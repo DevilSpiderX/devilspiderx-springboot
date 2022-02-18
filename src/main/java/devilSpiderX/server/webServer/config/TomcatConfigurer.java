@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class TomcatConfig {
+public class TomcatConfigurer {
     @Value("${server.http_port}")
     private int http_port;
     @Value("${server.port}")
@@ -32,6 +32,7 @@ public class TomcatConfig {
                 ctx.addConstraint(constraint);
             }
         };
+
         tomcat.addAdditionalTomcatConnectors(httpConnector());
         return tomcat;
     }
