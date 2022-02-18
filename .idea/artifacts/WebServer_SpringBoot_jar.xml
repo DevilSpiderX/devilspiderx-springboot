@@ -2,7 +2,7 @@
   <artifact name="WebServer-SpringBoot:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/WebServer_SpringBoot_jar</output-path>
     <root id="root">
-      <element id="archive" name="WebServer-SpringBoot.jar">
+      <element id="archive" name="WebServer.jar">
         <element id="module-output" name="WebServer-SpringBoot" />
       </element>
       <element id="directory" name="lib">

@@ -106,59 +106,62 @@ public class ServerInfoWS {
     }
 
     public void sendServerInfo(long cd) {
-        JSONObject data = new JSONObject();
+        Thread currentThread = Thread.currentThread();
+        while (!currentThread.isInterrupted()) {
+            JSONObject data = new JSONObject();
 
-        CPU cpu = serverInfo.update().getCPU();
-        JSONObject cpuData = new JSONObject();
-        cpuData.put("name", cpu.getName());
-        cpuData.put("physicalNum", cpu.getPhysicalNum());
-        cpuData.put("logicalNum", cpu.getLogicalNum());
-        cpuData.put("usedRate", cpu.getUsedRate());
-        cpuData.put("is64bit", cpu.is64bit());
-        cpuData.put("cpuTemperature", cpu.getCpuTemperature());
-        cpuData.put("freePercent", cpu.getFreePercent());
-        cpuData.put("usedPercent", cpu.getUsedPercent());
-        data.put("cpu", cpuData);
+            CPU cpu = serverInfo.update().getCPU();
+            JSONObject cpuData = new JSONObject();
+            cpuData.put("name", cpu.getName());
+            cpuData.put("physicalNum", cpu.getPhysicalNum());
+            cpuData.put("logicalNum", cpu.getLogicalNum());
+            cpuData.put("usedRate", cpu.getUsedRate());
+            cpuData.put("is64bit", cpu.is64bit());
+            cpuData.put("cpuTemperature", cpu.getCpuTemperature());
+            cpuData.put("freePercent", cpu.getFreePercent());
+            cpuData.put("usedPercent", cpu.getUsedPercent());
+            data.put("cpu", cpuData);
 
-        Memory memory = serverInfo.update().getMemory();
-        JSONObject memoryData = new JSONObject();
-        memoryData.put("total", memory.getTotal());
-        memoryData.put("used", memory.getUsed());
-        memoryData.put("free", memory.getFree());
-        memoryData.put("totalStr", memory.getTotalStr());
-        memoryData.put("usedStr", memory.getUsedStr());
-        memoryData.put("freeStr", memory.getFreeStr());
-        memoryData.put("usage", memory.getUsage());
-        data.put("memory", memoryData);
+            Memory memory = serverInfo.update().getMemory();
+            JSONObject memoryData = new JSONObject();
+            memoryData.put("total", memory.getTotal());
+            memoryData.put("used", memory.getUsed());
+            memoryData.put("free", memory.getFree());
+            memoryData.put("totalStr", memory.getTotalStr());
+            memoryData.put("usedStr", memory.getUsedStr());
+            memoryData.put("freeStr", memory.getFreeStr());
+            memoryData.put("usage", memory.getUsage());
+            data.put("memory", memoryData);
 
-        JSONArray diskDataArray = new JSONArray();
-        for (Disk disk : serverInfo.update().getDisks()) {
-            JSONObject diskData = new JSONObject();
-            diskData.put("label", disk.getLabel());
-            diskData.put("dir", disk.getDir());
-            diskData.put("fSType", disk.getFSType());
-            diskData.put("name", disk.getName());
-            diskData.put("total", disk.getTotal());
-            diskData.put("free", disk.getFree());
-            diskData.put("used", disk.getUsed());
-            diskData.put("totalStr", disk.getTotalStr());
-            diskData.put("freeStr", disk.getFreeStr());
-            diskData.put("usedStr", disk.getUsedStr());
-            diskData.put("usage", disk.getUsage());
-            diskDataArray.add(diskData);
-        }
-        data.put("disk", diskDataArray);
+            JSONArray diskDataArray = new JSONArray();
+            for (Disk disk : serverInfo.update().getDisks()) {
+                JSONObject diskData = new JSONObject();
+                diskData.put("label", disk.getLabel());
+                diskData.put("dir", disk.getDir());
+                diskData.put("fSType", disk.getFSType());
+                diskData.put("name", disk.getName());
+                diskData.put("total", disk.getTotal());
+                diskData.put("free", disk.getFree());
+                diskData.put("used", disk.getUsed());
+                diskData.put("totalStr", disk.getTotalStr());
+                diskData.put("freeStr", disk.getFreeStr());
+                diskData.put("usedStr", disk.getUsedStr());
+                diskData.put("usage", disk.getUsage());
+                diskDataArray.add(diskData);
+            }
+            data.put("disk", diskDataArray);
 
-        if (sendThread.isInterrupted()) {
-            return;
-        }
-        sendMessage(data.toJSONString());
+            if (sendThread.isInterrupted()) {
+                return;
+            }
+            sendMessage(data.toJSONString());
 
-        try {
-            Thread.sleep(cd);
-            sendServerInfo(cd);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            try {
+                //noinspection BusyWait
+                Thread.sleep(cd);
+            } catch (InterruptedException e) {
+                currentThread.interrupt();
+            }
         }
     }
 

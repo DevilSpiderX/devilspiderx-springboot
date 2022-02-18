@@ -85,11 +85,12 @@ public class MyServerInfo {
      */
     private void setCPUInfo(CentralProcessor processor, Sensors sensors) {
         // CPU信息
-        cpu.setName(processor.getProcessorIdentifier().getName());
+        CentralProcessor.ProcessorIdentifier cp_pi = processor.getProcessorIdentifier();
+        cpu.setName(cp_pi.getName());
         cpu.setPhysicalNum(processor.getPhysicalProcessorCount());
         cpu.setLogicalNum(processor.getLogicalProcessorCount());
         cpu.setUsedRate(processor.getSystemCpuLoadBetweenTicks(oldTicks));
-        cpu.set64bit(processor.getProcessorIdentifier().isCpu64bit());
+        cpu.set64bit(cp_pi.isCpu64bit());
         cpu.setCpuTemperature(sensors.getCpuTemperature());
         oldTicks = processor.getSystemCpuLoadTicks();
     }
