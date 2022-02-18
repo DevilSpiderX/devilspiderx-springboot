@@ -6,7 +6,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 
 
 @SpringBootApplication
-@ServletComponentScan(basePackages = "devilSpiderX.server.webServer.listener")
+@ServletComponentScan
 public class MainApplication {
     public static void main(String[] args) {
         SpringApplication.run(MainApplication.class, args);

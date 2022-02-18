@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.nio.file.Paths;
-
 @Configuration
 public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar {
     private final MyConfig config;
@@ -21,7 +19,7 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String path = "file:" + Paths.get(config.getSTATIC_LOCATION()).toAbsolutePath() + "/";
+        String path = "file:" + config.getSTATIC_LOCATION() + "/";
         registry.addResourceHandler("/**").addResourceLocations(path);
         WebMvcConfigurer.super.addResourceHandlers(registry);
     }
