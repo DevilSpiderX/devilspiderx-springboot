@@ -1,6 +1,5 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import devilSpiderX.server.webServer.service.OS;
@@ -56,9 +55,7 @@ public class MainController {
      */
     @PostMapping("/login")
     @ResponseBody
-    private JSONObject login(@RequestBody String reqBodyStr, HttpSession session, HttpServletResponse resp) {
-        JSONObject reqBody = JSON.parseObject(reqBodyStr);
-
+    private JSONObject login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletResponse resp) {
         JSONObject respJson = new JSONObject();
         if (!reqBody.containsKey("uid")) {
             respJson.put("code", "3");
@@ -115,9 +112,7 @@ public class MainController {
      */
     @PostMapping("/command")
     @ResponseBody
-    private JSONObject command(@RequestBody String reqBodyStr, HttpSession session) {
-        JSONObject reqBody = JSON.parseObject(reqBodyStr);
-
+    private JSONObject command(@RequestBody JSONObject reqBody, HttpSession session) {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             String cmdA = reqBody.getString("cmd");
@@ -178,9 +173,7 @@ public class MainController {
      */
     @PostMapping("/query")
     @ResponseBody
-    private JSONObject query(@RequestBody String reqBodyStr, HttpSession session) {
-        JSONObject reqBody = JSON.parseObject(reqBodyStr);
-
+    private JSONObject query(@RequestBody JSONObject reqBody, HttpSession session) {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             String key = "";
@@ -217,9 +210,7 @@ public class MainController {
      */
     @PostMapping("/v2ray")
     @ResponseBody
-    private JSONObject v2ray(@RequestBody String reqBodyStr, HttpSession session) throws IOException {
-        JSONObject reqBody = JSON.parseObject(reqBodyStr);
-
+    private JSONObject v2ray(@RequestBody JSONObject reqBody, HttpSession session) throws IOException {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             if (reqBody.containsKey("cmd")) {
@@ -300,9 +291,7 @@ public class MainController {
      */
     @PostMapping("/register")
     @ResponseBody
-    private JSONObject register(@RequestBody String reqBodyStr) {
-        JSONObject reqBody = JSON.parseObject(reqBodyStr);
-
+    private JSONObject register(@RequestBody JSONObject reqBody) {
         JSONObject respJson = new JSONObject();
         if (!reqBody.containsKey("uid")) {
             respJson.put("code", "2");
@@ -346,9 +335,7 @@ public class MainController {
      */
     @PostMapping("/addPasswords")
     @ResponseBody
-    private JSONObject addPasswords(@RequestBody String reqBodyStr, HttpSession session) {
-        JSONObject reqBody = JSON.parseObject(reqBodyStr);
-
+    private JSONObject addPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             if (!reqBody.containsKey("name")) {

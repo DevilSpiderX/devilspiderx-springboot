@@ -34,9 +34,9 @@ public class DSXTrayIcon {
 
     private void addPopupMenu() {
         PopupMenu popupMenu = new PopupMenu();
-        popupMenu.add(new MenuItem("打开目录"));
+        popupMenu.add(new MenuItem("Open Directory"));
         popupMenu.addSeparator();
-        popupMenu.add(new MenuItem("退出"));
+        popupMenu.add(new MenuItem("Exit"));
 
         MenuItem explorerMenuItem = popupMenu.getItem(0);
         explorerMenuItem.addActionListener(e -> OS.system("explorer " + config.getLocalPath()));
