@@ -1,5 +1,8 @@
 package devilSpiderX.server.webServer.sql;
 
+import org.teasoft.bee.osql.SuidRich;
+import org.teasoft.honey.osql.core.BeeFactory;
+
 import java.io.Serializable;
 
 public class User implements Serializable {
@@ -30,6 +33,18 @@ public class User implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean exist() {
+        if (uid == null) {
+            return false;
+        }
+        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        return suidRich.exist(this);
+    }
+
+    public static boolean exist(String uid) {
+        return new User(uid).exist();
     }
 
     @Override

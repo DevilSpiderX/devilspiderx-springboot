@@ -180,7 +180,7 @@ public class MainController {
             if (reqBody.containsKey("key")) {
                 key = reqBody.getString("key").trim();
             }
-            JSONArray myPwdArray = MyPasswords.getMyPasswords(key, (String) session.getAttribute("uid"));
+            JSONArray myPwdArray = MyPasswords.query(key, (String) session.getAttribute("uid"));
             if (myPwdArray.isEmpty()) {
                 respJson.put("code", "1");
                 respJson.put("msg", "空值");
@@ -358,6 +358,54 @@ public class MainController {
                 } else {
                     respJson.put("code", "1");
                     respJson.put("msg", "添加失败");
+                }
+            }
+
+        } else {
+            respJson.put("code", "100");
+            respJson.put("msg", "没有权限，请登录");
+        }
+        return respJson;
+    }
+
+    /**
+     * <b>修改密码</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * id, [name, account, password, remark]
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 修改成功；1 修改失败；2 id参数不能为空或不存在； 100 没有权限；
+     * </p>
+     */
+    @PostMapping("/updatePasswords")
+    @ResponseBody
+    private JSONObject updatePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        JSONObject respJson = new JSONObject();
+        if (isOperable(session)) {
+            if (!reqBody.containsKey("id")) {
+                respJson.put("code", "2");
+                respJson.put("msg", "id参数不能为空或不存在");
+            } else {
+                int id = reqBody.getInteger("id");
+                String name = reqBody.getString("name");
+                String account = reqBody.getString("account");
+                String password = reqBody.getString("password");
+                String remark = reqBody.getString("remark");
+                MyPasswords pwd = new MyPasswords();
+                pwd.setId(id);
+                pwd.setName(name);
+                pwd.setAccount(account);
+                pwd.setPassword(password);
+                pwd.setRemark(remark);
+                pwd.setOwner((String) session.getAttribute("uid"));
+                if (pwd.update()) {
+                    respJson.put("code", "0");
+                    respJson.put("msg", "修改成功");
+                } else {
+                    respJson.put("code", "1");
+                    respJson.put("msg", "修改失败");
                 }
             }
 

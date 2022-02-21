@@ -3,6 +3,7 @@ package devilSpiderX.server.webServer.sql;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.teasoft.bee.osql.Condition;
+import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.Op;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
@@ -84,6 +85,12 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     }
 
     public boolean add() {
+        if (name == null || name.equals("")) {
+            return false;
+        }
+        if (!User.exist(owner)) {
+            return false;
+        }
         SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
         MyPasswords counter = new MyPasswords();
         counter.setName(name);
@@ -94,11 +101,42 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         return suidRich.insert(this) == 1;
     }
 
-    public JSONArray getMyPasswords(String name) {
-        return getMyPasswords(name, owner);
+    public boolean delete() {
+        return delete(id);
     }
 
-    public static JSONArray getMyPasswords(String name, String owner) {
+    public static boolean delete(int id) {
+        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        return suidRich.deleteById(MyPasswords.class, id) == 1;
+    }
+
+    public boolean update() {
+        if ("".equals(name)) {
+            return false;
+        }
+        if (!User.exist(owner)) {
+            return false;
+        }
+        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        return suidRich.updateById(this, new ConditionImpl().setIncludeType(IncludeType.INCLUDE_EMPTY)) == 1;
+    }
+
+    public static boolean update(int id, String name, String account, String password, String remark, String owner) {
+        MyPasswords passwords = new MyPasswords();
+        passwords.setId(id);
+        passwords.setName(name);
+        passwords.setAccount(account);
+        passwords.setPassword(password);
+        passwords.setRemark(remark);
+        passwords.setOwner(owner);
+        return passwords.update();
+    }
+
+    public JSONArray query(String name) {
+        return query(name, owner);
+    }
+
+    public static JSONArray query(String name, String owner) {
         JSONArray result = new JSONArray();
         SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
         StringBuilder nameKey = new StringBuilder("%");
