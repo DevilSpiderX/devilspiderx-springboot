@@ -1,9 +1,9 @@
 package devilSpiderX.server.webServer.config;
 
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import devilSpiderX.server.webServer.util.BytesHttpMessageConverter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.ErrorPageRegistrar;
@@ -37,6 +37,7 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.add(0, fastJsonHttpMessageConverter());
+        converters.add(bytesHttpMessageConverter());
         WebMvcConfigurer.super.configureMessageConverters(converters);
     }
 
@@ -52,13 +53,15 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
         return converter;
     }
 
+    private @NotNull BytesHttpMessageConverter bytesHttpMessageConverter() {
+        return new BytesHttpMessageConverter();
+    }
+
     @Override
     public void registerErrorPages(ErrorPageRegistry registry) {
-        for (int i = 0; i < config.getERROR_PAGES().size(); i++) {
-            JSONObject pageConfig = config.getERROR_PAGES().getJSONObject(i);
-            ErrorPage errorPage = new ErrorPage(HttpStatus.valueOf(pageConfig.getInteger("code")),
-                    pageConfig.getString("location"));
-            registry.addErrorPages(errorPage);
-        }
+        ErrorPage e404 = new ErrorPage(HttpStatus.NOT_FOUND, "/error/404");
+        ErrorPage e405 = new ErrorPage(HttpStatus.METHOD_NOT_ALLOWED, "/error/405");
+        ErrorPage e500 = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/error/500");
+        registry.addErrorPages(e404, e405, e500);
     }
 }

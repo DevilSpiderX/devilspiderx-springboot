@@ -72,7 +72,7 @@ public class ServerInfoWS {
             logger.warn("java.io.EOFException");
             return;
         }
-        error.printStackTrace();
+        logger.error(error.getMessage(), error);
     }
 
     @OnMessage

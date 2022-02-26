@@ -9,10 +9,5 @@ server:
 
 my:
   static-location: "C:/Code/Web/WebServerWeb"
-  error-pages:
-    - code: 404
-      location: "/error/404.html"
-    - code: 500
-      location: "/error/500.html"
   tray-icon: false
   tray-icon-index: 1
