@@ -122,12 +122,10 @@ public class MainController {
             } else if (cmdA.equals("reboot")) {
                 respJson.put("code", "0");
                 respJson.put("msg", "成功\r\n服务器正在重启\r\n请稍后......");
-//                allowReboot = true;
                 OS.reboot(500);
             } else if (cmdA.equals("shutdown")) {
                 respJson.put("code", "0");
                 respJson.put("msg", "成功\r\n服务器正在关机......");
-//                allowShutdown = true;
                 OS.shutdown(500);
             } else {
                 respJson.put("code", "1");

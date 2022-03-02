@@ -1,17 +1,25 @@
 package devilSpiderX.server.webServer.service;
 
+import devilSpiderX.server.webServer.MainApplication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 
 public class OS {
+    private static final Logger logger = LoggerFactory.getLogger(OS.class);
 
-    public static String system(String cmd) {
+    public static String system(String... cmd) {
         StringBuilder resultBuilder = new StringBuilder();
+        Process process = null;
         BufferedReader resultReader = null;
         try {
-            Process process = Runtime.getRuntime().exec(cmd);
+            ProcessBuilder builder = new ProcessBuilder(cmd);
+            builder.redirectErrorStream(true);
+            process = builder.start();
             resultReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "GBK"));
             String line;
             while ((line = resultReader.readLine()) != null) {
@@ -19,14 +27,17 @@ public class OS {
             }
             process.waitFor();
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } finally {
-            if (resultReader != null) {
-                try {
+            try {
+                if (resultReader != null) {
                     resultReader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+                if (process != null) {
+                    process.destroy();
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
             }
         }
         return resultBuilder.toString();
@@ -36,9 +47,11 @@ public class OS {
         new Thread(() -> {
             try {
                 Thread.sleep(millis);
-                system("shutdown /r /t 0 /d p:4:1");
+                String result = system("pwsh", "-c", "shutdown", "/r", "/t 1", "/d p:4:1");
+                logger.info(result);
+                MainApplication.close();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }, "reboot").start();
     }
@@ -47,11 +60,12 @@ public class OS {
         new Thread(() -> {
             try {
                 Thread.sleep(millis);
-                system("shutdown /s /t 0 /d p:4:1");
+                String result = system("pwsh", "-c", "shutdown", "/s", "/t 1", "/d p:4:1");
+                logger.info(result);
+                MainApplication.close();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }, "shutdown").start();
     }
-
 }

@@ -10,8 +10,10 @@ public class V2ray {
 
     public static long start() throws IOException {
         if (!alive) {
-            p = Runtime.getRuntime().exec(String.format("\"%s\" \"-config=%s\"", exePath, configPath));
-            //p = Runtime.getRuntime().exec("\"" + exePath + "\" \"-config=" + configPath + "\"");
+            ProcessBuilder builder = new ProcessBuilder("pwsh", "-c",
+                    String.format("\"%s\" \"-config=%s\"", exePath, configPath));
+            builder.redirectErrorStream(true);
+            p = builder.start();
             alive = true;
         }
         return p.pid();
@@ -21,6 +23,7 @@ public class V2ray {
         String result;
         if (alive) {
             result = OS.system("TASKKILL /F /T /PID " + p.pid());
+            p.destroy();
             alive = false;
         } else {
             result = "v2ray不在运行中";

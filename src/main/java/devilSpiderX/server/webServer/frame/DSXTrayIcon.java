@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.frame;
 
 
+import devilSpiderX.server.webServer.MainApplication;
 import devilSpiderX.server.webServer.config.MyConfig;
 import devilSpiderX.server.webServer.service.OS;
 
@@ -42,7 +43,7 @@ public class DSXTrayIcon {
         explorerMenuItem.addActionListener(e -> OS.system("explorer " + config.getLocalPath()));
 
         MenuItem exitMenuItem = popupMenu.getItem(2);
-        exitMenuItem.addActionListener(e -> System.exit(0));
+        exitMenuItem.addActionListener(e -> MainApplication.close());
         trayIcon.setPopupMenu(popupMenu);
     }
 
