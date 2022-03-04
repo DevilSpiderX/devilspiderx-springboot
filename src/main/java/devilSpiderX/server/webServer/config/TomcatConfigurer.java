@@ -13,25 +13,32 @@ import org.springframework.context.annotation.Configuration;
 public class TomcatConfigurer {
     @Value("${server.http_port}")
     private int http_port;
-    @Value("${server.port}")
+    @Value("${server.https_port}")
     private int https_port;
+    @Value("${server.http_to_https}")
+    private boolean http_to_https;
 
     @Bean
     public TomcatServletWebServerFactory servletContainer() {
-        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
-            @Override
-            protected void postProcessContext(Context ctx) {
-                SecurityCollection collection = new SecurityCollection();
-                collection.setName("SSL");
-                collection.addPattern("/*");
+        TomcatServletWebServerFactory tomcat;
+        if (http_to_https) {
+            tomcat = new TomcatServletWebServerFactory(https_port) {
+                @Override
+                protected void postProcessContext(Context ctx) {
+                    SecurityCollection collection = new SecurityCollection();
+                    collection.setName("SSL");
+                    collection.addPattern("/*");
 
-                SecurityConstraint constraint = new SecurityConstraint();
-                constraint.addCollection(collection);
-                constraint.setUserConstraint("CONFIDENTIAL");
+                    SecurityConstraint constraint = new SecurityConstraint();
+                    constraint.addCollection(collection);
+                    constraint.setUserConstraint("CONFIDENTIAL");
 
-                ctx.addConstraint(constraint);
-            }
-        };
+                    ctx.addConstraint(constraint);
+                }
+            };
+        } else {
+            tomcat = new TomcatServletWebServerFactory(https_port);
+        }
 
         tomcat.addAdditionalTomcatConnectors(httpConnector());
         return tomcat;
@@ -39,10 +46,9 @@ public class TomcatConfigurer {
 
     @Bean
     public Connector httpConnector() {
-        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        Connector connector = new Connector();
         connector.setScheme("http");
         connector.setPort(http_port);
-        connector.setSecure(false);
         connector.setRedirectPort(https_port);
         return connector;
     }

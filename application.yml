@@ -1,6 +1,7 @@
 server:
   http_port: 10047
-  port: 10048
+  https_port: 10048
+  http_to_https: false
   ssl:
     protocol: "TLS"
     key-store: "file:./keys/tomcat.p12"
