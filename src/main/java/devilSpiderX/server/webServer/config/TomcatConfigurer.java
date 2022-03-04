@@ -15,30 +15,23 @@ public class TomcatConfigurer {
     private int http_port;
     @Value("${server.https_port}")
     private int https_port;
-    @Value("${server.http_to_https}")
-    private boolean http_to_https;
 
     @Bean
     public TomcatServletWebServerFactory servletContainer() {
-        TomcatServletWebServerFactory tomcat;
-        if (http_to_https) {
-            tomcat = new TomcatServletWebServerFactory(https_port) {
-                @Override
-                protected void postProcessContext(Context ctx) {
-                    SecurityCollection collection = new SecurityCollection();
-                    collection.setName("SSL");
-                    collection.addPattern("/*");
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory(https_port) {
+            @Override
+            protected void postProcessContext(Context ctx) {
+                SecurityCollection collection = new SecurityCollection();
+                collection.setName("SSL");
+                collection.addPattern("/*");
 
-                    SecurityConstraint constraint = new SecurityConstraint();
-                    constraint.addCollection(collection);
-                    constraint.setUserConstraint("CONFIDENTIAL");
+                SecurityConstraint constraint = new SecurityConstraint();
+                constraint.addCollection(collection);
+                constraint.setUserConstraint("CONFIDENTIAL");
 
-                    ctx.addConstraint(constraint);
-                }
-            };
-        } else {
-            tomcat = new TomcatServletWebServerFactory(https_port);
-        }
+                ctx.addConstraint(constraint);
+            }
+        };
 
         tomcat.addAdditionalTomcatConnectors(httpConnector());
         return tomcat;
