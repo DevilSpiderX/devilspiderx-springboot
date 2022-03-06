@@ -107,7 +107,7 @@ public class MainController {
      * </p>
      * <b>返回代码：</b>
      * 0 成功；1 cmd的值不存在；2 cmd参数不存在；
-     * 100 没有权限;
+     * 100 没有权限；101 没有管理员权限；
      * </p>
      */
     @PostMapping("/command")
@@ -116,7 +116,12 @@ public class MainController {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             String cmdA = reqBody.getString("cmd");
-            if (cmdA == null) {
+            SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+            User user = suidRich.select(new User((String) session.getAttribute("uid"))).get(0);
+            if (user == null || !user.getAdmin()) {
+                respJson.put("code", "101");
+                respJson.put("msg", "没有管理员权限");
+            } else if (cmdA == null) {
                 respJson.put("code", "2");
                 respJson.put("msg", "cmd参数不存在");
             } else if (cmdA.equals("reboot")) {
@@ -308,6 +313,7 @@ public class MainController {
                 respJson.put("msg", "该uid已存在");
             } else {
                 user.setPassword(pwd);
+                user.setAdmin(false);
                 if (suidRich.insert(user) > 0) {
                     respJson.put("code", "0");
                     respJson.put("msg", "注册成功");

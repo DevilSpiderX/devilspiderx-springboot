@@ -7,11 +7,14 @@ import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
 import devilSpiderX.server.webServer.service.information.MyServerInfo;
+import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.teasoft.bee.osql.SuidRich;
+import org.teasoft.honey.osql.core.BeeFactory;
 
 import javax.servlet.http.HttpSession;
 import java.math.BigInteger;
@@ -188,7 +191,7 @@ public class ServerInfoController {
      * </p>
      * <p>
      * <b>返回代码：</b>
-     * 0 成功；100 没有权限;
+     * 0 成功；100 没有权限；101 没有管理员权限；
      * </p>
      */
     @PostMapping("/ServerInfo/cleanMemory")
@@ -196,9 +199,16 @@ public class ServerInfoController {
     private JSONObject cleanMemory(HttpSession session) {
         JSONObject respJson = new JSONObject();
         if (MainController.isOperable(session)) {
-            String msg = OS.system("MemoryCleaner");
-            respJson.put("code", "0");
-            respJson.put("msg", msg);
+            SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+            User user = suidRich.select(new User((String) session.getAttribute("uid"))).get(0);
+            if (user != null && user.getAdmin()) {
+                String msg = OS.system("MemoryCleaner");
+                respJson.put("code", "0");
+                respJson.put("msg", msg);
+            } else {
+                respJson.put("code", "101");
+                respJson.put("msg", "没有管理员权限");
+            }
         } else {
             respJson.put("code", "100");
             respJson.put("msg", "没有权限，请登录");

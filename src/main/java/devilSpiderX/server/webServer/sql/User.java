@@ -4,6 +4,7 @@ import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class User implements Serializable {
 
@@ -11,6 +12,7 @@ public class User implements Serializable {
 
     private String uid;
     private String password;
+    private Boolean admin;
 
     public User() {
     }
@@ -35,6 +37,14 @@ public class User implements Serializable {
         this.password = password;
     }
 
+    public Boolean getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
+    }
+
     public boolean exist() {
         if (uid == null) {
             return false;
@@ -52,6 +62,13 @@ public class User implements Serializable {
         return "User{" +
                 "uid='" + uid + '\'' +
                 ", password='" + password + '\'' +
+                ", admin=" + admin +
                 '}';
+    }
+
+    public static void main(String[] args) {
+        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        List<User> userList = suidRich.select(new User());
+        System.out.println(userList);
     }
 }

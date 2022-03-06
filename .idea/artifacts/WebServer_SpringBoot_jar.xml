@@ -51,6 +51,10 @@
         <element id="library" level="project" name="Maven: org.teasoft:honey:1.9.8" />
         <element id="library" level="project" name="Maven: org.yaml:snakeyaml:1.28" />
       </element>
+      <element id="file-copy" path="$PROJECT_DIR$/application.yml" />
+      <element id="directory" name="keys">
+        <element id="file-copy" path="$PROJECT_DIR$/keys/tomcat.p12" />
+      </element>
     </root>
   </artifact>
 </component>
