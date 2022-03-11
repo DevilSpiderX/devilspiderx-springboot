@@ -3,26 +3,27 @@ package devilSpiderX.server.webServer.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Component
 @ConfigurationProperties(prefix = "my")
 public class MyConfig {
-    private final String LOCAL_PATH = Paths.get(".").toAbsolutePath().toString();
-    private String STATIC_LOCATION;
+    private final Path LOCAL_PATH = Paths.get(".").toAbsolutePath();
+    private Path STATIC_LOCATION;
     private boolean TRAY_ICON;
     private int TRAY_ICON_INDEX;
 
-    public String getLocalPath() {
+    public Path getLocalPath() {
         return LOCAL_PATH;
     }
 
-    public String getSTATIC_LOCATION() {
+    public Path getSTATIC_LOCATION() {
         return STATIC_LOCATION;
     }
 
     public void setSTATIC_LOCATION(String STATIC_LOCATION) {
-        this.STATIC_LOCATION = Paths.get(STATIC_LOCATION).toAbsolutePath().toString();
+        this.STATIC_LOCATION = Paths.get(STATIC_LOCATION).toAbsolutePath();
     }
 
     public boolean getTRAY_ICON() {

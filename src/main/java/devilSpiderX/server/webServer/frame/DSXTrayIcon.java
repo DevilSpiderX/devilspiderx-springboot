@@ -40,7 +40,7 @@ public class DSXTrayIcon {
         popupMenu.add(new MenuItem("Exit"));
 
         MenuItem explorerMenuItem = popupMenu.getItem(0);
-        explorerMenuItem.addActionListener(e -> OS.system("explorer", config.getLocalPath()));
+        explorerMenuItem.addActionListener(e -> OS.system("explorer", config.getLocalPath().toString()));
 
         MenuItem exitMenuItem = popupMenu.getItem(2);
         exitMenuItem.addActionListener(e -> MainApplication.close());

@@ -29,7 +29,7 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String path = "file:" + config.getSTATIC_LOCATION() + "/";
+        String path = config.getSTATIC_LOCATION().toUri().toString();
         registry.addResourceHandler("/**").addResourceLocations(path);
         WebMvcConfigurer.super.addResourceHandlers(registry);
     }
