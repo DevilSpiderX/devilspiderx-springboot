@@ -28,6 +28,7 @@ import java.util.Locale;
 @Controller
 public class ServerInfoController {
     private final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
+    private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
     private final MyServerInfo serverInfo = new MyServerInfo();
 
     /**
@@ -199,7 +200,6 @@ public class ServerInfoController {
     private JSONObject cleanMemory(HttpSession session) {
         JSONObject respJson = new JSONObject();
         if (MainController.isOperable(session)) {
-            SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
             User user = suidRich.select(new User((String) session.getAttribute("uid"))).get(0);
             if (user != null && user.getAdmin()) {
                 String msg = OS.system("MemoryCleaner");

@@ -28,6 +28,7 @@ import java.util.Locale;
 @Controller
 public class MainController {
     private final Logger logger = LoggerFactory.getLogger(MainController.class);
+    private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
 
     public static boolean isOperable(HttpSession session) {
         return session.getAttribute("operable") != null && (Boolean) session.getAttribute("operable");
@@ -66,7 +67,6 @@ public class MainController {
         } else {
             String uid = reqBody.getString("uid");
             String pwd = reqBody.getString("pwd");
-            SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
             List<User> users = suidRich.select(new User(uid));
 
             boolean flag = false;
@@ -116,7 +116,6 @@ public class MainController {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             String cmdA = reqBody.getString("cmd");
-            SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
             User user = suidRich.select(new User((String) session.getAttribute("uid"))).get(0);
             if (user == null || !user.getAdmin()) {
                 respJson.put("code", "101");
@@ -176,7 +175,7 @@ public class MainController {
      */
     @PostMapping("/query")
     @ResponseBody
-    private JSONObject query(@RequestBody JSONObject reqBody, HttpSession session) {
+    private JSONObject queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             String key = "";
@@ -307,7 +306,6 @@ public class MainController {
             String pwd = reqBody.getString("pwd");
             User user = new User(uid);
 
-            SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
             if (suidRich.exist(user)) {
                 respJson.put("code", "4");
                 respJson.put("msg", "该uid已存在");

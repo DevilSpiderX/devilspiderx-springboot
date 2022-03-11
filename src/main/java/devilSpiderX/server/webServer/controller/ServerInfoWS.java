@@ -154,7 +154,7 @@ public class ServerInfoWS {
             if (sendThread.isInterrupted()) {
                 return;
             }
-            sendMessage(data.toJSONString());
+            sendMessage(data.toString());
 
             try {
                 //noinspection BusyWait
@@ -192,7 +192,7 @@ public class ServerInfoWS {
             } catch (InterruptedException e) {
                 interrupt();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }
 
