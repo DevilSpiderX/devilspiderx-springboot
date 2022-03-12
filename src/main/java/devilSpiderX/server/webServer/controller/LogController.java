@@ -18,7 +18,12 @@ import java.nio.file.Paths;
 @RequestMapping("/log")
 public class LogController {
 
-    @PostMapping("/")
+    @GetMapping("")
+    public String logListView() {
+        return "log.html";
+    }
+
+    @PostMapping("")
     @ResponseBody
     public JSONArray list() throws IOException {
         JSONArray respList = new JSONArray();
