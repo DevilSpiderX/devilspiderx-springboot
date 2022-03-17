@@ -66,6 +66,11 @@ public class User implements Serializable {
                 '}';
     }
 
+    public static boolean isAdmin(String uid) {
+        User user = BeeFactory.getHoneyFactory().getSuidRich().select(new User(uid)).get(0);
+        return user != null && user.getAdmin();
+    }
+
     public static void main(String[] args) {
         SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
         List<User> userList = suidRich.select(new User());

@@ -47,7 +47,7 @@ public class OS {
         new Thread(() -> {
             try {
                 Thread.sleep(millis);
-                String result = system("pwsh", "-c", "shutdown", "/r", "/t 1", "/d p:4:1");
+                String result = system("shutdown", "/r", "/t 1", "/d p:4:1");
                 logger.info(result);
                 MainApplication.close();
             } catch (InterruptedException e) {
@@ -60,7 +60,7 @@ public class OS {
         new Thread(() -> {
             try {
                 Thread.sleep(millis);
-                String result = system("pwsh", "-c", "shutdown", "/s", "/t 1", "/d p:4:1");
+                String result = system("shutdown", "/s", "/t 1", "/d p:4:1");
                 logger.info(result);
                 MainApplication.close();
             } catch (InterruptedException e) {

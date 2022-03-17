@@ -20,10 +20,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 @Controller
 public class MainController {
@@ -116,8 +113,7 @@ public class MainController {
         JSONObject respJson = new JSONObject();
         if (isOperable(session)) {
             String cmdA = reqBody.getString("cmd");
-            User user = suidRich.select(new User((String) session.getAttribute("uid"))).get(0);
-            if (user == null || !user.getAdmin()) {
+            if (!User.isAdmin((String) session.getAttribute("uid"))) {
                 respJson.put("code", "101");
                 respJson.put("msg", "没有管理员权限");
             } else if (cmdA == null) {
@@ -207,7 +203,7 @@ public class MainController {
      * <p>
      * <b>返回代码：</b>
      * 0 启动成功；1 关闭成功；2 状态；3 cmd参数不存在；4 命令执行失败；
-     * 100 没有权限；
+     * 100 没有权限；101 没有管理员权限；
      * </p>
      */
     @PostMapping("/v2ray")
@@ -217,18 +213,21 @@ public class MainController {
         if (isOperable(session)) {
             if (reqBody.containsKey("cmd")) {
                 String command = reqBody.getString("cmd");
+                if ((command.equals("start") || command.equals("stop")) &&
+                        !User.isAdmin((String) session.getAttribute("uid"))) {
+                    respJson.put("code", "101");
+                    respJson.put("msg", "没有管理员权限");
+                    return respJson;
+                }
                 if (command.equals("start") && !V2ray.isAlive()) {
                     long pid = V2ray.start();
-                    System.out.println("(" + LocalDateTime.now().format(DateTimeFormatter
-                            .ofPattern("E, yyyy年MM月dd日 HH:mm:ss", Locale.CHINA)) +
-                            "): v2ray启动成功 PID=" + pid);
+                    logger.info("v2ray启动成功 PID=" + pid);
                     respJson.put("code", "0");
                     respJson.put("msg", "v2ray启动成功");
                 } else if (command.equals("stop") && V2ray.isAlive()) {
                     String rValue = V2ray.stop();
                     rValue = rValue.replaceAll("\n", "\t");
-                    System.out.println("(" + LocalDateTime.now().format(DateTimeFormatter
-                            .ofPattern("E, yyyy年MM月dd日 HH:mm:ss", Locale.CHINA)) + "): " + rValue);
+                    logger.info(rValue);
                     respJson.put("code", "1");
                     respJson.put("msg", "v2ray关闭成功");
                 } else if (command.equals("alive")) {
