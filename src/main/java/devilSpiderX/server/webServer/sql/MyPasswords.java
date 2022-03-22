@@ -132,20 +132,31 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         return passwords.update();
     }
 
-    public JSONArray query(String name) {
+    public JSONArray query() {
         return query(name, owner);
     }
 
     public static JSONArray query(String name, String owner) {
         JSONArray result = new JSONArray();
         SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
-        StringBuilder nameKey = new StringBuilder("%");
-        for (char c : name.toCharArray()) {
-            nameKey.append(c).append('%');
-        }
         Condition con = new ConditionImpl();
-        con.op("name", Op.like, "%" + nameKey + "%").and().op("owner", Op.equal, owner);
-        List<MyPasswords> passwords = suidRich.select(new MyPasswords(), con);
+        con.op("name", Op.like, name + '%').and().op("owner", Op.equal, owner);
+        MyPasswords emptyMP = new MyPasswords();
+        List<MyPasswords> passwords = suidRich.select(emptyMP, con);
+        if (passwords.isEmpty()) {
+            Condition con1 = new ConditionImpl();
+            con1.op("name", Op.like, '%' + name + '%').and().op("owner", Op.equal, owner);
+            passwords.addAll(suidRich.select(emptyMP, con1));
+            if (passwords.isEmpty()) {
+                StringBuilder nameKey = new StringBuilder("%");
+                for (char c : name.toCharArray()) {
+                    nameKey.append(c).append('%');
+                }
+                Condition con2 = new ConditionImpl();
+                con2.op("name", Op.like, nameKey.toString()).and().op("owner", Op.equal, owner);
+                passwords.addAll(suidRich.select(emptyMP, con2));
+            }
+        }
         passwords.sort(Comparator.naturalOrder());
         for (MyPasswords password : passwords) {
             JSONObject one = new JSONObject();
