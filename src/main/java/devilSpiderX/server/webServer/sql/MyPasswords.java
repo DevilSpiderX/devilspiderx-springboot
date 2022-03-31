@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.sql;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.Op;
@@ -9,9 +10,14 @@ import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
 import org.teasoft.honey.osql.core.ConditionImpl;
 
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 public class MyPasswords implements Serializable, Comparable<MyPasswords> {
 
@@ -84,6 +90,11 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
                 '}';
     }
 
+    @Override
+    public int compareTo(MyPasswords another) {
+        return id.compareTo(another.id);
+    }
+
     public boolean add() {
         if (name == null || name.equals("")) {
             return false;
@@ -98,6 +109,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         if (suidRich.count(counter) > 0) {
             return false;
         }
+        encrypt();
         return suidRich.insert(this) == 1;
     }
 
@@ -118,6 +130,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
             return false;
         }
         SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        encrypt();
         return suidRich.updateById(this, new ConditionImpl().setIncludeType(IncludeType.INCLUDE_EMPTY)) == 1;
     }
 
@@ -159,6 +172,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         }
         passwords.sort(Comparator.naturalOrder());
         for (MyPasswords password : passwords) {
+            password.decrypt();
             JSONObject one = new JSONObject();
             one.put("id", password.getId());
             one.put("name", password.getName());
@@ -170,8 +184,38 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         return result;
     }
 
-    @Override
-    public int compareTo(MyPasswords another) {
-        return id.compareTo(another.id);
+    public void encrypt() {
+        if (password == null || password.equals("")) {
+            return;
+        }
+        try {
+            byte[] result = doAES(password.getBytes(StandardCharsets.UTF_8), owner, Cipher.ENCRYPT_MODE);
+            password = new String(Base64.getEncoder().encode(result), StandardCharsets.UTF_8);
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException |
+                BadPaddingException e) {
+            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+        }
+    }
+
+    public void decrypt() {
+        if (password == null || password.equals("")) {
+            return;
+        }
+        try {
+            byte[] pwdBytes = Base64.getDecoder().decode(password.getBytes(StandardCharsets.UTF_8));
+            password = new String(doAES(pwdBytes, owner, Cipher.DECRYPT_MODE), StandardCharsets.UTF_8);
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException |
+                BadPaddingException e) {
+            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+        }
+    }
+
+    private static byte[] doAES(byte[] value, String keyStr, int mode) throws NoSuchPaddingException,
+            NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        byte[] key128 = MessageDigest.getInstance("MD5").digest(keyStr.getBytes(StandardCharsets.UTF_8));
+        SecretKey key = new SecretKeySpec(key128, "AES");
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(mode, key);
+        return cipher.doFinal(value);
     }
 }
