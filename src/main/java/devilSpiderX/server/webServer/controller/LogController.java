@@ -46,7 +46,7 @@ public class LogController {
         int offset = 0;
         byte[] buffer = new byte[64 * 1024];
         while (offset < fileLength) {
-            int count = fileIn.read(buffer, offset, buffer.length);
+            int count = fileIn.read(buffer);
             if (count == -1) {
                 break;
             }

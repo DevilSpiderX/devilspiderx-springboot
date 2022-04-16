@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.config;
 
 import devilSpiderX.server.webServer.frame.DSXTrayIcon;
+import devilSpiderX.server.webServer.service.PubYun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -18,6 +19,7 @@ public class DSXRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        new PubYun().start();
         if (config.getTRAY_ICON()) {
             System.setProperty("java.awt.headless", "false");
             logger.info("初始化系统托盘中......");
