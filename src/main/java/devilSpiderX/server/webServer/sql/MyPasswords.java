@@ -17,7 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.List;
 
 public class MyPasswords implements Serializable, Comparable<MyPasswords> {
 
@@ -26,7 +28,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     private Integer id;
     private String name;
     private String account;
-    private String password;
+    private String password;//只储存加密后的密码，禁止明文保存
     private String remark;
     private String owner;
 
@@ -55,11 +57,11 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     }
 
     public String getPassword() {
-        return password;
+        return decrypt(password);
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.password = encrypt(password);
     }
 
     public String getRemark() {
@@ -109,7 +111,6 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         if (suidRich.count(counter) > 0) {
             return false;
         }
-        encrypt();
         return suidRich.insert(this) == 1;
     }
 
@@ -130,7 +131,6 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
             return false;
         }
         SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
-        encrypt();
         return suidRich.updateById(this, new ConditionImpl().setIncludeType(IncludeType.INCLUDE_EMPTY)) == 1;
     }
 
@@ -172,7 +172,6 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         }
         passwords.sort(Comparator.naturalOrder());
         for (MyPasswords password : passwords) {
-            password.decrypt();
             JSONObject one = new JSONObject();
             one.put("id", password.getId());
             one.put("name", password.getName());
@@ -184,34 +183,41 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         return result;
     }
 
-    public void encrypt() {
-        if (password == null || password.equals("")) {
-            return;
+    private String encrypt(String value) {
+        if (value == null || value.equals("") || owner == null) {
+            return value;
         }
+        String resultStr = null;
         try {
-            byte[] result = doAES(password.getBytes(StandardCharsets.UTF_8), owner, Cipher.ENCRYPT_MODE);
-            password = new String(Base64.getEncoder().encode(result), StandardCharsets.UTF_8);
+            byte[] result = doAES(value.getBytes(StandardCharsets.UTF_8), owner, Cipher.ENCRYPT_MODE);
+            resultStr = new String(Base64.getEncoder().encode(result), StandardCharsets.UTF_8);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException |
                 BadPaddingException e) {
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
+        return resultStr;
     }
 
-    public void decrypt() {
-        if (password == null || password.equals("")) {
-            return;
+    private String decrypt(String value) {
+        if (value == null || value.equals("") || owner == null) {
+            return value;
         }
+        String resultStr = null;
         try {
-            byte[] pwdBytes = Base64.getDecoder().decode(password.getBytes(StandardCharsets.UTF_8));
-            password = new String(doAES(pwdBytes, owner, Cipher.DECRYPT_MODE), StandardCharsets.UTF_8);
+            byte[] valueBytes = Base64.getDecoder().decode(value.getBytes(StandardCharsets.UTF_8));
+            resultStr = new String(doAES(valueBytes, owner, Cipher.DECRYPT_MODE), StandardCharsets.UTF_8);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException |
                 BadPaddingException e) {
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
+        return resultStr;
     }
 
     private static byte[] doAES(byte[] value, String keyStr, int mode) throws NoSuchPaddingException,
             NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        if (keyStr == null) {
+            throw new NullPointerException("Parameter keyStr should not be null.");
+        }
         byte[] key128 = MessageDigest.getInstance("MD5").digest(keyStr.getBytes(StandardCharsets.UTF_8));
         SecretKey key = new SecretKeySpec(key128, "AES");
         Cipher cipher = Cipher.getInstance("AES");
