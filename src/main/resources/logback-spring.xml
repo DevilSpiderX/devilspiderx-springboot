@@ -24,7 +24,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         <!-- 文件滚动策略根据%d{patter}中的“patter”而定，此处为每天产生一个文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/%d{yyyy-MM-dd}_%i.log</fileNamePattern>
-            <maxFileSize>100MB</maxFileSize>
+            <maxFileSize>2MB</maxFileSize>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
         <!-- 日志输出格式： -->
