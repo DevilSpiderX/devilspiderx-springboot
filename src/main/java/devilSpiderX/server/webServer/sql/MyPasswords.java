@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.sql;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
@@ -136,12 +137,12 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
 
     public static boolean update(int id, String name, String account, String password, String remark, String owner) {
         MyPasswords passwords = new MyPasswords();
+        passwords.setOwner(owner);
         passwords.setId(id);
         passwords.setName(name);
         passwords.setAccount(account);
         passwords.setPassword(password);
         passwords.setRemark(remark);
-        passwords.setOwner(owner);
         return passwords.update();
     }
 
@@ -184,7 +185,11 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     }
 
     private String encrypt(String value) {
-        if (value == null || value.equals("") || owner == null) {
+        Logger logger = LoggerFactory.getLogger(getClass());
+        if (owner == null) {
+            throw new NullPointerException("owner is null");
+        }
+        if (value == null || value.equals("")) {
             return value;
         }
         String resultStr = null;
@@ -193,13 +198,17 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
             resultStr = new String(Base64.getEncoder().encode(result), StandardCharsets.UTF_8);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException |
                 BadPaddingException e) {
-            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
         return resultStr;
     }
 
     private String decrypt(String value) {
-        if (value == null || value.equals("") || owner == null) {
+        Logger logger = LoggerFactory.getLogger(getClass());
+        if (owner == null) {
+            throw new NullPointerException("owner is null");
+        }
+        if (value == null || value.equals("")) {
             return value;
         }
         String resultStr = null;
@@ -208,7 +217,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
             resultStr = new String(doAES(valueBytes, owner, Cipher.DECRYPT_MODE), StandardCharsets.UTF_8);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException |
                 BadPaddingException e) {
-            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
         return resultStr;
     }

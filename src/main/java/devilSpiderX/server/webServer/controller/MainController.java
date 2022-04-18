@@ -216,11 +216,11 @@ public class MainController {
                 String password = reqBody.getString("password");
                 String remark = reqBody.getString("remark");
                 MyPasswords newPwd = new MyPasswords();
+                newPwd.setOwner((String) session.getAttribute("uid"));
                 newPwd.setName(name);
                 newPwd.setAccount(account);
                 newPwd.setPassword(password);
                 newPwd.setRemark(remark);
-                newPwd.setOwner((String) session.getAttribute("uid"));
                 if (newPwd.add()) {
                     respJson.put("code", "0");
                     respJson.put("msg", "添加成功");
@@ -262,12 +262,12 @@ public class MainController {
                 String password = reqBody.getString("password");
                 String remark = reqBody.getString("remark");
                 MyPasswords pwd = new MyPasswords();
+                pwd.setOwner((String) session.getAttribute("uid"));
                 pwd.setId(id);
                 pwd.setName(name);
                 pwd.setAccount(account);
                 pwd.setPassword(password);
                 pwd.setRemark(remark);
-                pwd.setOwner((String) session.getAttribute("uid"));
                 if (pwd.update()) {
                     respJson.put("code", "0");
                     respJson.put("msg", "修改成功");
