@@ -112,7 +112,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         if (suidRich.count(counter) > 0) {
             return false;
         }
-        return suidRich.insert(this) == 1;
+        return suidRich.insert(this, IncludeType.INCLUDE_EMPTY) == 1;
     }
 
     public boolean delete() {
