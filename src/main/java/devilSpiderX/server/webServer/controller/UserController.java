@@ -22,7 +22,7 @@ import java.util.List;
 public class UserController {
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
-    private static final int SESSION_MAX_AGE = 5;//10 * 60;
+    private static final int SESSION_MAX_AGE = 10 * 60;
 
     /**
      * <b>登录</b>
