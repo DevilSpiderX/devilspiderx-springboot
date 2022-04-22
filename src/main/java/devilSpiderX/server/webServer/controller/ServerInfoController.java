@@ -6,7 +6,7 @@ import devilSpiderX.server.webServer.service.OS;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
-import devilSpiderX.server.webServer.service.information.MyServerInfo;
+import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ import java.util.Locale;
 public class ServerInfoController {
     private final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
-    private final MyServerInfo serverInfo = new MyServerInfo();
+    private final MyServerInfo serverInfo = MyServerInfo.serverInfo;
 
     /**
      * <b>CPU信息</b>

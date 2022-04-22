@@ -1,5 +1,8 @@
-package devilSpiderX.server.webServer.service.information;
+package devilSpiderX.server.webServer.service;
 
+import devilSpiderX.server.webServer.service.information.CPU;
+import devilSpiderX.server.webServer.service.information.Disk;
+import devilSpiderX.server.webServer.service.information.Memory;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.GlobalMemory;
@@ -10,16 +13,18 @@ import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
 
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MyServerInfo {
+    public static final MyServerInfo serverInfo = new MyServerInfo();
     private static final int coolDownTime = 1000;
     private final CD_Thread cdThread;
     private static int cdThread_count = 0;
     private boolean coolDown = false;
     private final Object cd_lock = new Object();
     private long[] oldTicks;
+    private boolean isTemperatureDetectable = true;
     /**
      * CPU相关信息
      */
@@ -31,14 +36,21 @@ public class MyServerInfo {
     /**
      * 磁盘相关信息
      */
-    private final List<Disk> disks = new LinkedList<>();
-    /**
-     * 风扇转速
-     */
-    private final List<Integer> fanSpeeds = new LinkedList<>();
+    private final Disk[] disks;
 
     public MyServerInfo() {
-        oldTicks = new SystemInfo().getHardware().getProcessor().getSystemCpuLoadTicks();
+        SystemInfo info = new SystemInfo();
+        oldTicks = info.getHardware().getProcessor().getSystemCpuLoadTicks();
+        double temp = info.getHardware().getSensors().getCpuTemperature();
+        if (temp == 0 || Double.isNaN(temp)) {
+            isTemperatureDetectable = false;
+        }
+
+        int diskSize = info.getOperatingSystem().getFileSystem().getFileStores().size();
+        disks = new Disk[diskSize];
+        for (int i = 0; i < diskSize; i++) {
+            disks[i] = new Disk();
+        }
         cdThread = new CD_Thread();
         cdThread.start();
     }
@@ -51,28 +63,19 @@ public class MyServerInfo {
         return memory;
     }
 
-    public List<Disk> getDisks() {
+    public Disk[] getDisks() {
         return disks;
-    }
-
-    public List<Integer> getFanSpeeds() {
-        return fanSpeeds;
     }
 
     public MyServerInfo update() {
         synchronized (cd_lock) {
             if (!coolDown) {
-                disks.clear();
-                fanSpeeds.clear();
                 SystemInfo info = new SystemInfo();
                 HardwareAbstractionLayer hw = info.getHardware();
                 Sensors sensors = hw.getSensors();
                 setCPUInfo(hw.getProcessor(), sensors);
                 setMemoryInfo(hw.getMemory());
                 setDisks(info.getOperatingSystem());
-                for (int fanSpeed : sensors.getFanSpeeds()) {
-                    fanSpeeds.add(fanSpeed);
-                }
                 coolDown = true;
                 cdThread.activate();
             }
@@ -91,7 +94,9 @@ public class MyServerInfo {
         cpu.setLogicalNum(processor.getLogicalProcessorCount());
         cpu.setUsedRate(processor.getSystemCpuLoadBetweenTicks(oldTicks));
         cpu.set64bit(cp_pi.isCpu64bit());
-        cpu.setCpuTemperature(sensors.getCpuTemperature());
+        if (isTemperatureDetectable) {
+            cpu.setCpuTemperature(sensors.getCpuTemperature());
+        }
         oldTicks = processor.getSystemCpuLoadTicks();
     }
 
@@ -110,11 +115,12 @@ public class MyServerInfo {
     private void setDisks(OperatingSystem os) {
         FileSystem fileSystem = os.getFileSystem();
         List<OSFileStore> fsList = fileSystem.getFileStores();
-        for (OSFileStore fs : fsList) {
+        for (int i = 0; i < fsList.size(); i++) {
+            OSFileStore fs = fsList.get(i);
             long free = fs.getUsableSpace();
             long total = fs.getTotalSpace();
             long used = total - free;
-            Disk disk = new Disk();
+            Disk disk = disks[i];
             disk.setLabel(fs.getLabel());
             disk.setDir(fs.getMount());
             disk.setFSType(fs.getType());
@@ -122,7 +128,6 @@ public class MyServerInfo {
             disk.setTotal(total);
             disk.setFree(free);
             disk.setUsed(used);
-            disks.add(disk);
         }
     }
 
@@ -154,13 +159,11 @@ public class MyServerInfo {
     }
 
     public static void main(String[] args) {
-        MyServerInfo info = new MyServerInfo();
-        for (int i = 0; i < 1; i++) {
-            info.update();
-            CPU cpu = info.getCPU();
-            Memory memory = info.getMemory();
-            List<Disk> disks = info.getDisks();
-            List<Integer> fanSpeeds = info.getFanSpeeds();
+        for (int i = 0; i < 2; i++) {
+            serverInfo.update();
+            CPU cpu = serverInfo.getCPU();
+            Memory memory = serverInfo.getMemory();
+            Disk[] disks = serverInfo.getDisks();
 
             System.out.println(cpu);
             System.out.println("CPU Free Percent:" + cpu.getFreePercent());
@@ -173,7 +176,7 @@ public class MyServerInfo {
             System.out.println("Memory Free Size:" + memory.getFreeStr());
             System.out.println("Memory Usage:" + memory.getUsage());
             System.out.println();
-            System.out.println(disks);
+            System.out.println(Arrays.toString(disks));
             int j = 0;
             for (Disk disk : disks) {
                 System.out.println("Disk" + j + " Total Size:" + disk.getTotalStr());
@@ -182,14 +185,8 @@ public class MyServerInfo {
                 System.out.println("Disk" + j + " Usage:" + disk.getUsage());
                 j++;
             }
-
-            j = 0;
-            for (int fanSpeed : fanSpeeds) {
-                System.out.println("fan" + j + " speed:" + fanSpeed);
-                j++;
-            }
             System.out.println("--------------------------------------------------");
-            Util.sleep(400);
+            Util.sleep(1000);
         }
     }
 }

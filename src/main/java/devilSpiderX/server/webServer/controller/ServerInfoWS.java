@@ -7,7 +7,7 @@ import devilSpiderX.server.webServer.listener.HttpSessionRegister;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
-import devilSpiderX.server.webServer.service.information.MyServerInfo;
+import devilSpiderX.server.webServer.service.MyServerInfo;
 import org.apache.tomcat.websocket.WsSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Controller
 @ServerEndpoint(value = "/websocket/getServerInfo/{token}/{timeStr}")
 public class ServerInfoWS {
-    private static final MyServerInfo serverInfo = new MyServerInfo();
+    private static final MyServerInfo serverInfo = MyServerInfo.serverInfo;
     private static final AtomicInteger onlineCount = new AtomicInteger(0);
     private static long count = 0;
     private final Logger logger = LoggerFactory.getLogger(ServerInfoWS.class);

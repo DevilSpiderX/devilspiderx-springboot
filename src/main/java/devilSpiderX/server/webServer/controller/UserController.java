@@ -22,6 +22,7 @@ import java.util.List;
 public class UserController {
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+    private static final int SESSION_MAX_AGE = 5;//10 * 60;
 
     /**
      * <b>登录</b>
@@ -61,11 +62,11 @@ public class UserController {
                 respJson.put("code", "2");
                 respJson.put("msg", "uid不存在");
             } else if (flag) {
-                session.setMaxInactiveInterval(10 * 60);
+                session.setMaxInactiveInterval(SESSION_MAX_AGE);
                 session.setAttribute("operable", true);
                 session.setAttribute("uid", uid);
                 Cookie jsessionid = new Cookie("JSESSIONID", session.getId());
-                jsessionid.setMaxAge(10 * 60);
+                jsessionid.setMaxAge(SESSION_MAX_AGE);
                 jsessionid.setPath("/");
                 resp.addCookie(jsessionid);
 
