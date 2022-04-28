@@ -17,12 +17,12 @@ import java.io.InputStream;
 public class BytesHttpMessageConverter extends AbstractHttpMessageConverter<Bytes> {
 
     public BytesHttpMessageConverter() {
-        super(MediaType.ALL);
+        super(MediaType.APPLICATION_OCTET_STREAM);
     }
 
     @Override
     protected boolean supports(@NotNull Class<?> clazz) {
-        return true;
+        return clazz.equals(Bytes.class);
     }
 
     @Override
@@ -31,21 +31,19 @@ public class BytesHttpMessageConverter extends AbstractHttpMessageConverter<Byte
         logger.info(clazz);
         InputStream in = inputMessage.getBody();
         Bytes bytes = new Bytes();
-        int offset = 0;
+        byte[] buffer = new byte[1024 * 64];
         while (true) {
-            byte[] buffer = new byte[1024 * 64];
-            int readCount = in.read(buffer, offset, buffer.length);
-            bytes.append(buffer);
+            int readCount = in.read(buffer);
             if (readCount == -1) {
                 break;
             }
-            offset += readCount;
+            bytes.append(buffer, 0, readCount);
         }
         return bytes;
     }
 
     @Override
-    protected void writeInternal(Bytes bytes, HttpOutputMessage outputMessage)
+    protected void writeInternal(Bytes bytes, @NotNull HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         HttpHeaders headers = outputMessage.getHeaders();

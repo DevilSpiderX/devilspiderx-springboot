@@ -4,6 +4,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import devilSpiderX.server.webServer.util.BytesHttpMessageConverter;
+import devilSpiderX.server.webServer.util.FormToJSONHttpMessageConverter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.ErrorPageRegistrar;
@@ -37,7 +38,8 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.add(0, fastJsonHttpMessageConverter());
-        converters.add(bytesHttpMessageConverter());
+        converters.add(new BytesHttpMessageConverter());
+        converters.add(new FormToJSONHttpMessageConverter());
         WebMvcConfigurer.super.configureMessageConverters(converters);
     }
 
@@ -51,10 +53,6 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
         mediaTypeList.add(MediaType.APPLICATION_JSON);
         converter.setSupportedMediaTypes(mediaTypeList);
         return converter;
-    }
-
-    private @NotNull BytesHttpMessageConverter bytesHttpMessageConverter() {
-        return new BytesHttpMessageConverter();
     }
 
     @Override

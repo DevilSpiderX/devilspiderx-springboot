@@ -3,7 +3,7 @@ server:
   https_port: 10048
   ssl:
     protocol: "TLS"
-    key-store: "file:./keys/tomcat.p12"
+    key-store: "file:./keys/Certificate.p12"
     key-store-password: "162276"
     key-store-type: "PKCS12"
 
