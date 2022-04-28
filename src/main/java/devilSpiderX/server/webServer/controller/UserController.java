@@ -157,6 +157,31 @@ public class UserController {
         return respJson;
     }
 
+    /**
+     * <b>状态</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 ；
+     * </p>
+     */
+    @PostMapping("/status")
+    @ResponseBody
+    private JSONObject status(HttpSession session) {
+        JSONObject respJson = new JSONObject();
+        respJson.put("status", 0);
+        respJson.put("login", false);
+        respJson.put("uid", "");
+        if (MainController.isOperable(session)) {
+            respJson.put("status", 1);
+            respJson.put("login", true);
+            respJson.put("uid", session.getAttribute("uid"));
+        }
+        return respJson;
+    }
+
     private static String SHA256(String value) {
         StringBuilder resultBld = new StringBuilder();
         try {

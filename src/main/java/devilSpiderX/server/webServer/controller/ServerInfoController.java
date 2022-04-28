@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
@@ -26,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 @Controller
+@RequestMapping("/ServerInfo")
 public class ServerInfoController {
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
@@ -41,7 +43,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/ServerInfo/cpu")
+    @PostMapping("/cpu")
     @ResponseBody
     private JSONObject cpu(HttpSession session) {
         JSONObject respJson = new JSONObject();
@@ -76,7 +78,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/ServerInfo/memory")
+    @PostMapping("/memory")
     @ResponseBody
     private JSONObject memory(HttpSession session) {
 
@@ -111,7 +113,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/ServerInfo/disk")
+    @PostMapping("/disk")
     @ResponseBody
     private JSONObject disk(HttpSession session) {
 
@@ -165,7 +167,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/ServerInfo/token")
+    @PostMapping("/token")
     @ResponseBody
     private JSONObject token(HttpSession session) {
 
@@ -195,7 +197,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限；101 没有管理员权限；
      * </p>
      */
-    @PostMapping("/ServerInfo/cleanMemory")
+    @PostMapping("/cleanMemory")
     @ResponseBody
     private JSONObject cleanMemory(HttpSession session) {
         JSONObject respJson = new JSONObject();
