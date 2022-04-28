@@ -28,7 +28,7 @@ public class ServerInfoWS {
     private static final MyServerInfo serverInfo = MyServerInfo.serverInfo;
     private static final AtomicInteger onlineCount = new AtomicInteger(0);
     private static long count = 0;
-    private final Logger logger = LoggerFactory.getLogger(ServerInfoWS.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerInfoWS.class);
     private WsSession session;
     private String uid;
     private String address;

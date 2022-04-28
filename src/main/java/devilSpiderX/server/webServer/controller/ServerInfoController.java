@@ -27,7 +27,7 @@ import java.util.Locale;
 
 @Controller
 public class ServerInfoController {
-    private final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
     private final MyServerInfo serverInfo = MyServerInfo.serverInfo;
 

@@ -3,13 +3,8 @@ package devilSpiderX.server.webServer.util;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class Arith {
-    // 默认除法运算精度
-    private static final int DEF_DIV_SCALE = 10;
-
-    // 这个类不能实例化
-    private Arith() {
-    }
+public class Arithmetic {
+    private static final int DEF_DIV_SCALE = 10;// 默认除法运算精度
 
     /**
      * 提供精确的加法运算。

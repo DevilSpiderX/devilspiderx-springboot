@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import devilSpiderX.server.webServer.MainApplication;
 import devilSpiderX.server.webServer.service.OS;
 import devilSpiderX.server.webServer.service.V2ray;
 import devilSpiderX.server.webServer.sql.MyPasswords;
@@ -9,10 +10,7 @@ import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
 
@@ -22,7 +20,7 @@ import java.io.IOException;
 
 @Controller
 public class MainController {
-    private final Logger logger = LoggerFactory.getLogger(MainController.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
 
     public static boolean isOperable(HttpSession session) {
@@ -280,6 +278,38 @@ public class MainController {
         } else {
             respJson.put("code", "100");
             respJson.put("msg", "没有权限，请登录");
+        }
+        return respJson;
+    }
+
+    /**
+     * <b>关闭服务器程序</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 关闭成功； 100 没有权限；
+     * </p>
+     */
+    @RequestMapping("/service/shutdown")
+    @ResponseBody
+    private JSONObject serviceShutdown(HttpSession session) {
+        JSONObject respJson = new JSONObject();
+        if (isOperable(session) && User.isAdmin((String) session.getAttribute("uid"))) {
+            respJson.put("code", "0");
+            respJson.put("msg", "关闭成功");
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1000);
+                    MainApplication.close();
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }, "service-shutdown-thread").start();
+        } else {
+            respJson.put("code", "100");
+            respJson.put("msg", "没有权限，请登录管理员账号");
         }
         return respJson;
     }

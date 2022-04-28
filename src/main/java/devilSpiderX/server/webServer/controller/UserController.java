@@ -15,12 +15,15 @@ import org.teasoft.honey.osql.core.BeeFactory;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Controller
 @RequestMapping("/user")
 public class UserController {
-    private final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
     private static final int SESSION_MAX_AGE = 10 * 60;
 
@@ -47,7 +50,7 @@ public class UserController {
             respJson.put("msg", "pwd参数不存在");
         } else {
             String uid = reqBody.getString("uid");
-            String pwd = reqBody.getString("pwd");
+            String pwd = SHA256(reqBody.getString("pwd"));
             List<User> users = suidRich.select(new User(uid));
 
             boolean flag = false;
@@ -133,7 +136,7 @@ public class UserController {
             respJson.put("msg", "pwd参数不存在");
         } else {
             String uid = reqBody.getString("uid");
-            String pwd = reqBody.getString("pwd");
+            String pwd = SHA256(reqBody.getString("pwd"));
             User user = new User(uid);
 
             if (suidRich.exist(user)) {
@@ -153,4 +156,23 @@ public class UserController {
         }
         return respJson;
     }
+
+    private static String SHA256(String value) {
+        StringBuilder resultBld = new StringBuilder();
+        try {
+            MessageDigest SHA256Digest = MessageDigest.getInstance("SHA-256");
+            byte[] buff = SHA256Digest.digest(value.getBytes(StandardCharsets.UTF_8));
+            for (byte b : buff) {
+                String hex = Integer.toHexString(b & 0xFF);
+                if (hex.length() == 1) {
+                    resultBld.append(0);
+                }
+                resultBld.append(hex);
+            }
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return resultBld.toString();
+    }
+
 }
