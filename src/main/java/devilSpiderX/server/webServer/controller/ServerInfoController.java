@@ -145,6 +145,31 @@ public class ServerInfoController {
         return respJson;
     }
 
+    /**
+     * <b>硬盘数量</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 成功；100 没有权限;
+     * </p>
+     */
+    @PostMapping("/disk/size")
+    @ResponseBody
+    private JSONObject disk_size(HttpSession session) {
+        JSONObject respJson = new JSONObject();
+        if (MainController.isOperable(session)) {
+            respJson.put("code", "0");
+            respJson.put("msg", "获取成功");
+            respJson.put("size", serverInfo.update().getDisks().size());
+        } else {
+            respJson.put("code", "100");
+            respJson.put("msg", "没有权限，请登录");
+        }
+        return respJson;
+    }
+
     public static String makeToken(String timeStr) {
         byte[] digest;
         try {

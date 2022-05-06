@@ -13,7 +13,7 @@ import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MyServerInfo {
@@ -36,7 +36,7 @@ public class MyServerInfo {
     /**
      * 磁盘相关信息
      */
-    private final Disk[] disks;
+    private final List<Disk> disks = new ArrayList<>();
 
     public MyServerInfo() {
         SystemInfo info = new SystemInfo();
@@ -47,9 +47,8 @@ public class MyServerInfo {
         }
 
         int diskSize = info.getOperatingSystem().getFileSystem().getFileStores().size();
-        disks = new Disk[diskSize];
         for (int i = 0; i < diskSize; i++) {
-            disks[i] = new Disk();
+            disks.add(new Disk());
         }
         cdThread = new CD_Thread();
         cdThread.start();
@@ -63,7 +62,7 @@ public class MyServerInfo {
         return memory;
     }
 
-    public Disk[] getDisks() {
+    public List<Disk> getDisks() {
         return disks;
     }
 
@@ -115,12 +114,18 @@ public class MyServerInfo {
     private void setDisks(OperatingSystem os) {
         FileSystem fileSystem = os.getFileSystem();
         List<OSFileStore> fsList = fileSystem.getFileStores();
+        if (disks.size() != fsList.size()) {
+            disks.clear();
+            for (int i = 0; i < fsList.size(); i++) {
+                disks.add(new Disk());
+            }
+        }
         for (int i = 0; i < fsList.size(); i++) {
             OSFileStore fs = fsList.get(i);
             long free = fs.getUsableSpace();
             long total = fs.getTotalSpace();
             long used = total - free;
-            Disk disk = disks[i];
+            Disk disk = disks.get(i);
             disk.setLabel(fs.getLabel());
             disk.setDir(fs.getMount());
             disk.setFSType(fs.getType());
@@ -163,7 +168,7 @@ public class MyServerInfo {
             serverInfo.update();
             CPU cpu = serverInfo.getCPU();
             Memory memory = serverInfo.getMemory();
-            Disk[] disks = serverInfo.getDisks();
+            List<Disk> disks = serverInfo.getDisks();
 
             System.out.println(cpu);
             System.out.println("CPU Free Percent:" + cpu.getFreePercent());
@@ -176,7 +181,7 @@ public class MyServerInfo {
             System.out.println("Memory Free Size:" + memory.getFreeStr());
             System.out.println("Memory Usage:" + memory.getUsage());
             System.out.println();
-            System.out.println(Arrays.toString(disks));
+            System.out.println(disks);
             int j = 0;
             for (Disk disk : disks) {
                 System.out.println("Disk" + j + " Total Size:" + disk.getTotalStr());
