@@ -1,12 +1,12 @@
 package devilSpiderX.server.webServer.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@Component
+@Configuration
 @ConfigurationProperties(prefix = "my")
 public class MyConfig {
     private final Path LOCAL_PATH = Paths.get(".").toAbsolutePath();

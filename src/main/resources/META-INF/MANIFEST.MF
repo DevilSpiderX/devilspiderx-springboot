@@ -44,5 +44,5 @@ Class-Path:  lib/bee-1.9.8.jar
              lib/tomcat-embed-core-9.0.54.jar
              lib/tomcat-embed-el-9.0.54.jar
              lib/tomcat-embed-websocket-9.0.54.jar
-
-
+             lib/vavr-0.10.4.jar
+             lib/vavr-match-0.10.4.jar

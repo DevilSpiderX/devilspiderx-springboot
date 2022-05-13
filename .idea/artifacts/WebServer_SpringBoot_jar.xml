@@ -50,11 +50,14 @@
         <element id="library" level="project" name="Maven: org.teasoft:bee:1.9.8" />
         <element id="library" level="project" name="Maven: org.teasoft:honey:1.9.8" />
         <element id="library" level="project" name="Maven: org.yaml:snakeyaml:1.28" />
+        <element id="library" level="project" name="Maven: io.vavr:vavr-match:0.10.4" />
+        <element id="library" level="project" name="Maven: io.vavr:vavr:0.10.4" />
       </element>
       <element id="file-copy" path="$PROJECT_DIR$/application.yml" />
       <element id="directory" name="keys">
-        <element id="file-copy" path="$PROJECT_DIR$/keys/tomcat.p12" />
+        <element id="file-copy" path="$PROJECT_DIR$/keys/Certificate.p12" />
       </element>
+      <element id="file-copy" path="$PROJECT_DIR$/v2rayParams.json" />
     </root>
   </artifact>
 </component>

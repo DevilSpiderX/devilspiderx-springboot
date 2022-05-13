@@ -10,12 +10,14 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.nio.file.Paths;
 
 public class DSXTrayIcon {
+    private static DSXTrayIcon instance;
     private final MyConfig config;
     private final TrayIcon trayIcon;
 
-    public DSXTrayIcon(MyConfig config) {
+    private DSXTrayIcon(MyConfig config) {
         this.config = config;
         trayIcon = new TrayIcon(getIcon());
         trayIcon.setToolTip("WebServer Of DevilSpiderX");
@@ -34,17 +36,30 @@ public class DSXTrayIcon {
     }
 
     private void addPopupMenu() {
+        String localPathStr = config.getLocalPath().toString();
+        MenuItem explorerMenuItem = new MenuItem("Open Directory");
+        explorerMenuItem.addActionListener(e -> OS.system("explorer", localPathStr));
+
+        String logPathStr = Paths.get(localPathStr, "log").toString();
+        MenuItem logDirMenuItem = new MenuItem("Log Directory");
+        logDirMenuItem.addActionListener(e -> OS.system("explorer", logPathStr));
+
+        MenuItem exitMenuItem = new MenuItem("Exit");
+        exitMenuItem.addActionListener(e -> {
+            trayIcon.setToolTip("WebServer is stopping");
+            MainApplication.close();
+        });
+
         PopupMenu popupMenu = new PopupMenu();
-        popupMenu.add(new MenuItem("Open Directory"));
+        popupMenu.add(explorerMenuItem);
+        popupMenu.add(logDirMenuItem);
         popupMenu.addSeparator();
-        popupMenu.add(new MenuItem("Exit"));
-
-        MenuItem explorerMenuItem = popupMenu.getItem(0);
-        explorerMenuItem.addActionListener(e -> OS.system("explorer", config.getLocalPath().toString()));
-
-        MenuItem exitMenuItem = popupMenu.getItem(2);
-        exitMenuItem.addActionListener(e -> MainApplication.close());
+        popupMenu.add(exitMenuItem);
         trayIcon.setPopupMenu(popupMenu);
+    }
+
+    public TrayIcon getTrayIcon() {
+        return trayIcon;
     }
 
     public MenuItem getMenuItem(int index) {
@@ -80,5 +95,16 @@ public class DSXTrayIcon {
             System.exit(e.hashCode());
         }
         return result;
+    }
+
+    public static DSXTrayIcon getInstance() {
+        return instance;
+    }
+
+    public static DSXTrayIcon getInstance(MyConfig config) {
+        if (instance == null) {
+            instance = new DSXTrayIcon(config);
+        }
+        return instance;
     }
 }

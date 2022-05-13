@@ -3,11 +3,13 @@ package devilSpiderX.server.webServer.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import devilSpiderX.server.webServer.frame.DSXTrayIcon;
 import devilSpiderX.server.webServer.listener.HttpSessionRegister;
+import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
-import devilSpiderX.server.webServer.service.MyServerInfo;
+import devilSpiderX.server.webServer.util.WSSendTextThread;
 import org.apache.tomcat.websocket.WsSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +20,6 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Controller
@@ -27,13 +27,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerInfoWS {
     private static final MyServerInfo serverInfo = MyServerInfo.serverInfo;
     private static final AtomicInteger onlineCount = new AtomicInteger(0);
-    private static long count = 0;
+    private static long logCount = 0;
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoWS.class);
+    private static final WSSendTextThread sendThread = new WSSendTextThread();
     private WsSession session;
     private String uid;
     private String address;
-    private SendMessageThread sendThread;
     private Thread sendServerInfoThread;
+
+    static {
+        sendThread.start();
+    }
 
     @OnOpen
     public void onOpen(@PathParam("token") String token, @PathParam("timeStr") String timeStr, Session session)
@@ -48,22 +52,29 @@ public class ServerInfoWS {
         uid = (String) httpSession.getAttribute("uid");
         address = (String) httpSession.getAttribute("address");
         info(address, "客户端" + uid + "接入");
-        info(address, "当前在线数量为：" + getOnlineCount());
-        sendThread = new SendMessageThread(session.getId());
-        sendThread.start();
+        int onlineCount = getOnlineCount();
+        info(address, "当前在线数量为：" + onlineCount);
+        if (DSXTrayIcon.getInstance() != null) {
+            DSXTrayIcon.getInstance().getTrayIcon().setToolTip("WS Online " + onlineCount);
+        }
     }
 
     @OnClose
     public void onClose(CloseReason reason) {
-        if (sendThread != null && !sendThread.isInterrupted()) {
-            sendThread.interrupt();
-        }
         if (sendServerInfoThread != null && !sendServerInfoThread.isInterrupted()) {
             sendServerInfoThread.interrupt();
         }
         subOnlineCount();
         info(address, "客户端" + uid + "退出 - " + reason.getCloseCode());
-        info(address, "当前在线数量为：" + getOnlineCount());
+        int onlineCount = getOnlineCount();
+        info(address, "当前在线数量为：" + onlineCount);
+        if (DSXTrayIcon.getInstance() != null) {
+            if (onlineCount == 0) {
+                DSXTrayIcon.getInstance().getTrayIcon().setToolTip("WebServer Of DevilSpiderX");
+            } else {
+                DSXTrayIcon.getInstance().getTrayIcon().setToolTip("WS Online " + onlineCount);
+            }
+        }
     }
 
     @OnError
@@ -102,7 +113,7 @@ public class ServerInfoWS {
     }
 
     public void sendMessage(String message) {
-        sendThread.sendMessage(message);
+        sendThread.sendMessage(session, message);
     }
 
     public void sendServerInfo(long cd) {
@@ -151,9 +162,9 @@ public class ServerInfoWS {
             }
             data.put("disk", diskDataArray);
 
-            if (sendThread.isInterrupted()) {
-                return;
-            }
+//            if (sendThread.isInterrupted()) {
+//                return;
+//            }
             sendMessage(data.toString());
 
             try {
@@ -167,44 +178,6 @@ public class ServerInfoWS {
 
     private void info(String address, String msg) {
         if (address == null) return;
-        logger.info("{}.（{}） {}", count++, address, msg);
-    }
-
-    private class SendMessageThread extends Thread {
-        private final Object lock = new Object();
-        private final BlockingQueue<String> msgQue = new LinkedBlockingQueue<>();
-
-        public SendMessageThread(String id) {
-            super("ServerInfoWS_SendMessage_" + id);
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (!isInterrupted()) {
-                    while (msgQue.size() != 0) {
-                        session.getBasicRemote().sendText(msgQue.take());
-                    }
-                    synchronized (lock) {
-                        lock.wait();
-                    }
-                }
-            } catch (InterruptedException e) {
-                interrupt();
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-        public void sendMessage(String message) {
-            try {
-                msgQue.put(message);
-                synchronized (lock) {
-                    lock.notify();
-                }
-            } catch (InterruptedException e) {
-                interrupt();
-            }
-        }
+        logger.info("{}.（{}） {}", logCount++, address, msg);
     }
 }

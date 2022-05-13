@@ -21,7 +21,7 @@ public class DSXRunner implements ApplicationRunner {
         if (config.getTRAY_ICON()) {
             System.setProperty("java.awt.headless", "false");
             logger.info("初始化系统托盘中......");
-            DSXTrayIcon trayIcon = new DSXTrayIcon(config);
+            DSXTrayIcon trayIcon = DSXTrayIcon.getInstance(config);
             logger.info("添加系统托盘中......");
             trayIcon.addSystemTrip();
             logger.info("系统托盘运行正常");
