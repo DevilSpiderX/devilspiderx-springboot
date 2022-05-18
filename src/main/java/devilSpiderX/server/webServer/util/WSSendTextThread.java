@@ -24,7 +24,9 @@ public class WSSendTextThread extends Thread {
         while (!isInterrupted()) {
             try {
                 Tuple2<WsSession, String> tu = msgQue.take();
-                tu._1.getBasicRemote().sendText(tu._2);
+                if (tu._1.isOpen()) {
+                    tu._1.getBasicRemote().sendText(tu._2);
+                }
             } catch (InterruptedException | IOException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -34,8 +36,7 @@ public class WSSendTextThread extends Thread {
     public void sendMessage(WsSession session, String message) {
         try {
             msgQue.put(Tuple.of(session, message));
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage(), e);
+        } catch (InterruptedException ignore) {
         }
     }
 }
