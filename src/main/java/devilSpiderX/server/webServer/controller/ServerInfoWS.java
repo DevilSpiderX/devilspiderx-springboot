@@ -3,7 +3,6 @@ package devilSpiderX.server.webServer.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import devilSpiderX.server.webServer.frame.DSXTrayIcon;
 import devilSpiderX.server.webServer.listener.HttpSessionRegister;
 import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.service.information.CPU;
@@ -54,9 +53,6 @@ public class ServerInfoWS {
         info(address, "客户端" + uid + "接入");
         int onlineCount = getOnlineCount();
         info(address, "当前在线数量为：" + onlineCount);
-        if (DSXTrayIcon.getInstance() != null) {
-            DSXTrayIcon.getInstance().getTrayIcon().setToolTip("WS Online " + onlineCount);
-        }
     }
 
     @OnClose
@@ -68,13 +64,6 @@ public class ServerInfoWS {
         info(address, "客户端" + uid + "退出 - " + reason.getCloseCode());
         int onlineCount = getOnlineCount();
         info(address, "当前在线数量为：" + onlineCount);
-        if (DSXTrayIcon.getInstance() != null) {
-            if (onlineCount == 0) {
-                DSXTrayIcon.getInstance().getTrayIcon().setToolTip("WebServer Of DevilSpiderX");
-            } else {
-                DSXTrayIcon.getInstance().getTrayIcon().setToolTip("WS Online " + onlineCount);
-            }
-        }
     }
 
     @OnError
@@ -161,12 +150,7 @@ public class ServerInfoWS {
                 diskDataArray.add(diskData);
             }
             data.put("disk", diskDataArray);
-
-//            if (sendThread.isInterrupted()) {
-//                return;
-//            }
             sendMessage(data.toString());
-
             try {
                 //noinspection BusyWait
                 Thread.sleep(cd);
