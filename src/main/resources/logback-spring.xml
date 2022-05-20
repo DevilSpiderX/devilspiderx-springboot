@@ -30,6 +30,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         <!-- 日志输出格式： -->
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
         </encoder>
     </appender>
     <root level="info">
