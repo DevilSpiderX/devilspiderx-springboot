@@ -2,6 +2,8 @@ package devilSpiderX.server.webServer.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,13 +16,23 @@ public class V2ray {
     private static Process p = null;
 
     static {
+        Logger logger = LoggerFactory.getLogger(V2ray.class);
+        FileInputStream fileIn = null;
         try {
-            FileInputStream fileIn = new FileInputStream("./v2rayParams.json");
+            fileIn = new FileInputStream("./v2rayParams.json");
             JSONObject json = JSON.parseObject(fileIn, StandardCharsets.UTF_8, JSONObject.class);
             exePath = json.getString("exe-path");
             configPath = json.getString("config-path");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (fileIn != null) {
+                try {
+                    fileIn.close();
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
         }
     }
 
