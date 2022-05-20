@@ -137,7 +137,7 @@ public class ServerInfoWS {
             for (Disk disk : serverInfo.update().getDisks()) {
                 JSONObject diskData = new JSONObject();
                 diskData.put("label", disk.getLabel());
-                diskData.put("dir", disk.getDir());
+                diskData.put("mount", disk.getMount());
                 diskData.put("fSType", disk.getFSType());
                 diskData.put("name", disk.getName());
                 diskData.put("total", disk.getTotal());

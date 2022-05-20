@@ -4,17 +4,18 @@ import devilSpiderX.server.webServer.util.Arithmetic;
 
 import java.text.DecimalFormat;
 
+@SuppressWarnings("UnusedReturnValue")
 public class Disk {
     /**
      * 磁盘标签
      */
     private String label;
     /**
-     * 盘符路径
+     * 挂载点
      */
-    private String dir;
+    private String mount;
     /**
-     * 盘符类型
+     * 文件系统类型
      */
     private String fSType;
     /**
@@ -22,15 +23,15 @@ public class Disk {
      */
     private String name;
     /**
-     * 总大小
+     * 总大小（单位 B）
      */
     private long total;
     /**
-     * 剩余大小
+     * 剩余大小（单位 B）
      */
     private long free;
     /**
-     * 已经使用量
+     * 已经使用量（单位 B）
      */
     private long used;
 
@@ -38,56 +39,63 @@ public class Disk {
         return label;
     }
 
-    public void setLabel(String label) {
+    public Disk setLabel(String label) {
         this.label = label;
+        return this;
     }
 
-    public String getDir() {
-        return dir;
+    public String getMount() {
+        return mount;
     }
 
-    public void setDir(String dir) {
-        this.dir = dir;
+    public Disk setMount(String mount) {
+        this.mount = mount;
+        return this;
     }
 
     public String getFSType() {
         return fSType;
     }
 
-    public void setFSType(String fSType) {
+    public Disk setFSType(String fSType) {
         this.fSType = fSType;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Disk setName(String name) {
         this.name = name;
+        return this;
     }
 
     public long getTotal() {
         return total;
     }
 
-    public void setTotal(long total) {
+    public Disk setTotal(long total) {
         this.total = total;
+        return this;
     }
 
     public long getFree() {
         return free;
     }
 
-    public void setFree(long free) {
+    public Disk setFree(long free) {
         this.free = free;
+        return this;
     }
 
     public long getUsed() {
         return used;
     }
 
-    public void setUsed(long used) {
+    public Disk setUsed(long used) {
         this.used = used;
+        return this;
     }
 
     public String getTotalStr() {
@@ -143,7 +151,7 @@ public class Disk {
     public String toString() {
         return "Disk{" +
                 "label='" + label + '\'' +
-                ", dir='" + dir + '\'' +
+                ", dir='" + mount + '\'' +
                 ", fSType='" + fSType + '\'' +
                 ", name='" + name + '\'' +
                 ", total=" + total +

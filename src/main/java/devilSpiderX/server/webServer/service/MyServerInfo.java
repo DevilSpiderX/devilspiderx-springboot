@@ -74,7 +74,7 @@ public class MyServerInfo {
                 Sensors sensors = hw.getSensors();
                 setCPUInfo(hw.getProcessor(), sensors);
                 setMemoryInfo(hw.getMemory());
-                setDisks(info.getOperatingSystem());
+                setDisksInfo(info.getOperatingSystem());
                 coolDown = true;
                 cdThread.activate();
             }
@@ -88,11 +88,11 @@ public class MyServerInfo {
     private void setCPUInfo(CentralProcessor processor, Sensors sensors) {
         // CPU信息
         CentralProcessor.ProcessorIdentifier cp_pi = processor.getProcessorIdentifier();
-        cpu.setName(cp_pi.getName());
-        cpu.setPhysicalNum(processor.getPhysicalProcessorCount());
-        cpu.setLogicalNum(processor.getLogicalProcessorCount());
-        cpu.setUsedRate(processor.getSystemCpuLoadBetweenTicks(oldTicks));
-        cpu.set64bit(cp_pi.isCpu64bit());
+        cpu.setName(cp_pi.getName())
+                .setPhysicalNum(processor.getPhysicalProcessorCount())
+                .setLogicalNum(processor.getLogicalProcessorCount())
+                .setUsedRate(processor.getSystemCpuLoadBetweenTicks(oldTicks))
+                .set64bit(cp_pi.isCpu64bit());
         if (isTemperatureDetectable) {
             cpu.setCpuTemperature(sensors.getCpuTemperature());
         }
@@ -103,15 +103,15 @@ public class MyServerInfo {
      * 设置内存信息
      */
     private void setMemoryInfo(GlobalMemory memory) {
-        this.memory.setTotal(memory.getTotal());
-        this.memory.setUsed(memory.getTotal() - memory.getAvailable());
-        this.memory.setFree(memory.getAvailable());
+        this.memory.setTotal(memory.getTotal())
+                .setUsed(memory.getTotal() - memory.getAvailable())
+                .setFree(memory.getAvailable());
     }
 
     /**
      * 设置磁盘信息
      */
-    private void setDisks(OperatingSystem os) {
+    private void setDisksInfo(OperatingSystem os) {
         FileSystem fileSystem = os.getFileSystem();
         List<OSFileStore> fsList = fileSystem.getFileStores();
         if (disks.size() != fsList.size()) {
@@ -125,14 +125,13 @@ public class MyServerInfo {
             long free = fs.getUsableSpace();
             long total = fs.getTotalSpace();
             long used = total - free;
-            Disk disk = disks.get(i);
-            disk.setLabel(fs.getLabel());
-            disk.setDir(fs.getMount());
-            disk.setFSType(fs.getType());
-            disk.setName(fs.getName());
-            disk.setTotal(total);
-            disk.setFree(free);
-            disk.setUsed(used);
+            disks.get(i).setLabel(fs.getLabel())
+                    .setMount(fs.getMount())
+                    .setFSType(fs.getType())
+                    .setName(fs.getName())
+                    .setTotal(total)
+                    .setFree(free)
+                    .setUsed(used);
         }
     }
 

@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.service.information;
 
 import java.text.DecimalFormat;
 
+@SuppressWarnings("UnusedReturnValue")
 public class CPU {
     /**
      * CPU名
@@ -32,48 +33,54 @@ public class CPU {
         return name;
     }
 
-    public void setName(String name) {
+    public CPU setName(String name) {
         this.name = name;
+        return this;
     }
 
     public int getPhysicalNum() {
         return physicalNum;
     }
 
-    public void setPhysicalNum(int physicalNum) {
+    public CPU setPhysicalNum(int physicalNum) {
         this.physicalNum = physicalNum;
+        return this;
     }
 
     public int getLogicalNum() {
         return logicalNum;
     }
 
-    public void setLogicalNum(int logicalNum) {
+    public CPU setLogicalNum(int logicalNum) {
         this.logicalNum = logicalNum;
+        return this;
     }
 
     public double getUsedRate() {
         return usedRate;
     }
 
-    public void setUsedRate(double usedRate) {
+    public CPU setUsedRate(double usedRate) {
         this.usedRate = usedRate;
+        return this;
     }
 
     public boolean is64bit() {
         return is64bit;
     }
 
-    public void set64bit(boolean is64bit) {
+    public CPU set64bit(boolean is64bit) {
         this.is64bit = is64bit;
+        return this;
     }
 
     public double getCpuTemperature() {
         return cpuTemperature;
     }
 
-    public void setCpuTemperature(double cpuTemperature) {
+    public CPU setCpuTemperature(double cpuTemperature) {
         this.cpuTemperature = cpuTemperature;
+        return this;
     }
 
     public String getFreePercent() {

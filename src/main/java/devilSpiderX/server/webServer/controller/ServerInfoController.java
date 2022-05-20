@@ -125,7 +125,7 @@ public class ServerInfoController {
             for (Disk disk : serverInfo.update().getDisks()) {
                 JSONObject diskJson = new JSONObject();
                 diskJson.put("label", disk.getLabel());
-                diskJson.put("dir", disk.getDir());
+                diskJson.put("mount", disk.getMount());
                 diskJson.put("fSType", disk.getFSType());
                 diskJson.put("name", disk.getName());
                 diskJson.put("total", disk.getTotal());

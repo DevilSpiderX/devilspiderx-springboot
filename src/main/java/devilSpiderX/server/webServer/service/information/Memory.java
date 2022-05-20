@@ -4,6 +4,7 @@ import devilSpiderX.server.webServer.util.Arithmetic;
 
 import java.text.DecimalFormat;
 
+@SuppressWarnings("UnusedReturnValue")
 public class Memory {
     /**
      * 内存总量
@@ -24,24 +25,27 @@ public class Memory {
         return total;
     }
 
-    public void setTotal(long total) {
+    public Memory setTotal(long total) {
         this.total = total;
+        return this;
     }
 
     public long getUsed() {
         return used;
     }
 
-    public void setUsed(long used) {
+    public Memory setUsed(long used) {
         this.used = used;
+        return this;
     }
 
     public long getFree() {
         return free;
     }
 
-    public void setFree(long free) {
+    public Memory setFree(long free) {
         this.free = free;
+        return this;
     }
 
     public String getTotalStr() {

@@ -76,9 +76,8 @@ public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter
     protected void writeInternal(JSONObject object, @NotNull HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         StringBuilder stringBuilder = new StringBuilder();
-        for (String key : object.keySet()) {
-            stringBuilder.append(urlEncode(key)).append('=').append(urlEncode(object.getString(key))).append('&');
-        }
+        object.forEach((key, value) -> stringBuilder.append(urlEncode(key)).append('=')
+                .append(urlEncode(value.toString())).append('&'));
         byte[] value = stringBuilder.substring(0, stringBuilder.length() - 1).getBytes(StandardCharsets.UTF_8);
 
         HttpHeaders headers = outputMessage.getHeaders();
