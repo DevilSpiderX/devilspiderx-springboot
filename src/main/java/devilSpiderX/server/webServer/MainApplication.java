@@ -18,7 +18,6 @@ public class MainApplication {
 
     public static void close() {
         LoggerFactory.getLogger(MainApplication.class).info("关闭服务器");
-        int exitCode = SpringApplication.exit(MainApplication.context, () -> 0);
-        System.exit(exitCode);
+        SpringApplication.exit(MainApplication.context, () -> 0);
     }
 }

@@ -1,6 +1,5 @@
 package devilSpiderX.server.webServer.service;
 
-import devilSpiderX.server.webServer.MainApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +48,7 @@ public class OS {
                 Thread.sleep(millis);
                 String result = system("shutdown", "/r", "/t", "1", "/d", "p:4:1");
                 logger.info(result);
-                MainApplication.close();
+                System.exit(0);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -62,7 +61,7 @@ public class OS {
                 Thread.sleep(millis);
                 String result = system("shutdown", "/s", "/t", "1", "/d", "p:4:1");
                 logger.info(result);
-                MainApplication.close();
+                System.exit(0);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }

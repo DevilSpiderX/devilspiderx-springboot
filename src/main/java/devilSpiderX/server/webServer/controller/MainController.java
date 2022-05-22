@@ -2,7 +2,6 @@ package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import devilSpiderX.server.webServer.MainApplication;
 import devilSpiderX.server.webServer.service.OS;
 import devilSpiderX.server.webServer.service.V2ray;
 import devilSpiderX.server.webServer.sql.MyPasswords;
@@ -302,7 +301,7 @@ public class MainController {
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
-                    MainApplication.close();
+                    System.exit(0);
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage(), e);
                 }

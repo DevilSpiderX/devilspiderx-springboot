@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.config;
 
+import devilSpiderX.server.webServer.MainApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -33,5 +34,6 @@ public class DSXRunner implements ApplicationRunner {
                 }
             }
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(MainApplication::close, "shutdown_thread"));
     }
 }
