@@ -2,11 +2,12 @@ package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import devilSpiderX.server.webServer.filter.UserFilter;
+import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.service.OS;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
-import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class ServerInfoController {
     @ResponseBody
     private JSONObject cpu(HttpSession session) {
         JSONObject respJson = new JSONObject();
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             respJson.put("code", "0");
             respJson.put("msg", "获取成功");
             JSONObject data = new JSONObject();
@@ -83,7 +84,7 @@ public class ServerInfoController {
     private JSONObject memory(HttpSession session) {
 
         JSONObject respJson = new JSONObject();
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             respJson.put("code", "0");
             respJson.put("msg", "获取成功");
             JSONObject data = new JSONObject();
@@ -118,7 +119,7 @@ public class ServerInfoController {
     private JSONObject disk(HttpSession session) {
 
         JSONObject respJson = new JSONObject();
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             respJson.put("code", "0");
             respJson.put("msg", "获取成功");
             JSONArray dataArray = new JSONArray();
@@ -159,7 +160,7 @@ public class ServerInfoController {
     @ResponseBody
     private JSONObject disk_size(HttpSession session) {
         JSONObject respJson = new JSONObject();
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             respJson.put("code", "0");
             respJson.put("msg", "获取成功");
             respJson.put("size", serverInfo.update().getDisks().size());
@@ -197,7 +198,7 @@ public class ServerInfoController {
     private JSONObject token(HttpSession session) {
 
         JSONObject respJson = new JSONObject();
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",
                     Locale.CHINA));
             String token = makeToken(timeStr);
@@ -226,7 +227,7 @@ public class ServerInfoController {
     @ResponseBody
     private JSONObject cleanMemory(HttpSession session) {
         JSONObject respJson = new JSONObject();
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             User user = suidRich.select(new User((String) session.getAttribute("uid"))).get(0);
             if (user != null && user.getAdmin()) {
                 String msg = OS.system("MemoryCleaner");

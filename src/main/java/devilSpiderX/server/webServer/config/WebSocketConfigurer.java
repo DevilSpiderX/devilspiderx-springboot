@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.listener;
+package devilSpiderX.server.webServer.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,7 +7,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 @Configuration
 @EnableWebSocket
-public class WebSocketConfig {
+public class WebSocketConfigurer {
 
     @Bean
     public ServerEndpointExporter serverEndpoint() {

@@ -12,14 +12,13 @@ import javax.servlet.http.HttpSession;
 @WebListener
 public class MyRequestListener implements ServletRequestListener {
     private final Logger logger = LoggerFactory.getLogger(MyRequestListener.class);
-    private long counter = 0;
 
     @Override
     public void requestInitialized(ServletRequestEvent sre) {
         HttpServletRequest req = (HttpServletRequest) sre.getServletRequest();
         HttpSession session = req.getSession();
         session.setAttribute("address", req.getRemoteAddr());
-        logger.info(String.format("%d.（%s） %s %s %s", counter++, req.getRemoteAddr(), req.getMethod(),
+        logger.info(String.format("（%s） %s %s %s", req.getRemoteAddr(), req.getMethod(),
                 req.getRequestURI(), req.getProtocol()));
     }
 }

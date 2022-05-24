@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import devilSpiderX.server.webServer.filter.UserFilter;
 import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +98,7 @@ public class UserController {
     @ResponseBody
     private JSONObject logout(HttpSession session, HttpServletResponse resp) {
         JSONObject respJson = new JSONObject();
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             Cookie jsessionid = new Cookie("JSESSIONID", session.getId());
             jsessionid.setMaxAge(1);
             jsessionid.setPath("/");
@@ -174,7 +175,7 @@ public class UserController {
         respJson.put("status", 0);
         respJson.put("login", false);
         respJson.put("uid", "");
-        if (MainController.isOperable(session)) {
+        if (UserFilter.isOperable(session)) {
             respJson.put("status", 1);
             respJson.put("login", true);
             respJson.put("uid", session.getAttribute("uid"));

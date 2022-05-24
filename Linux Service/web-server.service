@@ -1,0 +1,14 @@
+[Unit]
+Description=DevilSpiderX Web Server
+After=network.target
+
+ 
+[Service]
+Type=forking
+WorkingDirectory=/usr/local/webserver
+ExecStart=/usr/local/webserver/start.sh
+ExecStop=/usr/local/webserver/stop.sh
+PIDFile=/usr/local/webserver/WebServer.pid
+ 
+[Install]
+WantedBy=multi-user.target

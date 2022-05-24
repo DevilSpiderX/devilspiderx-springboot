@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerInfoWS {
     private static final MyServerInfo serverInfo = MyServerInfo.serverInfo;
     private static final AtomicInteger onlineCount = new AtomicInteger(0);
-    private static long logCount = 0;
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoWS.class);
     private static final WSSendTextThread sendThread = new WSSendTextThread();
     private WsSession session;
@@ -162,6 +161,6 @@ public class ServerInfoWS {
 
     private void info(String address, String msg) {
         if (address == null) return;
-        logger.info("{}.（{}） {}", logCount++, address, msg);
+        logger.info("（{}） {}", address, msg);
     }
 }
