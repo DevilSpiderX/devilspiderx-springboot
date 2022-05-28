@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.filter.UserFilter;
 import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();

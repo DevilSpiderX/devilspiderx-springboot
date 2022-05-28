@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(filterName = "UserFilter",
-        urlPatterns = {"/command", "/query", "/v2ray", "/addPasswords", "/updatePasswords", "/service/shutdown"})
+@WebFilter(filterName = "UserFilter", urlPatterns = {"/api/command", "/api/query", "/api/v2ray", "/api/addPasswords",
+        "/api/updatePasswords", "/api/service/shutdown"})
 public class UserFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

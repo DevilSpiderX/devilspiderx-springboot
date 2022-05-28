@@ -1,8 +1,7 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import devilSpiderX.server.webServer.filter.UserFilter;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.service.OS;
 import devilSpiderX.server.webServer.service.V2ray;
 import devilSpiderX.server.webServer.sql.MyPasswords;
@@ -10,27 +9,21 @@ import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @Controller
+@RequestMapping("/api")
 public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
-
-    @GetMapping("/")
-    public void welcome(HttpSession session, HttpServletResponse resp) throws IOException {
-        if (UserFilter.isOperable(session)) {
-            resp.sendRedirect("/index.html");
-        } else {
-            resp.sendRedirect("/login.html");
-        }
-    }
 
     /**
      * <b>命令请求，用于重启服务器和关机的命令</b>
@@ -66,25 +59,6 @@ public class MainController {
             respJson.put("code", "1");
             respJson.put("msg", "cmd的值不存在(\"reboot\"或\"shutdown\")");
         }
-        return respJson;
-    }
-
-    /**
-     * <b>测试POST请求</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 成功；
-     * </p>
-     */
-    @PostMapping("/test")
-    @ResponseBody
-    private JSONObject test() {
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "0");
-        respJson.put("msg", "收到\n测试成功");
         return respJson;
     }
 

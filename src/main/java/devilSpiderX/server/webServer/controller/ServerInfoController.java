@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.filter.UserFilter;
 import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.service.OS;
@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 @Controller
-@RequestMapping("/ServerInfo")
+@RequestMapping("/api/ServerInfo")
 public class ServerInfoController {
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
     private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();

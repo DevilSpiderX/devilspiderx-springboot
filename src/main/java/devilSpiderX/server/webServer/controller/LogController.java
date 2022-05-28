@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson2.JSONArray;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 
 @Controller
 @RequestMapping("/log")
+@SuppressWarnings("resource")
 public class LogController {
 
     @GetMapping("")
@@ -27,7 +28,7 @@ public class LogController {
     @ResponseBody
     public JSONArray list() throws IOException {
         JSONArray respList = new JSONArray();
-        Files.list(Paths.get("log")).forEach(path -> respList.add(path.getFileName()));
+        Files.list(Paths.get("log")).forEach(path -> respList.add(path.getFileName().toString()));
         return respList;
     }
 
@@ -54,5 +55,6 @@ public class LogController {
             webOut.write(buffer, 0, count);
             webOut.flush();
         }
+        fileIn.close();
     }
 }

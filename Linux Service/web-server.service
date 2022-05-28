@@ -1,7 +1,6 @@
 [Unit]
 Description=DevilSpiderX Web Server
 After=network.target
-
  
 [Service]
 Type=forking

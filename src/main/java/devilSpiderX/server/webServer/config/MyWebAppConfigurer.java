@@ -1,8 +1,9 @@
 package devilSpiderX.server.webServer.config;
 
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.support.config.FastJsonConfig;
-import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.alibaba.fastjson2.JSONReader;
+import com.alibaba.fastjson2.JSONWriter;
+import com.alibaba.fastjson2.support.config.FastJsonConfig;
+import com.alibaba.fastjson2.support.spring.http.converter.FastJsonHttpMessageConverter;
 import devilSpiderX.server.webServer.util.BytesHttpMessageConverter;
 import devilSpiderX.server.webServer.util.FormToJSONHttpMessageConverter;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,8 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
     private @NotNull FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {
         FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
         FastJsonConfig config = new FastJsonConfig();
-        config.setSerializerFeatures(SerializerFeature.DisableCircularReferenceDetect);
+        config.setWriterFeatures(JSONWriter.Feature.WriteBigDecimalAsPlain);
+        config.setReaderFeatures(JSONReader.Feature.UseBigDecimalForDoubles, JSONReader.Feature.IgnoreSetNullValue);
         converter.setFastJsonConfig(config);
         converter.setDefaultCharset(StandardCharsets.UTF_8);
         List<MediaType> mediaTypeList = new ArrayList<>();
