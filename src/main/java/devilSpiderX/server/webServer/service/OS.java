@@ -72,7 +72,7 @@ public class OS {
                 break;
             }
             case "Linux": {
-                rebootCMD = Arrays.asList("shutdown -t 1 -r".split(" "));
+                rebootCMD = Arrays.asList("shutdown -t 1 -r now".split(" "));
                 break;
             }
             default: {
@@ -100,7 +100,7 @@ public class OS {
                 break;
             }
             case "Linux": {
-                shutdownCMD = Arrays.asList("shutdown -t 1 -h".split(" "));
+                shutdownCMD = Arrays.asList("shutdown -t 1 -h now".split(" "));
                 break;
             }
             default: {
