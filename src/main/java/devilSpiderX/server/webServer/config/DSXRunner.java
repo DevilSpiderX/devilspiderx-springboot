@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import sun.misc.Signal;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class DSXRunner implements ApplicationRunner {
                 }
             }
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(MainApplication::close, "shutdown_thread"));
+        Signal.handle(new Signal("INT"), sig -> MainApplication.close());
+        Signal.handle(new Signal("TERM"), sig -> MainApplication.close());
     }
 }
