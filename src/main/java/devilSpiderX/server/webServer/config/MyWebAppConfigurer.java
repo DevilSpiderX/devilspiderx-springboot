@@ -33,7 +33,6 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String path = config.getSTATIC_LOCATION().toUri().toString();
         registry.addResourceHandler("/**").addResourceLocations(path);
-        WebMvcConfigurer.super.addResourceHandlers(registry);
     }
 
     @Override
@@ -41,7 +40,6 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
         converters.add(0, fastJsonHttpMessageConverter());
         converters.add(new BytesHttpMessageConverter());
         converters.add(new FormToJSONHttpMessageConverter());
-        WebMvcConfigurer.super.configureMessageConverters(converters);
     }
 
     private @NotNull FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {

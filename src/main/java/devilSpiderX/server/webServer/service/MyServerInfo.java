@@ -69,17 +69,21 @@ public class MyServerInfo {
     public MyServerInfo update() {
         synchronized (cd_lock) {
             if (!coolDown) {
-                SystemInfo info = new SystemInfo();
-                HardwareAbstractionLayer hw = info.getHardware();
-                Sensors sensors = hw.getSensors();
-                setCPUInfo(hw.getProcessor(), sensors);
-                setMemoryInfo(hw.getMemory());
-                setDisksInfo(info.getOperatingSystem());
-                coolDown = true;
-                cdThread.activate();
+                _update();
             }
         }
         return this;
+    }
+
+    private void _update() {
+        SystemInfo info = new SystemInfo();
+        HardwareAbstractionLayer hw = info.getHardware();
+        Sensors sensors = hw.getSensors();
+        setCPUInfo(hw.getProcessor(), sensors);
+        setMemoryInfo(hw.getMemory());
+        setDisksInfo(info.getOperatingSystem());
+        coolDown = true;
+        cdThread.activate();
     }
 
     /**
