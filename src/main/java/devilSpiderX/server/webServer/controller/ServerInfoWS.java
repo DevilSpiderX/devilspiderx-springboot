@@ -155,11 +155,11 @@ public class ServerInfoWS {
             for (Network network : serverInfo.update().getNetworks()) {
                 JSONObject networkData = new JSONObject();
                 networkData.put("name", network.getName());
-                networkData.put("updateSpeed", network.getUpdateSpeed());
+                networkData.put("uploadSpeed", network.getUploadSpeed());
                 networkData.put("downloadSpeed", network.getDownloadSpeed());
                 networkData.put("IPv4addr", network.getIPv4addr());
                 networkData.put("IPv6addr", network.getIPv6addr());
-                networkData.put("updateSpeedStr", network.getUpdateSpeedStr());
+                networkData.put("uploadSpeedStr", network.getUploadSpeedStr());
                 networkData.put("downloadSpeedStr", network.getDownloadSpeedStr());
                 networkArray.add(networkData);
             }

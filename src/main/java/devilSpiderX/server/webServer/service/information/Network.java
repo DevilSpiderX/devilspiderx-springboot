@@ -12,7 +12,7 @@ public class Network {
     /**
      * 上传速度 B/s
      */
-    private long updateSpeed;
+    private long uploadSpeed;
     /**
      * 下载速度 B/s
      */
@@ -57,12 +57,12 @@ public class Network {
         this.bytesRecv = bytesRecv;
     }
 
-    public long getUpdateSpeed() {
-        return updateSpeed;
+    public long getUploadSpeed() {
+        return uploadSpeed;
     }
 
-    public void setUpdateSpeed(long updateSpeed) {
-        this.updateSpeed = updateSpeed;
+    public void setUploadSpeed(long uploadSpeed) {
+        this.uploadSpeed = uploadSpeed;
     }
 
     public long getDownloadSpeed() {
@@ -89,11 +89,11 @@ public class Network {
         this.IPv6addr = IPv6addr;
     }
 
-    public String getUpdateSpeedStr() {
-        if (updateSpeed < 1024) {
-            return updateSpeed + " B/s";
+    public String getUploadSpeedStr() {
+        if (uploadSpeed < 1024) {
+            return uploadSpeed + " B/s";
         } else {
-            return FormatUtil.formatBytes(updateSpeed, 2, " ") + "/s";
+            return FormatUtil.formatBytes(uploadSpeed, 2, " ") + "/s";
         }
     }
 
@@ -112,7 +112,7 @@ public class Network {
                 ", timeStamp=" + timeStamp +
                 ", bytesSent=" + bytesSent +
                 ", bytesRecv=" + bytesRecv +
-                ", updateSpeed=" + updateSpeed +
+                ", uploadSpeed=" + uploadSpeed +
                 ", downloadSpeed=" + downloadSpeed +
                 ", IPv4addr=" + Arrays.toString(IPv4addr) +
                 ", IPv6addr=" + Arrays.toString(IPv6addr) +

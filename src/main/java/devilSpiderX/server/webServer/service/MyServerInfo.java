@@ -171,7 +171,7 @@ public class MyServerInfo {
             }
             long vTime = nif.getTimeStamp() - network.getTimeStamp();
 
-            network.setUpdateSpeed((nif.getBytesSent() - network.getBytesSent()) * 1000 / vTime);
+            network.setUploadSpeed((nif.getBytesSent() - network.getBytesSent()) * 1000 / vTime);
             network.setDownloadSpeed((nif.getBytesRecv() - network.getBytesRecv()) * 1000 / vTime);
 
             network.setTimeStamp(nif.getTimeStamp());
@@ -246,7 +246,7 @@ public class MyServerInfo {
             System.out.println();
             for (Network network : networks) {
                 System.out.println(network);
-                System.out.printf("%s:上传速度 %s 下载速度 %s\n", network.getName(), network.getUpdateSpeedStr(),
+                System.out.printf("%s:上传速度 %s 下载速度 %s\n", network.getName(), network.getUploadSpeedStr(),
                         network.getDownloadSpeedStr());
             }
             System.out.println("--------------------------------------------------");

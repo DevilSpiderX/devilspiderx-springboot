@@ -8,8 +8,6 @@
       <element id="directory" name="lib">
         <element id="library" level="project" name="Maven: ch.qos.logback:logback-classic:1.2.6" />
         <element id="library" level="project" name="Maven: ch.qos.logback:logback-core:1.2.6" />
-        <element id="library" level="project" name="Maven: com.alibaba.fastjson2:fastjson2-extension:2.0.4" />
-        <element id="library" level="project" name="Maven: com.alibaba.fastjson2:fastjson2:2.0.4" />
         <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.12.5" />
         <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.12.5" />
         <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.12.5" />
@@ -54,6 +52,8 @@
         <element id="library" level="project" name="Maven: org.teasoft:bee:1.11" />
         <element id="library" level="project" name="Maven: org.teasoft:honey:1.11" />
         <element id="library" level="project" name="Maven: org.yaml:snakeyaml:1.28" />
+        <element id="library" level="project" name="Maven: com.alibaba.fastjson2:fastjson2-extension:2.0.6" />
+        <element id="library" level="project" name="Maven: com.alibaba.fastjson2:fastjson2:2.0.6" />
       </element>
       <element id="file-copy" path="$PROJECT_DIR$/application.yml" />
       <element id="directory" name="keys">

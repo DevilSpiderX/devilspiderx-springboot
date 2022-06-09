@@ -6,6 +6,7 @@ import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
+import devilSpiderX.server.webServer.service.information.Network;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -88,6 +89,58 @@ public class ServerInfoController {
         data.put("freeStr", memory.getFreeStr());
         data.put("usage", memory.getUsage());
         respJson.put("data", data);
+        return respJson;
+    }
+
+    /**
+     * <b>网络信息</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 成功；100 没有权限;
+     * </p>
+     */
+    @PostMapping("/network")
+    @ResponseBody
+    private JSONObject network(HttpSession session) {
+        JSONObject respJson = new JSONObject();
+        respJson.put("code", "0");
+        respJson.put("msg", "获取成功");
+        JSONArray dataArray = new JSONArray();
+        for (Network network : serverInfo.update().getNetworks()) {
+            JSONObject networkData = new JSONObject();
+            networkData.put("name", network.getName());
+            networkData.put("uploadSpeed", network.getUploadSpeed());
+            networkData.put("downloadSpeed", network.getDownloadSpeed());
+            networkData.put("IPv4addr", network.getIPv4addr());
+            networkData.put("IPv6addr", network.getIPv6addr());
+            networkData.put("uploadSpeedStr", network.getUploadSpeedStr());
+            networkData.put("downloadSpeedStr", network.getDownloadSpeedStr());
+            dataArray.add(networkData);
+        }
+        respJson.put("data", dataArray);
+        return respJson;
+    }
+
+    /**
+     * <b>网络数量</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 成功；100 没有权限;
+     * </p>
+     */
+    @PostMapping("/network/size")
+    @ResponseBody
+    private JSONObject network_size(HttpSession session) {
+        JSONObject respJson = new JSONObject();
+        respJson.put("code", "0");
+        respJson.put("msg", "获取成功");
+        respJson.put("size", serverInfo.update().getNetworks().size());
         return respJson;
     }
 
