@@ -4,7 +4,6 @@ import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
 import devilSpiderX.server.webServer.service.information.Network;
-import devilSpiderX.server.webServer.util.FormatUtil;
 import oshi.SystemInfo;
 import oshi.hardware.*;
 import oshi.software.os.FileSystem;
@@ -247,9 +246,8 @@ public class MyServerInfo {
             System.out.println();
             for (Network network : networks) {
                 System.out.println(network);
-                System.out.printf("%s:上传速度 %s/s 下载速度 %s/s%n", network.getName(),
-                        FormatUtil.formatBytes(network.getUpdateSpeed(), 2, " "),
-                        FormatUtil.formatBytes(network.getDownloadSpeed(), 2, " "));
+                System.out.printf("%s:上传速度 %s 下载速度 %s\n", network.getName(), network.getUpdateSpeedStr(),
+                        network.getDownloadSpeedStr());
             }
             System.out.println("--------------------------------------------------");
             Util.sleep(1000);

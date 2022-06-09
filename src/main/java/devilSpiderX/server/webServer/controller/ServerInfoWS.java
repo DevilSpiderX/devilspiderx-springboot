@@ -8,6 +8,7 @@ import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
+import devilSpiderX.server.webServer.service.information.Network;
 import devilSpiderX.server.webServer.util.WSSendTextThread;
 import org.apache.tomcat.websocket.WsSession;
 import org.slf4j.Logger;
@@ -149,6 +150,21 @@ public class ServerInfoWS {
                 diskDataArray.add(diskData);
             }
             data.put("disk", diskDataArray);
+
+            JSONArray networkArray = new JSONArray();
+            for (Network network : serverInfo.update().getNetworks()) {
+                JSONObject networkData = new JSONObject();
+                networkData.put("name", network.getName());
+                networkData.put("updateSpeed", network.getUpdateSpeed());
+                networkData.put("downloadSpeed", network.getDownloadSpeed());
+                networkData.put("IPv4addr", network.getIPv4addr());
+                networkData.put("IPv6addr", network.getIPv6addr());
+                networkData.put("updateSpeedStr", network.getUpdateSpeedStr());
+                networkData.put("downloadSpeedStr", network.getDownloadSpeedStr());
+                networkArray.add(networkData);
+            }
+            data.put("network", networkArray);
+
             sendMessage(data.toString());
             try {
                 //noinspection BusyWait

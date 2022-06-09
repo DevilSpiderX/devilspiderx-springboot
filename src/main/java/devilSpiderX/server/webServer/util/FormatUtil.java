@@ -4,15 +4,26 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
 public class FormatUtil {
+    private static final long KB = 1L << 10;
+    private static final long MB = 1L << 20;
+    private static final long GB = 1L << 30;
+    private static final long TB = 1L << 40;
+    private static final long PB = 1L << 50;
+    private static final long EB = 1L << 60;
+
     public static Tuple2<Double, String> unitBytes(long n, int scale) {
-        if (n >= 1099511627776L) {
-            return Tuple.of(Arithmetic.div(n, 1099511627776L, scale), "TB");
-        } else if (n >= 1073741824L) {
-            return Tuple.of(Arithmetic.div(n, 1073741824L, scale), "GB");
-        } else if (n >= 1048576L) {
-            return Tuple.of(Arithmetic.div(n, 1048576L, scale), "MB");
-        } else if (n >= 1024L) {
-            return Tuple.of(Arithmetic.div(n, 1024L, scale), "KB");
+        if (n >= EB) {
+            return Tuple.of(Arithmetic.div(n, EB, scale), "EB");
+        } else if (n >= PB) {
+            return Tuple.of(Arithmetic.div(n, PB, scale), "PB");
+        } else if (n >= TB) {
+            return Tuple.of(Arithmetic.div(n, TB, scale), "TB");
+        } else if (n >= GB) {
+            return Tuple.of(Arithmetic.div(n, GB, scale), "GB");
+        } else if (n >= MB) {
+            return Tuple.of(Arithmetic.div(n, MB, scale), "MB");
+        } else if (n >= KB) {
+            return Tuple.of(Arithmetic.div(n, KB, scale), "KB");
         } else {
             return Tuple.of(n * 1.0, "B");
         }

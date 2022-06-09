@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.service.information;
 
-import devilSpiderX.server.webServer.util.Arithmetic;
+import devilSpiderX.server.webServer.util.FormatUtil;
 
 import java.text.DecimalFormat;
 
@@ -49,15 +49,15 @@ public class Memory {
     }
 
     public String getTotalStr() {
-        return Arithmetic.div(total, (1024 * 1024 * 1024), 2) + " GB";
+        return FormatUtil.formatBytes(total, 2, " ");
     }
 
     public String getUsedStr() {
-        return Arithmetic.div(used, (1024 * 1024 * 1024), 2) + " GB";
+        return FormatUtil.formatBytes(used, 2, " ");
     }
 
     public String getFreeStr() {
-        return Arithmetic.div(free, (1024 * 1024 * 1024), 2) + " GB";
+        return FormatUtil.formatBytes(free, 2, " ");
     }
 
     public String getUsage() {
