@@ -58,6 +58,7 @@
       <element id="file-copy" path="$PROJECT_DIR$/application.yml" />
       <element id="directory" name="keys">
         <element id="file-copy" path="$PROJECT_DIR$/keys/Certificate.p12" />
+        <element id="file-copy" path="$PROJECT_DIR$/keys/www.DevilSpiderX.ltd.pfx" />
       </element>
       <element id="file-copy" path="$PROJECT_DIR$/v2rayParams.json" />
     </root>

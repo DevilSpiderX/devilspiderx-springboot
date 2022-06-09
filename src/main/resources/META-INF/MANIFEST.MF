@@ -3,8 +3,8 @@ Main-Class: devilSpiderX.server.webServer.MainApplication
 Class-Path: lib/annotations-23.0.0.jar
             lib/bee-1.11.jar
             lib/bee-ext-1.11.jar
-            lib/fastjson2-2.0.4.jar
-            lib/fastjson2-extension-2.0.4.jar
+            lib/fastjson2-2.0.6.jar
+            lib/fastjson2-extension-2.0.6.jar
             lib/honey-1.11.jar
             lib/jackson-annotations-2.12.5.jar
             lib/jackson-core-2.12.5.jar

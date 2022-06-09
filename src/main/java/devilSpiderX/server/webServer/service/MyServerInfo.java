@@ -3,17 +3,17 @@ package devilSpiderX.server.webServer.service;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
+import devilSpiderX.server.webServer.service.information.Network;
+import devilSpiderX.server.webServer.util.FormatUtil;
 import oshi.SystemInfo;
-import oshi.hardware.CentralProcessor;
-import oshi.hardware.GlobalMemory;
-import oshi.hardware.HardwareAbstractionLayer;
-import oshi.hardware.Sensors;
+import oshi.hardware.*;
 import oshi.software.os.FileSystem;
 import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MyServerInfo {
@@ -37,11 +37,16 @@ public class MyServerInfo {
      * 磁盘相关信息
      */
     private final List<Disk> disks = new ArrayList<>();
+    /**
+     * 网络相关信息
+     */
+    private final List<Network> networks = new ArrayList<>();
 
     public MyServerInfo() {
         SystemInfo info = new SystemInfo();
-        oldTicks = info.getHardware().getProcessor().getSystemCpuLoadTicks();
-        double temp = info.getHardware().getSensors().getCpuTemperature();
+        HardwareAbstractionLayer hw = info.getHardware();
+        oldTicks = hw.getProcessor().getSystemCpuLoadTicks();
+        double temp = hw.getSensors().getCpuTemperature();
         if (temp == 0 || Double.isNaN(temp)) {
             isTemperatureDetectable = false;
         }
@@ -50,6 +55,14 @@ public class MyServerInfo {
         for (int i = 0; i < diskSize; i++) {
             disks.add(new Disk());
         }
+
+        List<NetworkIF> nIfs = hw.getNetworkIFs();
+        for (NetworkIF nIf : nIfs) {
+            if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
+                networks.add(new Network(nIf.getName(), nIf.getTimeStamp(), nIf.getBytesSent(), nIf.getBytesRecv()));
+            }
+        }
+
         cdThread = new CD_Thread();
         cdThread.start();
     }
@@ -64,6 +77,10 @@ public class MyServerInfo {
 
     public List<Disk> getDisks() {
         return disks;
+    }
+
+    public List<Network> getNetworks() {
+        return networks;
     }
 
     public MyServerInfo update() {
@@ -82,6 +99,13 @@ public class MyServerInfo {
         setCPUInfo(hw.getProcessor(), sensors);
         setMemoryInfo(hw.getMemory());
         setDisksInfo(info.getOperatingSystem());
+        HashMap<String, NetworkIF> nIfMap = new HashMap<>();
+        for (NetworkIF nIf : hw.getNetworkIFs()) {
+            if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
+                nIfMap.put(nIf.getName(), nIf);
+            }
+        }
+        setNetworkInfo(nIfMap);
         coolDown = true;
         cdThread.activate();
     }
@@ -139,6 +163,32 @@ public class MyServerInfo {
         }
     }
 
+    public void setNetworkInfo(HashMap<String, NetworkIF> nIfMap) {
+        for (Network network : networks) {
+            NetworkIF nif = nIfMap.get(network.getName());
+            if (nif == null) {
+                networks.remove(network);
+                continue;
+            }
+            long vTime = nif.getTimeStamp() - network.getTimeStamp();
+
+            network.setUpdateSpeed((nif.getBytesSent() - network.getBytesSent()) * 1000 / vTime);
+            network.setDownloadSpeed((nif.getBytesRecv() - network.getBytesRecv()) * 1000 / vTime);
+
+            network.setTimeStamp(nif.getTimeStamp());
+            network.setBytesSent(nif.getBytesSent());
+            network.setBytesRecv(nif.getBytesRecv());
+            network.setIPv4addr(nif.getIPv4addr());
+            network.setIPv6addr(nif.getIPv6addr());
+
+            nIfMap.remove(network.getName(), nif);
+        }
+        if (nIfMap.size() != 0) {
+            nIfMap.forEach((k, v) -> networks.add(new Network(v.getName(), v.getTimeStamp(), v.getBytesSent(),
+                    v.getBytesRecv())));
+        }
+    }
+
     private class CD_Thread extends Thread {
 
         public CD_Thread() {
@@ -167,11 +217,12 @@ public class MyServerInfo {
     }
 
     public static void main(String[] args) {
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 100; i++) {
             serverInfo.update();
             CPU cpu = serverInfo.getCPU();
             Memory memory = serverInfo.getMemory();
             List<Disk> disks = serverInfo.getDisks();
+            List<Network> networks = serverInfo.getNetworks();
 
             System.out.println(cpu);
             System.out.println("CPU Free Percent:" + cpu.getFreePercent());
@@ -192,6 +243,13 @@ public class MyServerInfo {
                 System.out.println("Disk" + j + " Free Size:" + disk.getFreeStr());
                 System.out.println("Disk" + j + " Usage:" + disk.getUsage());
                 j++;
+            }
+            System.out.println();
+            for (Network network : networks) {
+                System.out.println(network);
+                System.out.printf("%s:上传速度 %s/s 下载速度 %s/s%n", network.getName(),
+                        FormatUtil.formatBytes(network.getUpdateSpeed(), 2, " "),
+                        FormatUtil.formatBytes(network.getDownloadSpeed(), 2, " "));
             }
             System.out.println("--------------------------------------------------");
             Util.sleep(1000);
