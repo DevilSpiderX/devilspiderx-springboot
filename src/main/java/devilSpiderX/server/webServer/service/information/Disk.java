@@ -1,11 +1,12 @@
 package devilSpiderX.server.webServer.service.information;
 
 import devilSpiderX.server.webServer.util.FormatUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 
 @SuppressWarnings("UnusedReturnValue")
-public class Disk {
+public class Disk implements Comparable<Disk> {
     /**
      * 磁盘标签
      */
@@ -125,5 +126,10 @@ public class Disk {
                 ", free=" + free +
                 ", used=" + used +
                 '}';
+    }
+
+    @Override
+    public int compareTo(@NotNull Disk o) {
+        return this.mount.compareTo(o.mount);
     }
 }

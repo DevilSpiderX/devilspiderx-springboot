@@ -20,6 +20,8 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Controller
@@ -134,7 +136,9 @@ public class ServerInfoWS {
             data.put("memory", memoryData);
 
             JSONArray diskDataArray = new JSONArray();
-            for (Disk disk : serverInfo.update().getDisks()) {
+            List<Disk> disks = serverInfo.update().getDisks();
+            disks.sort(Comparator.naturalOrder());
+            for (Disk disk : disks) {
                 JSONObject diskData = new JSONObject();
                 diskData.put("label", disk.getLabel());
                 diskData.put("mount", disk.getMount());
