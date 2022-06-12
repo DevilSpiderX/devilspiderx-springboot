@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
 
-import javax.servlet.http.HttpSession;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -44,7 +43,7 @@ public class ServerInfoController {
      */
     @PostMapping("/cpu")
     @ResponseBody
-    private JSONObject cpu(HttpSession session) {
+    private JSONObject cpu() {
         JSONObject respJson = new JSONObject();
         respJson.put("code", "0");
         respJson.put("msg", "获取成功");
@@ -74,7 +73,7 @@ public class ServerInfoController {
      */
     @PostMapping("/memory")
     @ResponseBody
-    private JSONObject memory(HttpSession session) {
+    private JSONObject memory() {
 
         JSONObject respJson = new JSONObject();
         respJson.put("code", "0");
@@ -104,23 +103,21 @@ public class ServerInfoController {
      */
     @PostMapping("/network")
     @ResponseBody
-    private JSONObject network(HttpSession session) {
+    private JSONObject network() {
         JSONObject respJson = new JSONObject();
         respJson.put("code", "0");
         respJson.put("msg", "获取成功");
-        JSONArray dataArray = new JSONArray();
+        JSONObject data = new JSONObject();
+        Network AllNet = new Network("All", 0, 0, 0);
         for (Network network : serverInfo.update().getNetworks()) {
-            JSONObject networkData = new JSONObject();
-            networkData.put("name", network.getName());
-            networkData.put("uploadSpeed", network.getUploadSpeed());
-            networkData.put("downloadSpeed", network.getDownloadSpeed());
-            networkData.put("IPv4addr", network.getIPv4addr());
-            networkData.put("IPv6addr", network.getIPv6addr());
-            networkData.put("uploadSpeedStr", network.getUploadSpeedStr());
-            networkData.put("downloadSpeedStr", network.getDownloadSpeedStr());
-            dataArray.add(networkData);
+            AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
+            AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
         }
-        respJson.put("data", dataArray);
+        data.put("uploadSpeed", AllNet.getUploadSpeed());
+        data.put("downloadSpeed", AllNet.getDownloadSpeed());
+        data.put("uploadSpeedStr", AllNet.getUploadSpeedStr());
+        data.put("downloadSpeedStr", AllNet.getDownloadSpeedStr());
+        respJson.put("data", data);
         return respJson;
     }
 
@@ -136,7 +133,7 @@ public class ServerInfoController {
      */
     @PostMapping("/network/size")
     @ResponseBody
-    private JSONObject network_size(HttpSession session) {
+    private JSONObject network_size() {
         JSONObject respJson = new JSONObject();
         respJson.put("code", "0");
         respJson.put("msg", "获取成功");
@@ -156,7 +153,7 @@ public class ServerInfoController {
      */
     @PostMapping("/disk")
     @ResponseBody
-    private JSONObject disk(HttpSession session) {
+    private JSONObject disk() {
 
         JSONObject respJson = new JSONObject();
         respJson.put("code", "0");
@@ -193,7 +190,7 @@ public class ServerInfoController {
      */
     @PostMapping("/disk/size")
     @ResponseBody
-    private JSONObject disk_size(HttpSession session) {
+    private JSONObject disk_size() {
         JSONObject respJson = new JSONObject();
         respJson.put("code", "0");
         respJson.put("msg", "获取成功");
@@ -225,7 +222,7 @@ public class ServerInfoController {
      */
     @PostMapping("/token")
     @ResponseBody
-    private JSONObject token(HttpSession session) {
+    private JSONObject token() {
 
         JSONObject respJson = new JSONObject();
         String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",

@@ -101,7 +101,7 @@ public class ServerInfoWS {
         onlineCount.decrementAndGet();
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(String message) throws InterruptedException {
         sendThread.sendMessage(session, message);
     }
 
@@ -151,22 +151,20 @@ public class ServerInfoWS {
             }
             data.put("disk", diskDataArray);
 
-            JSONArray networkArray = new JSONArray();
+            JSONObject networkData = new JSONObject();
+            Network AllNet = new Network("All", 0, 0, 0);
             for (Network network : serverInfo.update().getNetworks()) {
-                JSONObject networkData = new JSONObject();
-                networkData.put("name", network.getName());
-                networkData.put("uploadSpeed", network.getUploadSpeed());
-                networkData.put("downloadSpeed", network.getDownloadSpeed());
-                networkData.put("IPv4addr", network.getIPv4addr());
-                networkData.put("IPv6addr", network.getIPv6addr());
-                networkData.put("uploadSpeedStr", network.getUploadSpeedStr());
-                networkData.put("downloadSpeedStr", network.getDownloadSpeedStr());
-                networkArray.add(networkData);
+                AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
+                AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
             }
-            data.put("network", networkArray);
+            networkData.put("uploadSpeed", AllNet.getUploadSpeed());
+            networkData.put("downloadSpeed", AllNet.getDownloadSpeed());
+            networkData.put("uploadSpeedStr", AllNet.getUploadSpeedStr());
+            networkData.put("downloadSpeedStr", AllNet.getDownloadSpeedStr());
+            data.put("network", networkData);
 
-            sendMessage(data.toString());
             try {
+                sendMessage(data.toString());
                 //noinspection BusyWait
                 Thread.sleep(cd);
             } catch (InterruptedException e) {

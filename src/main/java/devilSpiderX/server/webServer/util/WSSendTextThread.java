@@ -33,10 +33,7 @@ public class WSSendTextThread extends Thread {
         }
     }
 
-    public void sendMessage(WsSession session, String message) {
-        try {
-            msgQue.put(Tuple.of(session, message));
-        } catch (InterruptedException ignore) {
-        }
+    public void sendMessage(WsSession session, String message) throws InterruptedException {
+        msgQue.put(Tuple.of(session, message));
     }
 }
