@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.teasoft.bee.osql.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactory;
+import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +28,7 @@ import java.util.Locale;
 @RequestMapping("/api/ServerInfo")
 public class ServerInfoController {
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
-    private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+    private final SuidRich suidRich = BeeFactoryHelper.getSuidRich();
     private final MyServerInfo serverInfo = MyServerInfo.serverInfo;
 
     /**

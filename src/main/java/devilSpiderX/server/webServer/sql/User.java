@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.sql;
 
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
+import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.io.Serializable;
 import java.util.List;
@@ -49,7 +50,7 @@ public class User implements Serializable {
         if (uid == null) {
             return false;
         }
-        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        SuidRich suidRich = BeeFactoryHelper.getSuidRich();
         return suidRich.exist(this);
     }
 
@@ -72,7 +73,7 @@ public class User implements Serializable {
     }
 
     public static void main(String[] args) {
-        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        SuidRich suidRich = BeeFactoryHelper.getSuidRich();
         List<User> userList = suidRich.select(new User());
         System.out.println(userList);
     }

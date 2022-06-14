@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.teasoft.bee.osql.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactory;
+import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/api/user")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-    private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+    private final SuidRich suidRich = BeeFactoryHelper.getSuidRich();
     private static final int SESSION_MAX_AGE = 10 * 60;
 
     /**

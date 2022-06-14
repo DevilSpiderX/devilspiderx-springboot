@@ -8,7 +8,7 @@ import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.Op;
 import org.teasoft.bee.osql.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactory;
+import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 
 import javax.crypto.*;
@@ -105,7 +105,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         if (!User.exist(owner)) {
             return false;
         }
-        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        SuidRich suidRich = BeeFactoryHelper.getSuidRich();
         MyPasswords counter = new MyPasswords();
         counter.setName(name);
         counter.setOwner(owner);
@@ -120,7 +120,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     }
 
     public static boolean delete(int id) {
-        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        SuidRich suidRich = BeeFactoryHelper.getSuidRich();
         return suidRich.deleteById(MyPasswords.class, id) == 1;
     }
 
@@ -131,7 +131,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         if (!User.exist(owner)) {
             return false;
         }
-        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        SuidRich suidRich = BeeFactoryHelper.getSuidRich();
         return suidRich.updateById(this, new ConditionImpl().setIncludeType(IncludeType.INCLUDE_EMPTY)) == 1;
     }
 
@@ -152,7 +152,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
 
     public static JSONArray query(String name, String owner) {
         JSONArray result = new JSONArray();
-        SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+        SuidRich suidRich = BeeFactoryHelper.getSuidRich();
         Condition con = new ConditionImpl();
         con.op("name", Op.like, name + '%').and().op("owner", Op.equal, owner);
         MyPasswords emptyMP = new MyPasswords();

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.teasoft.bee.osql.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactory;
+import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import javax.servlet.http.HttpSession;
 
@@ -22,7 +22,7 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/api")
 public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
-    private final SuidRich suidRich = BeeFactory.getHoneyFactory().getSuidRich();
+    private final SuidRich suidRich = BeeFactoryHelper.getSuidRich();
 
     /**
      * <b>命令请求，用于重启服务器和关机的命令</b>
