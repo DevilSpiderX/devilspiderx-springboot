@@ -1,11 +1,16 @@
 server:
   http_port: 10047
   https_port: 10048
+  http2:
+    enabled: true
   ssl:
     protocol: "TLS"
     key-store: "file:./keys/Certificate.p12"
     key-store-password: "162276"
     key-store-type: "PKCS12"
 
-my:
-  static-location: "C:/Code/Web/WebServerWeb"
+devilspiderx:
+  static-location: C:/Code/Web/WebServerWeb
+  v2ray:
+    exe-path: "C:/MyDownloads/v2ray - Server/v2ray-windows-64/v2ray.exe"
+    config-path: "C:/MyDownloads/v2ray - Server/v2ray-windows-64/config.json"

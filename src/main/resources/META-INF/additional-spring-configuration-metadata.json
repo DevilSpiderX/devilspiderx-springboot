@@ -1,0 +1,22 @@
+{
+  "properties": [
+    {
+      "name": "devilspiderx.static-location",
+      "type": "java.lang.String",
+      "defaultValue": "web",
+      "description": "static file directory."
+    },
+    {
+      "name": "devilspiderx.v2ray.exe-path",
+      "type": "java.lang.String",
+      "defaultValue": "v2ray",
+      "description": "."
+    },
+    {
+      "name": "devilspiderx.v2ray.config-path",
+      "type": "java.lang.String",
+      "defaultValue": "",
+      "description": "."
+    }
+  ]
+}

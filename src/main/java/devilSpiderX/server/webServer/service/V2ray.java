@@ -1,44 +1,25 @@
 package devilSpiderX.server.webServer.service;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import devilSpiderX.server.webServer.config.MyConfig;
+import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
+@Service(value = "v2ray")
 public class V2ray {
-    private static final String exePath;
-    private static final String configPath;
-    private static boolean alive = false;
-    private static Process p = null;
+    private final String exePath;
+    private final String configPath;
+    private boolean alive = false;
+    private Process p = null;
 
-    static {
-        Logger logger = LoggerFactory.getLogger(V2ray.class);
-        FileInputStream fileIn = null;
-        try {
-            fileIn = new FileInputStream("./v2rayParams.json");
-            JSONObject json = JSON.parseObject(fileIn, StandardCharsets.UTF_8, JSONObject.class);
-            exePath = json.getString("exe-path");
-            configPath = json.getString("config-path");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (fileIn != null) {
-                try {
-                    fileIn.close();
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-        }
+    public V2ray(MyConfig config) {
+        exePath = config.getV2RAY().get("exe-path");
+        configPath = config.getV2RAY().get("config-path");
     }
 
-    public static long start() throws IOException {
+    public long start() throws IOException {
         if (!alive) {
-            ProcessBuilder builder = new ProcessBuilder(exePath, "-config=" + configPath);
+            ProcessBuilder builder = new ProcessBuilder(exePath, "-config", configPath);
             builder.redirectErrorStream(true);
             p = builder.start();
             alive = true;
@@ -46,7 +27,7 @@ public class V2ray {
         return p.pid();
     }
 
-    public static String stop() {
+    public String stop() {
         String result;
         if (alive) {
             p.destroy();
@@ -58,7 +39,7 @@ public class V2ray {
         return result;
     }
 
-    public static boolean isAlive() {
+    public boolean isAlive() {
         return alive;
     }
 }

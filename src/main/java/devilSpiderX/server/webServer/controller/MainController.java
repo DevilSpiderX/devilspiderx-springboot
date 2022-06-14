@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.MainApplication;
 import devilSpiderX.server.webServer.service.OS;
-import devilSpiderX.server.webServer.service.V2ray;
 import devilSpiderX.server.webServer.sql.MyPasswords;
 import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
@@ -18,7 +17,6 @@ import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactory;
 
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 
 @Controller
 @RequestMapping("/api")
@@ -91,56 +89,6 @@ public class MainController {
             respJson.put("code", "0");
             respJson.put("msg", "成功");
             respJson.put("data", myPwdArray);
-        }
-        return respJson;
-    }
-
-    /**
-     * <b>v2ray的启动和关闭</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * cmd
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 启动成功；1 关闭成功；2 状态；3 cmd参数不存在；4 命令执行失败；
-     * 100 没有权限；101 没有管理员权限；
-     * </p>
-     */
-    @PostMapping("/v2ray")
-    @ResponseBody
-    private JSONObject v2ray(@RequestBody JSONObject reqBody, HttpSession session) throws IOException {
-        JSONObject respJson = new JSONObject();
-        if (reqBody.containsKey("cmd")) {
-            String command = reqBody.getString("cmd");
-            if ((command.equals("start") || command.equals("stop")) &&
-                    !User.isAdmin((String) session.getAttribute("uid"))) {
-                respJson.put("code", "101");
-                respJson.put("msg", "没有管理员权限");
-                return respJson;
-            }
-            if (command.equals("start") && !V2ray.isAlive()) {
-                long pid = V2ray.start();
-                logger.info("v2ray启动成功 PID=" + pid);
-                respJson.put("code", "0");
-                respJson.put("msg", "v2ray启动成功");
-            } else if (command.equals("stop") && V2ray.isAlive()) {
-                String rValue = V2ray.stop();
-                rValue = rValue.replaceAll("\n", "\t");
-                logger.info(rValue);
-                respJson.put("code", "1");
-                respJson.put("msg", "v2ray关闭成功");
-            } else if (command.equals("alive")) {
-                respJson.put("code", "2");
-                respJson.put("msg", V2ray.isAlive() ? "v2ray正在运行" : "v2ray没有运行");
-                respJson.put("state", V2ray.isAlive() ? 1 : 0);
-            } else {
-                respJson.put("code", "4");
-                respJson.put("msg", "命令执行失败");
-            }
-        } else {
-            respJson.put("code", "3");
-            respJson.put("msg", "cmd参数不存在");
         }
         return respJson;
     }
