@@ -42,31 +42,31 @@ public class V2rayController {
             String command = reqBody.getString("cmd");
             if ((command.equals("start") || command.equals("stop")) &&
                     !User.isAdmin((String) session.getAttribute("uid"))) {
-                respJson.put("code", "101");
+                respJson.put("code", 101);
                 respJson.put("msg", "没有管理员权限");
                 return respJson;
             }
             if (command.equals("start") && !v2ray.isAlive()) {
                 long pid = v2ray.start();
                 logger.info("v2ray启动成功 PID=" + pid);
-                respJson.put("code", "0");
+                respJson.put("code", 0);
                 respJson.put("msg", "v2ray启动成功");
             } else if (command.equals("stop") && v2ray.isAlive()) {
                 String rValue = v2ray.stop();
                 rValue = rValue.replaceAll("\n", "\t");
                 logger.info(rValue);
-                respJson.put("code", "1");
+                respJson.put("code", 1);
                 respJson.put("msg", "v2ray关闭成功");
             } else if (command.equals("alive")) {
-                respJson.put("code", "2");
+                respJson.put("code", 2);
                 respJson.put("msg", v2ray.isAlive() ? "v2ray正在运行" : "v2ray没有运行");
                 respJson.put("state", v2ray.isAlive() ? 1 : 0);
             } else {
-                respJson.put("code", "4");
+                respJson.put("code", 4);
                 respJson.put("msg", "命令执行失败");
             }
         } else {
-            respJson.put("code", "3");
+            respJson.put("code", 3);
             respJson.put("msg", "cmd参数不存在");
         }
         return respJson;

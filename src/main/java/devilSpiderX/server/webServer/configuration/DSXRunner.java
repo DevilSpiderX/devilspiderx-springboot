@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.config;
+package devilSpiderX.server.webServer.configuration;
 
 import devilSpiderX.server.webServer.MainApplication;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.config;
+package devilSpiderX.server.webServer.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -13,14 +13,14 @@ public class UserFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         HttpSession session = ((HttpServletRequest) request).getSession();
-        if (isOperable(session)) {
+        if (isLogged(session)) {
             chain.doFilter(request, response);
         } else {
             request.getRequestDispatcher("/error/userNoLogin").forward(request, response);
         }
     }
 
-    public static boolean isOperable(HttpSession session) {
-        return session.getAttribute("operable") != null && (Boolean) session.getAttribute("operable");
+    public static boolean isLogged(HttpSession session) {
+        return session.getAttribute("logged") != null && (Boolean) session.getAttribute("logged");
     }
 }

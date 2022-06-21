@@ -4,12 +4,12 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
 public class FormatUtil {
-    private static final long KB = 1L << 10;
-    private static final long MB = 1L << 20;
-    private static final long GB = 1L << 30;
-    private static final long TB = 1L << 40;
-    private static final long PB = 1L << 50;
-    private static final long EB = 1L << 60;
+    public static final long KB = 1L << 10;
+    public static final long MB = 1L << 20;
+    public static final long GB = 1L << 30;
+    public static final long TB = 1L << 40;
+    public static final long PB = 1L << 50;
+    public static final long EB = 1L << 60;
 
     public static Tuple2<Double, String> unitBytes(long n, int scale) {
         if (n >= EB) {

@@ -1,7 +1,9 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import devilSpiderX.server.webServer.controller.response.ResultArray;
+import devilSpiderX.server.webServer.controller.response.ResultData;
+import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.service.MyServerInfo;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
@@ -22,7 +24,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/api/ServerInfo")
@@ -43,10 +48,10 @@ public class ServerInfoController {
      */
     @PostMapping("/cpu")
     @ResponseBody
-    private JSONObject cpu() {
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "0");
-        respJson.put("msg", "获取成功");
+    private ResultMap<Object> cpu() {
+        ResultMap<Object> respResult = new ResultMap<>();
+        respResult.setCode(0);
+        respResult.setMsg("获取成功");
         JSONObject data = new JSONObject();
         CPU cpu = serverInfo.update().getCPU();
         data.put("name", cpu.getName());
@@ -57,8 +62,8 @@ public class ServerInfoController {
         data.put("cpuTemperature", cpu.getCpuTemperature());
         data.put("freePercent", cpu.getFreePercent());
         data.put("usedPercent", cpu.getUsedPercent());
-        respJson.put("data", data);
-        return respJson;
+        respResult.setData(data);
+        return respResult;
     }
 
     /**
@@ -73,11 +78,10 @@ public class ServerInfoController {
      */
     @PostMapping("/memory")
     @ResponseBody
-    private JSONObject memory() {
-
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "0");
-        respJson.put("msg", "获取成功");
+    private ResultMap<Object> memory() {
+        ResultMap<Object> respResult = new ResultMap<>();
+        respResult.setCode(0);
+        respResult.setMsg("获取成功");
         JSONObject data = new JSONObject();
         Memory memory = serverInfo.update().getMemory();
         data.put("total", memory.getTotal());
@@ -87,8 +91,8 @@ public class ServerInfoController {
         data.put("usedStr", memory.getUsedStr());
         data.put("freeStr", memory.getFreeStr());
         data.put("usage", memory.getUsage());
-        respJson.put("data", data);
-        return respJson;
+        respResult.setData(data);
+        return respResult;
     }
 
     /**
@@ -103,10 +107,10 @@ public class ServerInfoController {
      */
     @PostMapping("/network")
     @ResponseBody
-    private JSONObject network() {
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "0");
-        respJson.put("msg", "获取成功");
+    private ResultMap<Object> network() {
+        ResultMap<Object> respResult = new ResultMap<>();
+        respResult.setCode(0);
+        respResult.setMsg("获取成功");
         JSONObject data = new JSONObject();
         Network AllNet = new Network("All", 0, 0, 0);
         for (Network network : serverInfo.update().getNetworks()) {
@@ -117,8 +121,8 @@ public class ServerInfoController {
         data.put("downloadSpeed", AllNet.getDownloadSpeed());
         data.put("uploadSpeedStr", AllNet.getUploadSpeedStr());
         data.put("downloadSpeedStr", AllNet.getDownloadSpeedStr());
-        respJson.put("data", data);
-        return respJson;
+        respResult.setData(data);
+        return respResult;
     }
 
     /**
@@ -133,12 +137,12 @@ public class ServerInfoController {
      */
     @PostMapping("/network/size")
     @ResponseBody
-    private JSONObject network_size() {
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "0");
-        respJson.put("msg", "获取成功");
-        respJson.put("size", serverInfo.update().getNetworks().size());
-        return respJson;
+    private ResultData<Integer> network_size() {
+        ResultData<Integer> respResult = new ResultData<>();
+        respResult.setCode(0);
+        respResult.setMsg("获取成功");
+        respResult.setData(serverInfo.update().getNetworks().size());
+        return respResult;
     }
 
     /**
@@ -153,12 +157,11 @@ public class ServerInfoController {
      */
     @PostMapping("/disk")
     @ResponseBody
-    private JSONObject disk() {
-
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "0");
-        respJson.put("msg", "获取成功");
-        JSONArray dataArray = new JSONArray();
+    private ResultArray<JSONObject> disk() {
+        ResultArray<JSONObject> respResult = new ResultArray<>();
+        respResult.setCode(0);
+        respResult.setMsg("获取成功");
+        List<JSONObject> dataArray = new LinkedList<>();
         for (Disk disk : serverInfo.update().getDisks()) {
             JSONObject diskJson = new JSONObject();
             diskJson.put("label", disk.getLabel());
@@ -174,8 +177,8 @@ public class ServerInfoController {
             diskJson.put("usage", disk.getUsage());
             dataArray.add(diskJson);
         }
-        respJson.put("data", dataArray);
-        return respJson;
+        respResult.setData(dataArray);
+        return respResult;
     }
 
     /**
@@ -190,12 +193,12 @@ public class ServerInfoController {
      */
     @PostMapping("/disk/size")
     @ResponseBody
-    private JSONObject disk_size() {
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "0");
-        respJson.put("msg", "获取成功");
-        respJson.put("size", serverInfo.update().getDisks().size());
-        return respJson;
+    private ResultData<Integer> disk_size() {
+        ResultData<Integer> respResult = new ResultData<>();
+        respResult.setCode(0);
+        respResult.setMsg("获取成功");
+        respResult.setData(serverInfo.update().getDisks().size());
+        return respResult;
     }
 
     public static String makeToken(String timeStr) {
@@ -217,21 +220,24 @@ public class ServerInfoController {
      * </p>
      * <p>
      * <b>返回代码：</b>
-     * 0 成功；100 没有权限;
+     * 0 成功；1 token生成失败；100 没有权限;
      * </p>
      */
     @PostMapping("/token")
     @ResponseBody
-    private JSONObject token() {
-
-        JSONObject respJson = new JSONObject();
+    private ResultMap<String> token() {
+        ResultMap<String> respResult = new ResultMap<>();
         String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",
                 Locale.CHINA));
         String token = makeToken(timeStr);
-        respJson.put("code", "0");
-        respJson.put("msg", "成功");
-        respJson.put("token", token);
-        respJson.put("timeStr", timeStr);
-        return respJson;
+        if (token == null) {
+            respResult.setCode(1);
+            respResult.setMsg("token生成失败");
+            return respResult;
+        }
+        respResult.setCode(0);
+        respResult.setMsg("成功");
+        respResult.setData(Map.of("token", token, "timeStr", timeStr));
+        return respResult;
     }
 }

@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.service;
 
-import devilSpiderX.server.webServer.config.MyConfig;
+import devilSpiderX.server.webServer.configuration.DSXProperties;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ public class V2ray {
     private boolean alive = false;
     private Process p = null;
 
-    public V2ray(MyConfig config) {
+    public V2ray(DSXProperties config) {
         exePath = config.getV2RAY().get("exe-path");
         configPath = config.getV2RAY().get("config-path");
     }

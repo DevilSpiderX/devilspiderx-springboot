@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.config;
+package devilSpiderX.server.webServer.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Configuration
 @ConfigurationProperties(prefix = "devilspiderx")
-public class MyConfig {
+public class DSXProperties {
     private final Path LOCAL_PATH = Paths.get(".").toAbsolutePath();
     private Path STATIC_LOCATION;
     private Map<String, String> V2RAY;

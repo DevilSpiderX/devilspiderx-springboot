@@ -108,8 +108,7 @@ public class ServerInfoWS {
     }
 
     public void sendServerInfo(long cd) {
-        Thread currentThread = Thread.currentThread();
-        while (!currentThread.isInterrupted()) {
+        while (!Thread.interrupted()) {
             JSONObject data = new JSONObject();
 
             CPU cpu = serverInfo.update().getCPU();
@@ -172,7 +171,7 @@ public class ServerInfoWS {
                 //noinspection BusyWait
                 Thread.sleep(cd);
             } catch (InterruptedException e) {
-                currentThread.interrupt();
+                break;
             }
         }
     }

@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.config;
+package devilSpiderX.server.webServer.configuration;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;

@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson2.JSONObject;
+import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.filter.UserFilter;
 import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.nio.charset.StandardCharsets;
@@ -41,14 +41,14 @@ public class UserController {
      */
     @PostMapping("/login")
     @ResponseBody
-    private JSONObject login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletResponse resp) {
-        JSONObject respJson = new JSONObject();
+    private ResultMap<Void> login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletResponse resp) {
+        ResultMap<Void> respResult = new ResultMap<>();
         if (!reqBody.containsKey("uid")) {
-            respJson.put("code", "3");
-            respJson.put("msg", "uid参数不存在");
+            respResult.setCode(3);
+            respResult.setMsg("uid参数不存在");
         } else if (!reqBody.containsKey("pwd")) {
-            respJson.put("code", "4");
-            respJson.put("msg", "pwd参数不存在");
+            respResult.setCode(4);
+            respResult.setMsg("pwd参数不存在");
         } else {
             String uid = reqBody.getString("uid");
             String pwd = SHA256(reqBody.getString("pwd"));
@@ -63,25 +63,21 @@ public class UserController {
             }
 
             if (users.isEmpty()) {
-                respJson.put("code", "2");
-                respJson.put("msg", "uid不存在");
+                respResult.setCode(2);
+                respResult.setMsg("uid不存在");
             } else if (flag) {
                 session.setMaxInactiveInterval(SESSION_MAX_AGE);
-                session.setAttribute("operable", true);
+                session.setAttribute("logged", true);
                 session.setAttribute("uid", uid);
-                Cookie jsessionid = new Cookie("JSESSIONID", session.getId());
-                jsessionid.setMaxAge(SESSION_MAX_AGE);
-                jsessionid.setPath("/");
-                resp.addCookie(jsessionid);
 
-                respJson.put("code", "0");
-                respJson.put("msg", "密码正确，登录成功");
+                respResult.setCode(0);
+                respResult.setMsg("密码正确，登录成功");
             } else {
-                respJson.put("code", "1");
-                respJson.put("msg", "密码错误，登录失败");
+                respResult.setCode(1);
+                respResult.setMsg("密码错误，登录失败");
             }
         }
-        return respJson;
+        return respResult;
     }
 
     /**
@@ -96,22 +92,17 @@ public class UserController {
      */
     @PostMapping("/logout")
     @ResponseBody
-    private JSONObject logout(HttpSession session, HttpServletResponse resp) {
-        JSONObject respJson = new JSONObject();
-        if (UserFilter.isOperable(session)) {
-            Cookie jsessionid = new Cookie("JSESSIONID", session.getId());
-            jsessionid.setMaxAge(1);
-            jsessionid.setPath("/");
-            resp.addCookie(jsessionid);
-            session.invalidate();
-
-            respJson.put("code", "0");
-            respJson.put("msg", "登出成功");
-        } else {
-            respJson.put("code", "1");
-            respJson.put("msg", "该sessionId（" + session.getId() + "）还未登录过");
+    private ResultMap<Void> logout(HttpSession session, HttpServletResponse resp) {
+        ResultMap<Void> respResult = new ResultMap<>();
+        try {
+            session.removeAttribute("logged");
+            session.removeAttribute("uid");
+        } catch (IllegalStateException ignored) {
         }
-        return respJson;
+
+        respResult.setCode(0);
+        respResult.setMsg("登出成功");
+        return respResult;
     }
 
     /**
@@ -127,35 +118,35 @@ public class UserController {
      */
     @PostMapping("/register")
     @ResponseBody
-    private JSONObject register(@RequestBody JSONObject reqBody) {
-        JSONObject respJson = new JSONObject();
+    private ResultMap<Void> register(@RequestBody JSONObject reqBody) {
+        ResultMap<Void> respResult = new ResultMap<>();
         if (!reqBody.containsKey("uid")) {
-            respJson.put("code", "2");
-            respJson.put("msg", "uid参数不存在");
+            respResult.setCode(2);
+            respResult.setMsg("uid参数不存在");
         } else if (!reqBody.containsKey("pwd")) {
-            respJson.put("code", "3");
-            respJson.put("msg", "pwd参数不存在");
+            respResult.setCode(3);
+            respResult.setMsg("pwd参数不存在");
         } else {
             String uid = reqBody.getString("uid");
             String pwd = SHA256(reqBody.getString("pwd"));
             User user = new User(uid);
 
             if (suidRich.exist(user)) {
-                respJson.put("code", "4");
-                respJson.put("msg", "该uid已存在");
+                respResult.setCode(4);
+                respResult.setMsg("该uid已存在");
             } else {
                 user.setPassword(pwd);
                 user.setAdmin(false);
                 if (suidRich.insert(user) > 0) {
-                    respJson.put("code", "0");
-                    respJson.put("msg", "注册成功");
+                    respResult.setCode(0);
+                    respResult.setMsg("注册成功");
                 } else {
-                    respJson.put("code", "1");
-                    respJson.put("msg", "注册失败");
+                    respResult.setCode(1);
+                    respResult.setMsg("注册失败");
                 }
             }
         }
-        return respJson;
+        return respResult;
     }
 
     /**
@@ -170,17 +161,21 @@ public class UserController {
      */
     @PostMapping("/status")
     @ResponseBody
-    private JSONObject status(HttpSession session) {
+    private ResultMap<Object> status(HttpSession session) {
+        ResultMap<Object> respResult = new ResultMap<>();
+        respResult.setCode(0);
+        respResult.setMsg("OK");
         JSONObject respJson = new JSONObject();
         respJson.put("status", 0);
         respJson.put("login", false);
         respJson.put("uid", "");
-        if (UserFilter.isOperable(session)) {
+        if (UserFilter.isLogged(session)) {
             respJson.put("status", 1);
             respJson.put("login", true);
             respJson.put("uid", session.getAttribute("uid"));
         }
-        return respJson;
+        respResult.setData(respJson);
+        return respResult;
     }
 
     private static String SHA256(String value) {

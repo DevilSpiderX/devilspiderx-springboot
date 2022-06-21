@@ -3,6 +3,8 @@ package devilSpiderX.server.webServer.controller;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.MainApplication;
+import devilSpiderX.server.webServer.controller.response.ResultArray;
+import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.service.OS;
 import devilSpiderX.server.webServer.sql.MyPasswords;
 import devilSpiderX.server.webServer.sql.User;
@@ -37,28 +39,27 @@ public class MainController {
      */
     @PostMapping("/command")
     @ResponseBody
-    private JSONObject command(@RequestBody JSONObject reqBody, HttpSession session) {
-        JSONObject respJson = new JSONObject();
+    private ResultMap<Void> command(@RequestBody JSONObject reqBody, HttpSession session) {
+        ResultMap<Void> respResult = new ResultMap<>();
         String cmdA = reqBody.getString("cmd");
         if (!User.isAdmin((String) session.getAttribute("uid"))) {
-            respJson.put("code", "101");
-            respJson.put("msg", "没有管理员权限");
+            respResult.setCode(101);
+            respResult.setMsg("没有管理员权限");
         } else if (cmdA == null) {
-            respJson.put("code", "2");
-            respJson.put("msg", "cmd参数不存在");
+            respResult.setMsg("cmd参数不存在");
         } else if (cmdA.equals("reboot")) {
-            respJson.put("code", "0");
-            respJson.put("msg", "成功\r\n服务器正在重启\r\n请稍后......");
+            respResult.setCode(0);
+            respResult.setMsg("成功\n服务器正在重启\n请稍后......");
             OS.reboot(500);
         } else if (cmdA.equals("shutdown")) {
-            respJson.put("code", "0");
-            respJson.put("msg", "成功\r\n服务器正在关机......");
+            respResult.setCode(0);
+            respResult.setMsg("成功\n服务器正在关机......");
             OS.shutdown(500);
         } else {
-            respJson.put("code", "1");
-            respJson.put("msg", "cmd的值不存在(\"reboot\"或\"shutdown\")");
+            respResult.setCode(1);
+            respResult.setMsg("cmd的值不存在(\"reboot\"或\"shutdown\")");
         }
-        return respJson;
+        return respResult;
     }
 
     /**
@@ -75,22 +76,22 @@ public class MainController {
      */
     @PostMapping("/query")
     @ResponseBody
-    private JSONObject queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        JSONObject respJson = new JSONObject();
+    private ResultArray<Object> queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        ResultArray<Object> respResult = new ResultArray<>();
         String key = "";
         if (reqBody.containsKey("key")) {
             key = reqBody.getString("key").trim();
         }
         JSONArray myPwdArray = MyPasswords.query(key, (String) session.getAttribute("uid"));
         if (myPwdArray.isEmpty()) {
-            respJson.put("code", "1");
-            respJson.put("msg", "空值");
+            respResult.setCode(1);
+            respResult.setMsg("空值");
         } else {
-            respJson.put("code", "0");
-            respJson.put("msg", "成功");
-            respJson.put("data", myPwdArray);
+            respResult.setCode(0);
+            respResult.setMsg("成功");
+            respResult.setData(myPwdArray);
         }
-        return respJson;
+        return respResult;
     }
 
     /**
@@ -106,11 +107,11 @@ public class MainController {
      */
     @PostMapping("/addPasswords")
     @ResponseBody
-    private JSONObject addPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        JSONObject respJson = new JSONObject();
+    private ResultMap<Void> addPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        ResultMap<Void> respResult = new ResultMap<>();
         if (!reqBody.containsKey("name")) {
-            respJson.put("code", "2");
-            respJson.put("msg", "name参数不能为空或不存在");
+            respResult.setCode(2);
+            respResult.setMsg("name参数不能为空或不存在");
         } else {
             String name = reqBody.getString("name");
             String account = reqBody.getString("account");
@@ -123,14 +124,14 @@ public class MainController {
             newPwd.setPassword(password);
             newPwd.setRemark(remark);
             if (newPwd.add()) {
-                respJson.put("code", "0");
-                respJson.put("msg", "添加成功");
+                respResult.setCode(0);
+                respResult.setMsg("添加成功");
             } else {
-                respJson.put("code", "1");
-                respJson.put("msg", "添加失败");
+                respResult.setCode(1);
+                respResult.setMsg("添加失败");
             }
         }
-        return respJson;
+        return respResult;
     }
 
     /**
@@ -146,11 +147,11 @@ public class MainController {
      */
     @PostMapping("/updatePasswords")
     @ResponseBody
-    private JSONObject updatePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        JSONObject respJson = new JSONObject();
+    private ResultMap<Void> updatePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        ResultMap<Void> respResult = new ResultMap<>();
         if (!reqBody.containsKey("id")) {
-            respJson.put("code", "2");
-            respJson.put("msg", "id参数不能为空或不存在");
+            respResult.setCode(2);
+            respResult.setMsg("id参数不能为空或不存在");
         } else {
             int id = reqBody.getInteger("id");
             String name = reqBody.getString("name");
@@ -165,14 +166,14 @@ public class MainController {
             pwd.setPassword(password);
             pwd.setRemark(remark);
             if (pwd.update()) {
-                respJson.put("code", "0");
-                respJson.put("msg", "修改成功");
+                respResult.setCode(0);
+                respResult.setMsg("修改成功");
             } else {
-                respJson.put("code", "1");
-                respJson.put("msg", "修改失败");
+                respResult.setCode(1);
+                respResult.setMsg("修改失败");
             }
         }
-        return respJson;
+        return respResult;
     }
 
     /**
@@ -187,11 +188,11 @@ public class MainController {
      */
     @RequestMapping("/service/shutdown")
     @ResponseBody
-    private JSONObject serviceShutdown(HttpSession session) {
-        JSONObject respJson = new JSONObject();
+    private ResultMap<Void> serviceShutdown(HttpSession session) {
+        ResultMap<Void> respResult = new ResultMap<>();
         if (User.isAdmin((String) session.getAttribute("uid"))) {
-            respJson.put("code", "0");
-            respJson.put("msg", "关闭成功");
+            respResult.setCode(0);
+            respResult.setMsg("关闭成功");
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
@@ -201,9 +202,9 @@ public class MainController {
                 }
             }, "service-shutdown-thread").start();
         } else {
-            respJson.put("code", "100");
-            respJson.put("msg", "没有权限，请登录管理员账号");
+            respResult.setCode(101);
+            respResult.setMsg("没有权限，请登录管理员账号");
         }
-        return respJson;
+        return respResult;
     }
 }

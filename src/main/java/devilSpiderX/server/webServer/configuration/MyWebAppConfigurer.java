@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.config;
+package devilSpiderX.server.webServer.configuration;
 
 import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
@@ -23,9 +23,9 @@ import java.util.List;
 
 @Configuration
 public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar {
-    private final MyConfig config;
+    private final DSXProperties config;
 
-    public MyWebAppConfigurer(MyConfig config) {
+    public MyWebAppConfigurer(DSXProperties config) {
         this.config = config;
     }
 
