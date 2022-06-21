@@ -4,10 +4,15 @@ server:
   http2:
     enabled: true
   ssl:
-    protocol: "TLS"
-    key-store: "file:./keys/Certificate.p12"
-    key-store-password: "162276"
-    key-store-type: "PKCS12"
+    key-store: file:./keys/Certificate.p12
+    key-store-password: 162276
+    key-store-type: PKCS12
+
+spring:
+  web:
+    resources:
+      static-locations:
+        - file:/C:/Code/Web/WebServerWeb
 
 bee:
   db:
@@ -20,7 +25,6 @@ bee:
     showSQL: false
 
 devilspiderx:
-  static-location: C:/Code/Web/WebServerWeb
   v2ray:
-    exe-path: "C:/MyDownloads/v2ray - Server/v2ray-windows-64/v2ray.exe"
-    config-path: "C:/MyDownloads/v2ray - Server/v2ray-windows-64/config.json"
+    exe-path: C:/MyDownloads/v2ray - Server/v2ray-windows-64/v2ray.exe
+    config-path: C:/MyDownloads/v2ray - Server/v2ray-windows-64/config.json

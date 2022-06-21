@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/error")
-public class ErrorController {
+public class ErrorController implements org.springframework.boot.web.servlet.error.ErrorController {
 
     @GetMapping("/{status:\\d+}")
     public String error_get(@PathVariable String status) {

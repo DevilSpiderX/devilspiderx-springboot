@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.service;
 
-import devilSpiderX.server.webServer.configuration.DSXProperties;
+import devilSpiderX.server.webServer.properties.DSXProperties;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -13,8 +13,8 @@ public class V2ray {
     private Process p = null;
 
     public V2ray(DSXProperties config) {
-        exePath = config.getV2RAY().get("exe-path");
-        configPath = config.getV2RAY().get("config-path");
+        exePath = config.getV2ray().getExePath();
+        configPath = config.getV2ray().getConfigPath();
     }
 
     public long start() throws IOException {
