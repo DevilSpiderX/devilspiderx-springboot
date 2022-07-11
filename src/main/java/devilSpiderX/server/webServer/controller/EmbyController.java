@@ -3,6 +3,7 @@ package devilSpiderX.server.webServer.controller;
 import com.alibaba.fastjson2.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -23,11 +24,11 @@ public class EmbyController {
 
     @RequestMapping("/admin/service/registration/getStatus")
     @ResponseBody
-    private JSONObject getStatus() {
+    private JSONObject getStatus(@RequestBody JSONObject reqBody) {
         JSONObject respJson = new JSONObject();
         respJson.put("deviceStatus", "0");
         respJson.put("planType", "Lifetime");
-        respJson.put("subscriptions", new JSONObject());
+        respJson.put("subscriptions", reqBody);
         return respJson;
     }
 
