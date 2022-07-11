@@ -24,11 +24,11 @@ public class EmbyController {
 
     @RequestMapping("/admin/service/registration/getStatus")
     @ResponseBody
-    private JSONObject getStatus(@RequestBody JSONObject reqBody) {
+    private JSONObject getStatus(@RequestBody(required = false) JSONObject reqBody) {
         JSONObject respJson = new JSONObject();
         respJson.put("deviceStatus", "0");
         respJson.put("planType", "Lifetime");
-        respJson.put("subscriptions", reqBody);
+        respJson.put("subscriptions", reqBody == null ? new JSONObject() : reqBody);
         return respJson;
     }
 
