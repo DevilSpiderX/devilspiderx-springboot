@@ -4,7 +4,7 @@ server:
   http2:
     enabled: true
   ssl:
-    key-store: file:./keys/Certificate.p12
+    key-store: file:./keys/www.DevilSpiderX.ltd.pfx
     key-store-password: 162276
     key-store-type: PKCS12
 
