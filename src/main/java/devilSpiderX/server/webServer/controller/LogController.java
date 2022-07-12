@@ -19,12 +19,12 @@ import java.nio.file.Paths;
 @SuppressWarnings("resource")
 public class LogController {
 
-    @GetMapping("")
+    @GetMapping
     public String logListView() {
         return "log.html";
     }
 
-    @PostMapping("")
+    @PostMapping
     @ResponseBody
     public JSONArray list() throws IOException {
         JSONArray respList = new JSONArray();

@@ -5,9 +5,8 @@ import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.MainApplication;
 import devilSpiderX.server.webServer.controller.response.ResultArray;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
+import devilSpiderX.server.webServer.service.MyPasswordsService;
 import devilSpiderX.server.webServer.service.OS;
-import devilSpiderX.server.webServer.sql.MyPasswords;
-import devilSpiderX.server.webServer.sql.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -15,50 +14,53 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.teasoft.bee.osql.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/api")
 public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
-    private final SuidRich suidRich = BeeFactoryHelper.getSuidRich();
+
+    @Resource(name = "myPasswordsService")
+    private MyPasswordsService myPasswordsService;
 
     /**
-     * <b>命令请求，用于重启服务器和关机的命令</b>
+     * <b>重启服务器</b>
      * <p>
      * <b>应包含参数：</b>
-     * cmd
      * </p>
      * <b>返回代码：</b>
-     * 0 成功；1 cmd的值不存在；2 cmd参数不存在；
-     * 100 没有权限；101 没有管理员权限；
+     * 0 成功；100 没有权限；101 没有管理员权限；
      * </p>
      */
-    @PostMapping("/command")
+    @PostMapping("/os/reboot")
     @ResponseBody
-    private ResultMap<Void> command(@RequestBody JSONObject reqBody, HttpSession session) {
+    private ResultMap<Void> OSReboot() {
         ResultMap<Void> respResult = new ResultMap<>();
-        String cmdA = reqBody.getString("cmd");
-        if (!User.isAdmin((String) session.getAttribute("uid"))) {
-            respResult.setCode(101);
-            respResult.setMsg("没有管理员权限");
-        } else if (cmdA == null) {
-            respResult.setMsg("cmd参数不存在");
-        } else if (cmdA.equals("reboot")) {
-            respResult.setCode(0);
-            respResult.setMsg("成功\n服务器正在重启\n请稍后......");
-            OS.reboot(500);
-        } else if (cmdA.equals("shutdown")) {
-            respResult.setCode(0);
-            respResult.setMsg("成功\n服务器正在关机......");
-            OS.shutdown(500);
-        } else {
-            respResult.setCode(1);
-            respResult.setMsg("cmd的值不存在(\"reboot\"或\"shutdown\")");
-        }
+        respResult.setCode(0);
+        respResult.setMsg("成功\n服务器正在重启......");
+        OS.reboot(500);
+        return respResult;
+    }
+
+    /**
+     * <b>关闭服务器</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <b>返回代码：</b>
+     * 0 成功；100 没有权限；101 没有管理员权限；
+     * </p>
+     */
+    @PostMapping("/os/shutdown")
+    @ResponseBody
+    private ResultMap<Void> OSShutdown() {
+        ResultMap<Void> respResult = new ResultMap<>();
+        respResult.setCode(0);
+        respResult.setMsg("成功\n服务器正在关机......");
+        OS.shutdown(500);
         return respResult;
     }
 
@@ -82,7 +84,7 @@ public class MainController {
         if (reqBody.containsKey("key")) {
             key = reqBody.getString("key").trim();
         }
-        JSONArray myPwdArray = MyPasswords.query(key, (String) session.getAttribute("uid"));
+        JSONArray myPwdArray = myPasswordsService.query(key, (String) session.getAttribute("uid"));
         if (myPwdArray.isEmpty()) {
             respResult.setCode(1);
             respResult.setMsg("空值");
@@ -117,13 +119,8 @@ public class MainController {
             String account = reqBody.getString("account");
             String password = reqBody.getString("password");
             String remark = reqBody.getString("remark");
-            MyPasswords newPwd = new MyPasswords();
-            newPwd.setOwner((String) session.getAttribute("uid"));
-            newPwd.setName(name);
-            newPwd.setAccount(account);
-            newPwd.setPassword(password);
-            newPwd.setRemark(remark);
-            if (newPwd.add()) {
+            String owner = (String) session.getAttribute("uid");
+            if (myPasswordsService.add(name, account, password, remark, owner)) {
                 respResult.setCode(0);
                 respResult.setMsg("添加成功");
             } else {
@@ -147,7 +144,7 @@ public class MainController {
      */
     @PostMapping("/updatePasswords")
     @ResponseBody
-    private ResultMap<Void> updatePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+    private ResultMap<Void> updatePasswords(@RequestBody JSONObject reqBody) {
         ResultMap<Void> respResult = new ResultMap<>();
         if (!reqBody.containsKey("id")) {
             respResult.setCode(2);
@@ -158,14 +155,7 @@ public class MainController {
             String account = reqBody.getString("account");
             String password = reqBody.getString("password");
             String remark = reqBody.getString("remark");
-            MyPasswords pwd = new MyPasswords();
-            pwd.setOwner((String) session.getAttribute("uid"));
-            pwd.setId(id);
-            pwd.setName(name);
-            pwd.setAccount(account);
-            pwd.setPassword(password);
-            pwd.setRemark(remark);
-            if (pwd.update()) {
+            if (myPasswordsService.update(id, name, account, password, remark)) {
                 respResult.setCode(0);
                 respResult.setMsg("修改成功");
             } else {
@@ -188,23 +178,18 @@ public class MainController {
      */
     @RequestMapping("/service/shutdown")
     @ResponseBody
-    private ResultMap<Void> serviceShutdown(HttpSession session) {
+    private ResultMap<Void> serviceShutdown() {
         ResultMap<Void> respResult = new ResultMap<>();
-        if (User.isAdmin((String) session.getAttribute("uid"))) {
-            respResult.setCode(0);
-            respResult.setMsg("关闭成功");
-            new Thread(() -> {
-                try {
-                    Thread.sleep(1000);
-                    MainApplication.close();
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }, "service-shutdown-thread").start();
-        } else {
-            respResult.setCode(101);
-            respResult.setMsg("没有权限，请登录管理员账号");
-        }
+        respResult.setCode(0);
+        respResult.setMsg("关闭成功");
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                MainApplication.close();
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }, "service-shutdown-thread").start();
         return respResult;
     }
 }

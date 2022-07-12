@@ -3,7 +3,7 @@ package devilSpiderX.server.webServer.controller;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.filter.UserFilter;
-import devilSpiderX.server.webServer.sql.User;
+import devilSpiderX.server.webServer.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;

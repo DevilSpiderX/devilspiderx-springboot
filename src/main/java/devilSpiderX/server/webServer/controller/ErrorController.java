@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson2.JSONObject;
+import devilSpiderX.server.webServer.controller.response.ResultMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +27,19 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 
     @RequestMapping("/userNoLogin")
     @ResponseBody
-    public JSONObject UserNoLogin() {
-        JSONObject respJson = new JSONObject();
-        respJson.put("code", "100");
-        respJson.put("msg", "没有权限，请登录");
-        return respJson;
+    public ResultMap<Void> UserNoLogin() {
+        ResultMap<Void> resultMap = new ResultMap<>();
+        resultMap.setCode(100);
+        resultMap.setMsg("没有权限，请登录");
+        return resultMap;
+    }
+
+    @RequestMapping("/noAdmin")
+    @ResponseBody
+    public ResultMap<Void> NoAdmin() {
+        ResultMap<Void> resultMap = new ResultMap<>();
+        resultMap.setCode(101);
+        resultMap.setMsg("没有管理员权限");
+        return resultMap;
     }
 }

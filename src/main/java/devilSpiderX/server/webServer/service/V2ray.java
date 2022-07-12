@@ -27,14 +27,12 @@ public class V2ray {
         return p.pid();
     }
 
-    public String stop() {
-        String result;
+    public boolean stop() {
+        boolean result = false;
         if (alive) {
             p.destroy();
             alive = false;
-            result = "v2ray关闭成功";
-        } else {
-            result = "v2ray不在运行中";
+            result = true;
         }
         return result;
     }
