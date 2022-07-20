@@ -2,10 +2,10 @@ package devilSpiderX.server.webServer.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import devilSpiderX.server.webServer.entity.MyPasswords;
 import devilSpiderX.server.webServer.service.MyCipher;
 import devilSpiderX.server.webServer.service.MyPasswordsService;
 import devilSpiderX.server.webServer.service.UserService;
-import devilSpiderX.server.webServer.entity.MyPasswords;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
@@ -73,15 +73,14 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     @Override
     public JSONArray query(String name, String owner) {
         JSONArray result = new JSONArray();
-        SuidRich suidRich = BeeFactoryHelper.getSuidRich();
         Condition con = new ConditionImpl();
         con.op("name", Op.like, name + '%').and().op("owner", Op.equal, owner);
         MyPasswords emptyMP = new MyPasswords();
-        List<MyPasswords> passwords = suidRich.select(emptyMP, con);
+        List<MyPasswords> passwords = dao.select(emptyMP, con);
         if (passwords.isEmpty()) {
             Condition con1 = new ConditionImpl();
             con1.op("name", Op.like, '%' + name + '%').and().op("owner", Op.equal, owner);
-            passwords.addAll(suidRich.select(emptyMP, con1));
+            passwords.addAll(dao.select(emptyMP, con1));
             if (passwords.isEmpty()) {
                 StringBuilder nameKey = new StringBuilder("%");
                 for (char c : name.toCharArray()) {
@@ -89,7 +88,7 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
                 }
                 Condition con2 = new ConditionImpl();
                 con2.op("name", Op.like, nameKey.toString()).and().op("owner", Op.equal, owner);
-                passwords.addAll(suidRich.select(emptyMP, con2));
+                passwords.addAll(dao.select(emptyMP, con2));
             }
         }
         passwords.sort(Comparator.naturalOrder());

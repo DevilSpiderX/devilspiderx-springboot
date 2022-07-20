@@ -2,8 +2,9 @@ package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
-import devilSpiderX.server.webServer.filter.UserFilter;
 import devilSpiderX.server.webServer.entity.User;
+import devilSpiderX.server.webServer.filter.UserFilter;
+import devilSpiderX.server.webServer.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -11,21 +12,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.teasoft.bee.osql.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/api/user")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-    private final SuidRich suidRich = BeeFactoryHelper.getSuidRich();
+    @Resource(name = "userService")
+    private UserService userService;
     private static final int SESSION_MAX_AGE = 10 * 60;
 
     /**
@@ -41,7 +41,7 @@ public class UserController {
      */
     @PostMapping("/login")
     @ResponseBody
-    private ResultMap<Void> login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletResponse resp) {
+    private ResultMap<Void> login(@RequestBody JSONObject reqBody, HttpSession session) {
         ResultMap<Void> respResult = new ResultMap<>();
         if (!reqBody.containsKey("uid")) {
             respResult.setCode(3);
@@ -52,20 +52,12 @@ public class UserController {
         } else {
             String uid = reqBody.getString("uid");
             String pwd = SHA256(reqBody.getString("pwd"));
-            List<User> users = suidRich.select(new User(uid));
+            User user = userService.get(uid);
 
-            boolean flag = false;
-            for (User user : users) {
-                if (pwd.equals(user.getPassword())) {
-                    flag = true;
-                    break;
-                }
-            }
-
-            if (users.isEmpty()) {
+            if (user == null) {
                 respResult.setCode(2);
                 respResult.setMsg("uid不存在");
-            } else if (flag) {
+            } else if (Objects.equals(user.getPassword(), pwd)) {
                 session.setMaxInactiveInterval(SESSION_MAX_AGE);
                 session.setAttribute("logged", true);
                 session.setAttribute("uid", uid);
@@ -92,7 +84,7 @@ public class UserController {
      */
     @PostMapping("/logout")
     @ResponseBody
-    private ResultMap<Void> logout(HttpSession session, HttpServletResponse resp) {
+    private ResultMap<Void> logout(HttpSession session) {
         ResultMap<Void> respResult = new ResultMap<>();
         try {
             session.removeAttribute("logged");
@@ -129,22 +121,18 @@ public class UserController {
         } else {
             String uid = reqBody.getString("uid");
             String pwd = SHA256(reqBody.getString("pwd"));
-            User user = new User(uid);
 
-            if (suidRich.exist(user)) {
+            if (userService.exist(uid)) {
                 respResult.setCode(4);
                 respResult.setMsg("该uid已存在");
+            } else if (userService.register(uid, pwd)) {
+                respResult.setCode(0);
+                respResult.setMsg("注册成功");
             } else {
-                user.setPassword(pwd);
-                user.setAdmin(false);
-                if (suidRich.insert(user) > 0) {
-                    respResult.setCode(0);
-                    respResult.setMsg("注册成功");
-                } else {
-                    respResult.setCode(1);
-                    respResult.setMsg("注册失败");
-                }
+                respResult.setCode(1);
+                respResult.setMsg("注册失败");
             }
+
         }
         return respResult;
     }
