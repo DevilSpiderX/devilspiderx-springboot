@@ -5,8 +5,12 @@ import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.entity.User;
 import devilSpiderX.server.webServer.filter.UserFilter;
 import devilSpiderX.server.webServer.service.UserService;
+import devilSpiderX.server.webServer.util.MyCipher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
@@ -40,9 +42,9 @@ public class UserController {
      * </p>
      */
     @PostMapping("/login")
-    @ResponseBody
-    private ResultMap<Void> login(@RequestBody JSONObject reqBody, HttpSession session) {
+    private ResponseEntity<ResultMap<Void>> login(@RequestBody JSONObject reqBody, HttpSession session) {
         ResultMap<Void> respResult = new ResultMap<>();
+        HttpHeaders headers = new HttpHeaders();
         if (!reqBody.containsKey("uid")) {
             respResult.setCode(3);
             respResult.setMsg("uid参数不存在");
@@ -62,6 +64,10 @@ public class UserController {
                 session.setAttribute("logged", true);
                 session.setAttribute("uid", uid);
 
+                ResponseCookie cookie = ResponseCookie.from("JSESSIONID", session.getId()).maxAge(SESSION_MAX_AGE)
+                        .path("/").httpOnly(true).build();
+                headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+
                 respResult.setCode(0);
                 respResult.setMsg("密码正确，登录成功");
             } else {
@@ -69,7 +75,7 @@ public class UserController {
                 respResult.setMsg("密码错误，登录失败");
             }
         }
-        return respResult;
+        return ResponseEntity.ok().headers(headers).body(respResult);
     }
 
     /**
@@ -167,21 +173,13 @@ public class UserController {
     }
 
     private static String SHA256(String value) {
-        StringBuilder resultBld = new StringBuilder();
+        String result = null;
         try {
-            MessageDigest SHA256Digest = MessageDigest.getInstance("SHA-256");
-            byte[] buff = SHA256Digest.digest(value.getBytes(StandardCharsets.UTF_8));
-            for (byte b : buff) {
-                String hex = Integer.toHexString(b & 0xFF);
-                if (hex.length() == 1) {
-                    resultBld.append(0);
-                }
-                resultBld.append(hex);
-            }
+            result = MyCipher.SHA256(value);
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage(), e);
         }
-        return resultBld.toString();
+        return result;
     }
 
 }

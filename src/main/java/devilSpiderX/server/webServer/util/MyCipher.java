@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.service;
+package devilSpiderX.server.webServer.util;
 
 import devilSpiderX.server.webServer.MainApplication;
 import org.slf4j.Logger;
@@ -68,5 +68,19 @@ public class MyCipher {
         Cipher cipher = Cipher.getInstance("AES");
         cipher.init(mode, key);
         return cipher.doFinal(value);
+    }
+
+    public static String SHA256(String value) throws NoSuchAlgorithmException {
+        StringBuilder resultBld = new StringBuilder();
+        MessageDigest SHA256Digest = MessageDigest.getInstance("SHA-256");
+        byte[] buff = SHA256Digest.digest(value.getBytes(StandardCharsets.UTF_8));
+        for (byte b : buff) {
+            String hex = Integer.toHexString(b & 0xFF);
+            if (hex.length() == 1) {
+                resultBld.append(0);
+            }
+            resultBld.append(hex);
+        }
+        return resultBld.toString();
     }
 }

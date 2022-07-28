@@ -3,7 +3,7 @@ package devilSpiderX.server.webServer.service.impl;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.entity.MyPasswords;
-import devilSpiderX.server.webServer.service.MyCipher;
+import devilSpiderX.server.webServer.util.MyCipher;
 import devilSpiderX.server.webServer.service.MyPasswordsService;
 import devilSpiderX.server.webServer.service.UserService;
 import org.springframework.stereotype.Service;
