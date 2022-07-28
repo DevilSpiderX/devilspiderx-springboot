@@ -3,9 +3,9 @@ package devilSpiderX.server.webServer.service.impl;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.entity.MyPasswords;
-import devilSpiderX.server.webServer.util.MyCipher;
 import devilSpiderX.server.webServer.service.MyPasswordsService;
 import devilSpiderX.server.webServer.service.UserService;
+import devilSpiderX.server.webServer.util.MyCipher;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
@@ -15,8 +15,7 @@ import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 
 import javax.annotation.Resource;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service("myPasswordsService")
 public class MyPasswordsServiceImpl implements MyPasswordsService {
@@ -72,34 +71,66 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
 
     @Override
     public JSONArray query(String name, String owner) {
+        if (name == null) return query((List<String>) null, owner);
+        return query(List.of(name), owner);
+    }
+
+    @Override
+    public JSONArray query(String[] names, String owner) {
+        if (names == null) return query((List<String>) null, owner);
+        return query(List.of(names), owner);
+    }
+
+    @Override
+    public JSONArray query(List<String> names, String owner) {
         JSONArray result = new JSONArray();
-        Condition con = new ConditionImpl();
-        con.op("name", Op.like, name + '%').and().op("owner", Op.equal, owner);
+        List<MyPasswords> passwords;
         MyPasswords emptyMP = new MyPasswords();
-        List<MyPasswords> passwords = dao.select(emptyMP, con);
-        if (passwords.isEmpty()) {
-            Condition con1 = new ConditionImpl();
-            con1.op("name", Op.like, '%' + name + '%').and().op("owner", Op.equal, owner);
-            passwords.addAll(dao.select(emptyMP, con1));
-            if (passwords.isEmpty()) {
-                StringBuilder nameKey = new StringBuilder("%");
-                for (char c : name.toCharArray()) {
-                    nameKey.append(c).append('%');
+        if (names == null || names.isEmpty() || (names.size() == 1 && names.get(0).equals(""))) {
+            passwords = dao.select(emptyMP);
+        } else {
+            passwords = new ArrayList<>();
+            Set<String> nameSet = new HashSet<>(names);
+            List<String> nameList = new LinkedList<>(nameSet);
+            nameList.remove("");
+
+            for (String name : nameList) {
+                Condition con = new ConditionImpl();
+                con.op("name", Op.like, name + '%').and().op("owner", Op.equal, owner);
+                List<MyPasswords> selectList = dao.select(emptyMP, con);
+                if (selectList.isEmpty()) {
+                    Condition con1 = new ConditionImpl();
+                    con1.op("name", Op.like, '%' + name + '%').and().op("owner", Op.equal, owner);
+                    selectList.addAll(dao.select(emptyMP, con1));
+                    if (selectList.isEmpty()) {
+                        StringBuilder nameKey = new StringBuilder("%");
+                        for (char c : name.toCharArray()) {
+                            nameKey.append(c).append('%');
+                        }
+                        Condition con2 = new ConditionImpl();
+                        con2.op("name", Op.like, nameKey.toString()).and().op("owner", Op.equal, owner);
+                        selectList.addAll(dao.select(emptyMP, con2));
+                    }
                 }
-                Condition con2 = new ConditionImpl();
-                con2.op("name", Op.like, nameKey.toString()).and().op("owner", Op.equal, owner);
-                passwords.addAll(dao.select(emptyMP, con2));
+                passwords.addAll(selectList);
             }
         }
         passwords.sort(Comparator.naturalOrder());
+        int lastId = -1;
         for (MyPasswords password : passwords) {
-            JSONObject one = new JSONObject();
-            one.put("id", password.getId());
-            one.put("name", password.getName());
-            one.put("account", password.getAccount());
-            one.put("password", MyCipher.decrypt(password.getPassword()));
-            one.put("remark", password.getRemark());
-            result.add(one);
+            int id = password.getId();
+            putting:
+            {
+                if (id == lastId) break putting;
+                JSONObject one = new JSONObject();
+                one.put("id", id);
+                one.put("name", password.getName());
+                one.put("account", password.getAccount());
+                one.put("password", MyCipher.decrypt(password.getPassword()));
+                one.put("remark", password.getRemark());
+                result.add(one);
+            }
+            lastId = id;
         }
         return result;
     }

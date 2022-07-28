@@ -80,11 +80,14 @@ public class MainController {
     @ResponseBody
     private ResultArray<Object> queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
         ResultArray<Object> respResult = new ResultArray<>();
-        String key = "";
+        String[] keys = new String[0];
         if (reqBody.containsKey("key")) {
-            key = reqBody.getString("key").trim();
+            String keysStr = reqBody.getString("key").trim();
+            keys = keysStr.split("\\s|\\.");
         }
-        JSONArray myPwdArray = myPasswordsService.query(key, (String) session.getAttribute("uid"));
+        String uid = (String) session.getAttribute("uid");
+        JSONArray myPwdArray = myPasswordsService.query(keys, uid);
+
         if (myPwdArray.isEmpty()) {
             respResult.setCode(1);
             respResult.setMsg("空值");
