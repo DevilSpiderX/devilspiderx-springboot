@@ -119,9 +119,9 @@ public class MyServerInfo {
                 .setPhysicalNum(processor.getPhysicalProcessorCount())
                 .setLogicalNum(processor.getLogicalProcessorCount())
                 .setUsedRate(processor.getSystemCpuLoadBetweenTicks(oldTicks))
-                .set64bit(cp_pi.isCpu64bit());
+                .setA64bit(cp_pi.isCpu64bit());
         if (isTemperatureDetectable) {
-            cpu.setCpuTemperature(sensors.getCpuTemperature());
+            cpu.setTemperature(sensors.getCpuTemperature());
         }
         oldTicks = processor.getSystemCpuLoadTicks();
     }

@@ -3,6 +3,8 @@ package devilSpiderX.server.webServer.util;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
+import java.text.DecimalFormat;
+
 public class FormatUtil {
     public static final long KB = 1L << 10;
     public static final long MB = 1L << 20;
@@ -31,8 +33,8 @@ public class FormatUtil {
 
     public static String formatBytes(long n, int scale, CharSequence delimiter) {
         if (delimiter == null) delimiter = "";
-        String formatStr = "%." + scale + "f" + delimiter + "%s";
         Tuple2<Double, String> tup = unitBytes(n, scale);
-        return String.format(formatStr, tup._1, tup._2);
+        String num = new DecimalFormat("#." + "#".repeat(scale)).format(tup._1);
+        return String.format("%s" + delimiter + "%s", num, tup._2);
     }
 }

@@ -9,8 +9,6 @@ import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
 import devilSpiderX.server.webServer.service.information.Network;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +28,6 @@ import java.util.Map;
 @Controller
 @RequestMapping("/api/ServerInfo")
 public class ServerInfoController {
-    private static final Logger logger = LoggerFactory.getLogger(ServerInfoController.class);
     private final MyServerInfo serverInfo = MyServerInfo.serverInfo;
 
     /**
@@ -55,8 +52,8 @@ public class ServerInfoController {
         data.put("physicalNum", cpu.getPhysicalNum());
         data.put("logicalNum", cpu.getLogicalNum());
         data.put("usedRate", cpu.getUsedRate());
-        data.put("is64bit", cpu.is64bit());
-        data.put("cpuTemperature", cpu.getCpuTemperature());
+        data.put("is64bit", cpu.isA64bit());
+        data.put("cpuTemperature", cpu.getTemperature());
         data.put("freePercent", cpu.getFreePercent());
         data.put("usedPercent", cpu.getUsedPercent());
         respResult.setData(data);

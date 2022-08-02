@@ -117,8 +117,8 @@ public class ServerInfoWS {
             cpuData.put("physicalNum", cpu.getPhysicalNum());
             cpuData.put("logicalNum", cpu.getLogicalNum());
             cpuData.put("usedRate", cpu.getUsedRate());
-            cpuData.put("is64bit", cpu.is64bit());
-            cpuData.put("cpuTemperature", cpu.getCpuTemperature());
+            cpuData.put("is64bit", cpu.isA64bit());
+            cpuData.put("cpuTemperature", cpu.getTemperature());
             cpuData.put("freePercent", cpu.getFreePercent());
             cpuData.put("usedPercent", cpu.getUsedPercent());
             data.put("cpu", cpuData);

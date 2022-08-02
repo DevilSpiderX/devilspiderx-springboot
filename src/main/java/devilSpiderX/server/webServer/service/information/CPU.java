@@ -23,11 +23,11 @@ public class CPU {
     /**
      * 是否是64位处理器
      */
-    private boolean is64bit;
+    private boolean a64bit;
     /**
      * CPU温度
      */
-    private double cpuTemperature;
+    private double temperature;
 
     public String getName() {
         return name;
@@ -65,21 +65,21 @@ public class CPU {
         return this;
     }
 
-    public boolean is64bit() {
-        return is64bit;
+    public boolean isA64bit() {
+        return a64bit;
     }
 
-    public CPU set64bit(boolean is64bit) {
-        this.is64bit = is64bit;
+    public CPU setA64bit(boolean a64bit) {
+        this.a64bit = a64bit;
         return this;
     }
 
-    public double getCpuTemperature() {
-        return cpuTemperature;
+    public double getTemperature() {
+        return temperature;
     }
 
-    public CPU setCpuTemperature(double cpuTemperature) {
-        this.cpuTemperature = cpuTemperature;
+    public CPU setTemperature(double temperature) {
+        this.temperature = temperature;
         return this;
     }
 
@@ -98,8 +98,8 @@ public class CPU {
                 ", physicalNum=" + physicalNum +
                 ", logicalNum=" + logicalNum +
                 ", usedRate=" + usedRate +
-                ", is64bit=" + is64bit +
-                ", cpuTemperature=" + cpuTemperature +
+                ", is64bit=" + a64bit +
+                ", cpuTemperature=" + temperature +
                 '}';
     }
 }
