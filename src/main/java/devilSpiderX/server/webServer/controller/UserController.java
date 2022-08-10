@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -42,7 +43,7 @@ public class UserController {
      * </p>
      */
     @PostMapping("/login")
-    private ResponseEntity<ResultMap<Void>> login(@RequestBody JSONObject reqBody, HttpSession session) {
+    private ResponseEntity<ResultMap<Void>> login(@RequestBody JSONObject reqBody, HttpSession session, WebRequest req) {
         ResultMap<Void> respResult = new ResultMap<>();
         HttpHeaders headers = new HttpHeaders();
         if (!reqBody.containsKey("uid")) {
@@ -65,7 +66,7 @@ public class UserController {
                 session.setAttribute("uid", uid);
 
                 ResponseCookie cookie = ResponseCookie.from("JSESSIONID", session.getId()).maxAge(SESSION_MAX_AGE)
-                        .path("/").httpOnly(true).build();
+                        .path("/").httpOnly(true).secure(req.isSecure()).build();
                 headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
 
                 respResult.setCode(0);
