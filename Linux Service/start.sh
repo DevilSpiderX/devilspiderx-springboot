@@ -1,8 +1,10 @@
 #!/bin/sh
 
 cd /usr/local/webserver
-nohup java --illegal-access=deny --add-opens=java.base/java.lang.invoke=ALL-UNNAMED -jar WebServer.jar >/dev/null 2>&1 &
+
+jarName=webserver-*.jar
+nohup java --illegal-access=deny --add-opens=java.base/java.lang.invoke=ALL-UNNAMED -jar $jarName >/dev/null 2>&1 &
 javaPid=$!
 echo "Java Pid = $javaPid"
-echo $javaPid >WebServer.pid
+echo $javaPid >webserver.pid
 exit 0

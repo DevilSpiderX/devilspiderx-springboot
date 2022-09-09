@@ -7,7 +7,7 @@ Type=forking
 WorkingDirectory=/usr/local/webserver
 ExecStart=/usr/local/webserver/start.sh
 # ExecStop=/usr/local/webserver/stop.sh
-PIDFile=/usr/local/webserver/WebServer.pid
+PIDFile=/usr/local/webserver/webserver.pid
  
 [Install]
 WantedBy=multi-user.target
