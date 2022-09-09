@@ -54,13 +54,13 @@ public class UserController {
             respResult.setMsg("pwd参数不存在");
         } else {
             String uid = reqBody.getString("uid");
-            String pwd = SHA256(reqBody.getString("pwd"));
+            String pwd = reqBody.getString("pwd");
             User user = userService.get(uid);
 
             if (user == null) {
                 respResult.setCode(2);
                 respResult.setMsg("uid不存在");
-            } else if (Objects.equals(user.getPassword(), pwd)) {
+            } else if (Objects.equals(user.getPassword().toLowerCase(), pwd.toLowerCase())) {
                 session.setMaxInactiveInterval(SESSION_MAX_AGE);
                 session.setAttribute("logged", true);
                 session.setAttribute("uid", uid);
