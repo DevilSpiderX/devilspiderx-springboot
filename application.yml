@@ -1,6 +1,9 @@
+application:
+  title: WebServer
+  version: dev
+
 server:
-  http_port: 10047
-  https_port: 10048
+  port: 10048
   http2:
     enabled: true
   ssl:
@@ -13,6 +16,10 @@ spring:
     resources:
       static-locations:
         - file:/C:/Code/Web/WebServerWeb
+  banner:
+    location: classpath:banner.txt
+  main:
+    banner-mode: LOG
 
 bee:
   db:

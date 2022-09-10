@@ -8,13 +8,13 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 import sun.misc.Signal;
 
+import javax.annotation.PreDestroy;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
 @Component
 public class DSXRunner implements ApplicationRunner {
-    //    private final MyConfig config;
     private final Logger logger = LoggerFactory.getLogger(DSXRunner.class);
 
     @Override
@@ -38,5 +38,9 @@ public class DSXRunner implements ApplicationRunner {
         }
         Signal.handle(new Signal("INT"), sig -> MainApplication.close());
         Signal.handle(new Signal("TERM"), sig -> MainApplication.close());
+    }
+
+    @PreDestroy
+    public void destroy() {
     }
 }

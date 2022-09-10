@@ -6,6 +6,11 @@
         <language minSize="119" name="Java" />
       </Languages>
     </inspection_tool>
+    <inspection_tool class="MisspelledHeader" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="CUSTOM_HEADERS">
+        <header value="Build-Jdk-Spec" />
+      </option>
+    </inspection_tool>
     <inspection_tool class="SpringMVCViewInspection" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

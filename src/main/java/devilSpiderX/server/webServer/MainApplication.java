@@ -13,7 +13,8 @@ public class MainApplication {
     private static ConfigurableApplicationContext context = null;
 
     public static void main(String[] args) {
-        context = SpringApplication.run(MainApplication.class, args);
+        SpringApplication app = new SpringApplication(MainApplication.class);
+        context = app.run(args);
     }
 
     public static void close() {
