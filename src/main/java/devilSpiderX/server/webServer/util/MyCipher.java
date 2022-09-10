@@ -23,7 +23,7 @@ public class MyCipher {
             keyBytes = MessageDigest.getInstance("MD5").digest(key.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage(), e);
-            MainApplication.close();
+            MainApplication.close(e.hashCode());
         }
         key128 = keyBytes;
     }

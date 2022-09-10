@@ -1,6 +1,5 @@
 package devilSpiderX.server.webServer;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -18,8 +17,11 @@ public class MainApplication {
     }
 
     public static void close() {
-        LoggerFactory.getLogger(MainApplication.class).info("关闭服务器");
-        int code = SpringApplication.exit(MainApplication.context, () -> 0);
+        close(0);
+    }
+
+    public static void close(int Code) {
+        int code = SpringApplication.exit(context, () -> Code);
         System.exit(code);
     }
 }

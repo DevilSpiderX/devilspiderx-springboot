@@ -1,12 +1,10 @@
 package devilSpiderX.server.webServer.configuration;
 
-import devilSpiderX.server.webServer.MainApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import sun.misc.Signal;
 
 import javax.annotation.PreDestroy;
 import java.io.FileWriter;
@@ -36,11 +34,10 @@ public class DSXRunner implements ApplicationRunner {
                 }
             }
         }
-        Signal.handle(new Signal("INT"), sig -> MainApplication.close());
-        Signal.handle(new Signal("TERM"), sig -> MainApplication.close());
     }
 
     @PreDestroy
     public void destroy() {
+        logger.info("关闭服务器");
     }
 }
