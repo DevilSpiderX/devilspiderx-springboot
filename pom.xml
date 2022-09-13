@@ -56,13 +56,13 @@
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
-            <version>2.0.12</version>
+            <version>2.0.13</version>
         </dependency>
 
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2-extension</artifactId>
-            <version>2.0.12</version>
+            <version>2.0.13</version>
         </dependency>
 
         <dependency>
@@ -121,6 +121,34 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>
+                                ${project.basedir}/log
+                            </directory>
+                        </fileset>
+                        <fileset>
+                            <directory>
+                                ${project.basedir}/target
+                            </directory>
+                        </fileset>
+                        <fileset>
+                            <directory>
+                                ${project.basedir}
+                            </directory>
+                            <includes>
+                                <include>webserver.pid</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
             </plugin>
 
         </plugins>
