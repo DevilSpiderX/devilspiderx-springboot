@@ -87,6 +87,7 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         List<MyPasswords> passwords;
         MyPasswords emptyMP = new MyPasswords();
         if (names == null || names.isEmpty() || (names.size() == 1 && names.get(0).equals(""))) {
+            emptyMP.setOwner(owner);
             passwords = dao.select(emptyMP);
         } else {
             passwords = new ArrayList<>();
