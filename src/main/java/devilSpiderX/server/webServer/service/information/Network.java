@@ -1,7 +1,5 @@
 package devilSpiderX.server.webServer.service.information;
 
-import devilSpiderX.server.webServer.util.FormatUtil;
-
 import java.util.Arrays;
 
 public class Network {
@@ -87,22 +85,6 @@ public class Network {
 
     public void setIPv6addr(String[] IPv6addr) {
         this.IPv6addr = IPv6addr;
-    }
-
-    public String getUploadSpeedStr() {
-        if (uploadSpeed < 1024) {
-            return uploadSpeed + " B/s";
-        } else {
-            return FormatUtil.formatBytes(uploadSpeed, 2, " ") + "/s";
-        }
-    }
-
-    public String getDownloadSpeedStr() {
-        if (downloadSpeed < 1024) {
-            return downloadSpeed + " B/s";
-        } else {
-            return FormatUtil.formatBytes(downloadSpeed, 2, " ") + "/s";
-        }
     }
 
     @Override

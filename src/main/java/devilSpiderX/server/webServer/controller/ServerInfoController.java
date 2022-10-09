@@ -46,17 +46,8 @@ public class ServerInfoController {
         ResultMap<Object> respResult = new ResultMap<>();
         respResult.setCode(0);
         respResult.setMsg("获取成功");
-        JSONObject data = new JSONObject();
         CPU cpu = serverInfo.update().getCPU();
-        data.put("name", cpu.getName());
-        data.put("physicalNum", cpu.getPhysicalNum());
-        data.put("logicalNum", cpu.getLogicalNum());
-        data.put("usedRate", cpu.getUsedRate());
-        data.put("is64bit", cpu.isA64bit());
-        data.put("cpuTemperature", cpu.getTemperature());
-        data.put("freePercent", cpu.getFreePercent());
-        data.put("usedPercent", cpu.getUsedPercent());
-        respResult.setData(data);
+        respResult.setData(serverInfo.constructCpuObject(cpu));
         return respResult;
     }
 
@@ -76,16 +67,8 @@ public class ServerInfoController {
         ResultMap<Object> respResult = new ResultMap<>();
         respResult.setCode(0);
         respResult.setMsg("获取成功");
-        JSONObject data = new JSONObject();
         Memory memory = serverInfo.update().getMemory();
-        data.put("total", memory.getTotal());
-        data.put("used", memory.getUsed());
-        data.put("free", memory.getFree());
-        data.put("totalStr", memory.getTotalStr());
-        data.put("usedStr", memory.getUsedStr());
-        data.put("freeStr", memory.getFreeStr());
-        data.put("usage", memory.getUsage());
-        respResult.setData(data);
+        respResult.setData(serverInfo.constructMemoryObject(memory));
         return respResult;
     }
 
@@ -105,17 +88,12 @@ public class ServerInfoController {
         ResultMap<Object> respResult = new ResultMap<>();
         respResult.setCode(0);
         respResult.setMsg("获取成功");
-        JSONObject data = new JSONObject();
         Network AllNet = new Network("All", 0, 0, 0);
         for (Network network : serverInfo.update().getNetworks()) {
             AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
             AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
         }
-        data.put("uploadSpeed", AllNet.getUploadSpeed());
-        data.put("downloadSpeed", AllNet.getDownloadSpeed());
-        data.put("uploadSpeedStr", AllNet.getUploadSpeedStr());
-        data.put("downloadSpeedStr", AllNet.getDownloadSpeedStr());
-        respResult.setData(data);
+        respResult.setData(serverInfo.constructNetworkObject(AllNet));
         return respResult;
     }
 
@@ -157,19 +135,7 @@ public class ServerInfoController {
         respResult.setMsg("获取成功");
         List<JSONObject> dataArray = new LinkedList<>();
         for (Disk disk : serverInfo.update().getDisks()) {
-            JSONObject diskJson = new JSONObject();
-            diskJson.put("label", disk.getLabel());
-            diskJson.put("mount", disk.getMount());
-            diskJson.put("fSType", disk.getFSType());
-            diskJson.put("name", disk.getName());
-            diskJson.put("total", disk.getTotal());
-            diskJson.put("free", disk.getFree());
-            diskJson.put("used", disk.getUsed());
-            diskJson.put("totalStr", disk.getTotalStr());
-            diskJson.put("freeStr", disk.getFreeStr());
-            diskJson.put("usedStr", disk.getUsedStr());
-            diskJson.put("usage", disk.getUsage());
-            dataArray.add(diskJson);
+            dataArray.add(serverInfo.constructDiskObject(disk));
         }
         respResult.setData(dataArray);
         return respResult;

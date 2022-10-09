@@ -1,9 +1,12 @@
 package devilSpiderX.server.webServer.service;
 
+import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.service.information.CPU;
 import devilSpiderX.server.webServer.service.information.Disk;
 import devilSpiderX.server.webServer.service.information.Memory;
 import devilSpiderX.server.webServer.service.information.Network;
+import devilSpiderX.server.webServer.util.FormatUtil;
+import io.vavr.Tuple2;
 import oshi.SystemInfo;
 import oshi.hardware.*;
 import oshi.software.os.FileSystem;
@@ -215,42 +218,118 @@ public class MyServerInfo {
         }
     }
 
-    public static void main(String[] args) {
-        for (int i = 0; i < 100; i++) {
-            serverInfo.update();
-            CPU cpu = serverInfo.getCPU();
-            Memory memory = serverInfo.getMemory();
-            List<Disk> disks = serverInfo.getDisks();
-            List<Network> networks = serverInfo.getNetworks();
+    public JSONObject constructCpuObject(CPU cpu) {
+        JSONObject result = new JSONObject();
+        result.put("name", cpu.getName());
+        result.put("physicalNum", cpu.getPhysicalNum());
+        result.put("logicalNum", cpu.getLogicalNum());
+        result.put("usedRate", cpu.getUsedRate());
+        result.put("is64bit", cpu.isA64bit());
+        result.put("cpuTemperature", cpu.getTemperature());
+        return result;
+    }
 
-            System.out.println(cpu);
-            System.out.println("CPU Free Percent:" + cpu.getFreePercent());
-            System.out.println("CPU Used Percent:" + cpu.getUsedPercent());
+    public JSONObject constructMemoryObject(Memory memory) {
+        JSONObject result = new JSONObject();
+        long total = memory.getTotal();
+        long used = memory.getUsed();
+        long free = memory.getFree();
 
-            System.out.println();
-            System.out.println(memory);
-            System.out.println("Memory Total Size:" + memory.getTotalStr());
-            System.out.println("Memory Used Size:" + memory.getUsedStr());
-            System.out.println("Memory Free Size:" + memory.getFreeStr());
-            System.out.println("Memory Usage:" + memory.getUsage());
-            System.out.println();
-            System.out.println(disks);
-            int j = 0;
-            for (Disk disk : disks) {
-                System.out.println("Disk" + j + " Total Size:" + disk.getTotalStr());
-                System.out.println("Disk" + j + " Used Size:" + disk.getUsedStr());
-                System.out.println("Disk" + j + " Free Size:" + disk.getFreeStr());
-                System.out.println("Disk" + j + " Usage:" + disk.getUsage());
-                j++;
-            }
-            System.out.println();
-            for (Network network : networks) {
-                System.out.println(network);
-                System.out.printf("%s:上传速度 %s 下载速度 %s\n", network.getName(), network.getUploadSpeedStr(),
-                        network.getDownloadSpeedStr());
-            }
-            System.out.println("--------------------------------------------------");
-            Util.sleep(1000);
-        }
+        result.put("total", total);
+        result.put("used", used);
+        result.put("free", free);
+
+        //格式化数据
+        JSONObject format = new JSONObject();
+
+        JSONObject totalFormat = new JSONObject();
+        Tuple2<Double, String> totalUnit = FormatUtil.unitBytes(total, 2);
+        totalFormat.put("value", totalUnit._1);
+        totalFormat.put("unit", totalUnit._2);
+        format.put("total", totalFormat);
+
+        JSONObject usedFormat = new JSONObject();
+        Tuple2<Double, String> usedUnit = FormatUtil.unitBytes(used, 2);
+        usedFormat.put("value", usedUnit._1);
+        usedFormat.put("unit", usedUnit._2);
+        format.put("used", usedFormat);
+
+        JSONObject freeFormat = new JSONObject();
+        Tuple2<Double, String> freeUnit = FormatUtil.unitBytes(free, 2);
+        freeFormat.put("value", freeUnit._1);
+        freeFormat.put("unit", freeUnit._2);
+        format.put("free", freeFormat);
+
+        result.put("format", format);
+
+        return result;
+    }
+
+    public JSONObject constructDiskObject(Disk disk) {
+        JSONObject result = new JSONObject();
+        long total = disk.getTotal();
+        long free = disk.getFree();
+        long used = disk.getUsed();
+
+        result.put("label", disk.getLabel());
+        result.put("mount", disk.getMount());
+        result.put("fSType", disk.getFSType());
+        result.put("name", disk.getName());
+        result.put("total", total);
+        result.put("free", free);
+        result.put("used", used);
+
+        //格式化数据
+        JSONObject format = new JSONObject();
+
+        JSONObject totalFormat = new JSONObject();
+        Tuple2<Double, String> totalUnit = FormatUtil.unitBytes(total, 2);
+        totalFormat.put("value", totalUnit._1);
+        totalFormat.put("unit", totalUnit._2);
+        format.put("total", totalFormat);
+
+        JSONObject freeFormat = new JSONObject();
+        Tuple2<Double, String> freeUnit = FormatUtil.unitBytes(free, 2);
+        freeFormat.put("value", freeUnit._1);
+        freeFormat.put("unit", freeUnit._2);
+        format.put("free", freeFormat);
+
+        JSONObject usedFormat = new JSONObject();
+        Tuple2<Double, String> usedUnit = FormatUtil.unitBytes(used, 2);
+        usedFormat.put("value", usedUnit._1);
+        usedFormat.put("unit", usedUnit._2);
+        format.put("used", usedFormat);
+
+        result.put("format", format);
+
+        return result;
+    }
+
+    public JSONObject constructNetworkObject(Network network) {
+        JSONObject result = new JSONObject();
+        long uploadSpeed = network.getUploadSpeed();
+        long downloadSpeed = network.getDownloadSpeed();
+
+        result.put("uploadSpeed", uploadSpeed);
+        result.put("downloadSpeed", downloadSpeed);
+
+        //格式化数据
+        JSONObject format = new JSONObject();
+
+        JSONObject uploadSpeedFormat = new JSONObject();
+        Tuple2<Double, String> uploadSpeedUnit = FormatUtil.unitBytes(uploadSpeed, 2);
+        uploadSpeedFormat.put("value", uploadSpeedUnit._1);
+        uploadSpeedFormat.put("unit", uploadSpeedUnit._2 + "/s");
+        format.put("uploadSpeed", uploadSpeedFormat);
+
+        JSONObject downloadSpeedFormat = new JSONObject();
+        Tuple2<Double, String> downloadSpeedUnit = FormatUtil.unitBytes(downloadSpeed, 2);
+        downloadSpeedFormat.put("value", downloadSpeedUnit._1);
+        downloadSpeedFormat.put("unit", downloadSpeedUnit._2 + "/s");
+        format.put("downloadSpeed", downloadSpeedFormat);
+
+        result.put("format", format);
+
+        return result;
     }
 }

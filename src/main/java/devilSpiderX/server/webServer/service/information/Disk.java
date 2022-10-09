@@ -1,9 +1,6 @@
 package devilSpiderX.server.webServer.service.information;
 
-import devilSpiderX.server.webServer.util.FormatUtil;
 import org.jetbrains.annotations.NotNull;
-
-import java.text.DecimalFormat;
 
 @SuppressWarnings("UnusedReturnValue")
 public class Disk implements Comparable<Disk> {
@@ -97,22 +94,6 @@ public class Disk implements Comparable<Disk> {
     public Disk setUsed(long used) {
         this.used = used;
         return this;
-    }
-
-    public String getTotalStr() {
-        return FormatUtil.formatBytes(total, 2, " ");
-    }
-
-    public String getFreeStr() {
-        return FormatUtil.formatBytes(free, 2, " ");
-    }
-
-    public String getUsedStr() {
-        return FormatUtil.formatBytes(used, 2, " ");
-    }
-
-    public String getUsage() {
-        return new DecimalFormat("#.##%").format((double) used / total);
     }
 
     @Override

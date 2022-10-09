@@ -1,9 +1,5 @@
 package devilSpiderX.server.webServer.service.information;
 
-import devilSpiderX.server.webServer.util.FormatUtil;
-
-import java.text.DecimalFormat;
-
 @SuppressWarnings("UnusedReturnValue")
 public class Memory {
     /**
@@ -46,22 +42,6 @@ public class Memory {
     public Memory setFree(long free) {
         this.free = free;
         return this;
-    }
-
-    public String getTotalStr() {
-        return FormatUtil.formatBytes(total, 2, " ");
-    }
-
-    public String getUsedStr() {
-        return FormatUtil.formatBytes(used, 2, " ");
-    }
-
-    public String getFreeStr() {
-        return FormatUtil.formatBytes(free, 2, " ");
-    }
-
-    public String getUsage() {
-        return new DecimalFormat("#.##%").format((double) used / total);
     }
 
     @Override

@@ -112,59 +112,25 @@ public class ServerInfoWS {
             JSONObject data = new JSONObject();
 
             CPU cpu = serverInfo.update().getCPU();
-            JSONObject cpuData = new JSONObject();
-            cpuData.put("name", cpu.getName());
-            cpuData.put("physicalNum", cpu.getPhysicalNum());
-            cpuData.put("logicalNum", cpu.getLogicalNum());
-            cpuData.put("usedRate", cpu.getUsedRate());
-            cpuData.put("is64bit", cpu.isA64bit());
-            cpuData.put("cpuTemperature", cpu.getTemperature());
-            cpuData.put("freePercent", cpu.getFreePercent());
-            cpuData.put("usedPercent", cpu.getUsedPercent());
-            data.put("cpu", cpuData);
+            data.put("cpu", serverInfo.constructCpuObject(cpu));
 
             Memory memory = serverInfo.update().getMemory();
-            JSONObject memoryData = new JSONObject();
-            memoryData.put("total", memory.getTotal());
-            memoryData.put("used", memory.getUsed());
-            memoryData.put("free", memory.getFree());
-            memoryData.put("totalStr", memory.getTotalStr());
-            memoryData.put("usedStr", memory.getUsedStr());
-            memoryData.put("freeStr", memory.getFreeStr());
-            memoryData.put("usage", memory.getUsage());
-            data.put("memory", memoryData);
+            data.put("memory", serverInfo.constructMemoryObject(memory));
 
             JSONArray diskDataArray = new JSONArray();
             List<Disk> disks = serverInfo.update().getDisks();
             disks.sort(Comparator.naturalOrder());
             for (Disk disk : disks) {
-                JSONObject diskData = new JSONObject();
-                diskData.put("label", disk.getLabel());
-                diskData.put("mount", disk.getMount());
-                diskData.put("fSType", disk.getFSType());
-                diskData.put("name", disk.getName());
-                diskData.put("total", disk.getTotal());
-                diskData.put("free", disk.getFree());
-                diskData.put("used", disk.getUsed());
-                diskData.put("totalStr", disk.getTotalStr());
-                diskData.put("freeStr", disk.getFreeStr());
-                diskData.put("usedStr", disk.getUsedStr());
-                diskData.put("usage", disk.getUsage());
-                diskDataArray.add(diskData);
+                diskDataArray.add(serverInfo.constructDiskObject(disk));
             }
             data.put("disk", diskDataArray);
 
-            JSONObject networkData = new JSONObject();
             Network AllNet = new Network("All", 0, 0, 0);
             for (Network network : serverInfo.update().getNetworks()) {
                 AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
                 AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
             }
-            networkData.put("uploadSpeed", AllNet.getUploadSpeed());
-            networkData.put("downloadSpeed", AllNet.getDownloadSpeed());
-            networkData.put("uploadSpeedStr", AllNet.getUploadSpeedStr());
-            networkData.put("downloadSpeedStr", AllNet.getDownloadSpeedStr());
-            data.put("network", networkData);
+            data.put("network", serverInfo.constructNetworkObject(AllNet));
 
             try {
                 sendMessage(data.toString());
@@ -180,4 +146,5 @@ public class ServerInfoWS {
         if (address == null) return;
         logger.info("（{}） {}", address, msg);
     }
+
 }

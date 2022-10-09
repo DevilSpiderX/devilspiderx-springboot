@@ -1,7 +1,5 @@
 package devilSpiderX.server.webServer.service.information;
 
-import java.text.DecimalFormat;
-
 @SuppressWarnings("UnusedReturnValue")
 public class CPU {
     /**
@@ -81,14 +79,6 @@ public class CPU {
     public CPU setTemperature(double temperature) {
         this.temperature = temperature;
         return this;
-    }
-
-    public String getFreePercent() {
-        return new DecimalFormat("#.##%").format(1 - usedRate);
-    }
-
-    public String getUsedPercent() {
-        return new DecimalFormat("#.##%").format(usedRate);
     }
 
     @Override
