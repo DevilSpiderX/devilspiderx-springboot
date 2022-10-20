@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.service;
 
 import com.alibaba.fastjson2.JSONArray;
+import io.vavr.Tuple2;
 
 import java.util.List;
 
@@ -16,4 +17,10 @@ public interface MyPasswordsService {
     JSONArray query(String[] names, String owner);
 
     JSONArray query(List<String> names, String owner);
+
+    Tuple2<JSONArray, Integer> query(String name, int page, String owner);
+
+    Tuple2<JSONArray, Integer> query(String[] names, int page, String owner);
+
+    Tuple2<JSONArray, Integer> query(List<String> names, int page, String owner);
 }

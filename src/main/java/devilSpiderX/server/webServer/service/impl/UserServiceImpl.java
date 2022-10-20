@@ -10,11 +10,11 @@ import java.util.List;
 
 @Service("userService")
 public class UserServiceImpl implements UserService {
-    private final SuidRich dao = BeeFactoryHelper.getSuidRich();
+    private final SuidRich suid = BeeFactoryHelper.getSuidRich();
 
     @Override
     public User get(String uid) {
-        List<User> list = dao.select(new User(uid));
+        List<User> list = suid.select(new User(uid));
         if (list.isEmpty()) {
             return null;
         }
@@ -27,13 +27,13 @@ public class UserServiceImpl implements UserService {
         user.setUid(uid);
         user.setPassword(password);
         user.setAdmin(false);
-        return dao.insert(user) > 0;
+        return suid.insert(user) > 0;
     }
 
     @Override
     public boolean isAdmin(String uid) {
         if (uid == null) return false;
-        User user = dao.select(new User(uid)).get(0);
+        User user = suid.select(new User(uid)).get(0);
         return user != null && user.getAdmin();
     }
 
@@ -42,6 +42,6 @@ public class UserServiceImpl implements UserService {
         if (uid == null) {
             return false;
         }
-        return dao.exist(new User(uid));
+        return suid.exist(new User(uid));
     }
 }

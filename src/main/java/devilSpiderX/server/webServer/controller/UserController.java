@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.entity.User;
 import devilSpiderX.server.webServer.filter.UserFilter;
+import devilSpiderX.server.webServer.service.SettingsService;
 import devilSpiderX.server.webServer.service.UserService;
 import devilSpiderX.server.webServer.util.MyCipher;
 import org.slf4j.Logger;
@@ -11,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,14 +25,27 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("/api/user")
+@EnableScheduling
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     @Resource(name = "userService")
     private UserService userService;
-    private static final int SESSION_MAX_AGE = 10 * 60;
+    @Resource(name = "settingsService")
+    private SettingsService settingsService;
+    private int SESSION_MAX_AGE = 0;
+
+    @Scheduled(fixedDelay = 10, timeUnit = TimeUnit.MINUTES)
+    private void pollingSettings() {
+        int newMaxAge = Integer.parseInt(settingsService.get("session_max_age"));
+        if (SESSION_MAX_AGE != newMaxAge) {
+            SESSION_MAX_AGE = newMaxAge;
+            logger.info("SESSION_MAX_AGE 设置为: {}s", SESSION_MAX_AGE);
+        }
+    }
 
     /**
      * <b>登录</b>

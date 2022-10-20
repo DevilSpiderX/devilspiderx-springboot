@@ -21,16 +21,6 @@ spring:
   main:
     banner-mode: LOG
 
-bee:
-  db:
-    dbName: MySQL
-    driverName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/webserver?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-    username: root
-    password: zdy18906071630
-  osql:
-    showSQL: false
-
 devilspiderx:
   v2ray:
     exe-path: C:/Downloads/v2ray - Server/v2ray-windows-64/v2ray.exe

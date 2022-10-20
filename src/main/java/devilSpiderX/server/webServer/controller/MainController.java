@@ -3,10 +3,10 @@ package devilSpiderX.server.webServer.controller;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.MainApplication;
-import devilSpiderX.server.webServer.controller.response.ResultArray;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.service.MyPasswordsService;
 import devilSpiderX.server.webServer.service.OS;
+import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -78,15 +78,20 @@ public class MainController {
      */
     @PostMapping("/query")
     @ResponseBody
-    private ResultArray<Object> queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        ResultArray<Object> respResult = new ResultArray<>();
+    private ResultMap<Object> queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        ResultMap<Object> respResult = new ResultMap<>();
         String[] keys = new String[0];
         if (reqBody.containsKey("key")) {
             String keysStr = reqBody.getString("key").trim();
             keys = keysStr.split("\\s|\\.");
         }
+        int page = 1;
+        if (reqBody.containsKey("page")) {
+            page = reqBody.getIntValue("page");
+        }
         String uid = (String) session.getAttribute("uid");
-        JSONArray myPwdArray = myPasswordsService.query(keys, uid);
+        Tuple2<JSONArray, Integer> result = myPasswordsService.query(keys, page, uid);
+        JSONArray myPwdArray = result._1;
 
         if (myPwdArray.isEmpty()) {
             respResult.setCode(1);
@@ -94,7 +99,11 @@ public class MainController {
         } else {
             respResult.setCode(0);
             respResult.setMsg("成功");
-            respResult.setData(myPwdArray);
+
+            JSONObject data = new JSONObject();
+            data.put("list", myPwdArray);
+            data.put("page_count", result._2);
+            respResult.setData(data);
         }
         return respResult;
     }
