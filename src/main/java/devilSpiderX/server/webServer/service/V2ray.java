@@ -19,7 +19,7 @@ public class V2ray {
 
     public long start() throws IOException {
         if (!alive) {
-            ProcessBuilder builder = new ProcessBuilder(exePath, "-config", configPath);
+            ProcessBuilder builder = new ProcessBuilder(exePath, "run", "-c", configPath);
             builder.redirectErrorStream(true);
             p = builder.start();
             alive = true;
