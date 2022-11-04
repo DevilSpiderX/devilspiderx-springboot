@@ -6,7 +6,6 @@ import devilSpiderX.server.webServer.MainApplication;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.service.MyPasswordsService;
 import devilSpiderX.server.webServer.service.OS;
-import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -85,13 +84,8 @@ public class MainController {
             String keysStr = reqBody.getString("key").trim();
             keys = keysStr.split("\\s|\\.");
         }
-        int page = 1;
-        if (reqBody.containsKey("page")) {
-            page = reqBody.getIntValue("page");
-        }
         String uid = (String) session.getAttribute("uid");
-        Tuple2<JSONArray, Integer> result = myPasswordsService.query(keys, page, uid);
-        JSONArray myPwdArray = result._1;
+        JSONArray myPwdArray = myPasswordsService.query(keys, uid);
 
         if (myPwdArray.isEmpty()) {
             respResult.setCode(1);
@@ -102,7 +96,7 @@ public class MainController {
 
             JSONObject data = new JSONObject();
             data.put("list", myPwdArray);
-            data.put("page_count", result._2);
+            data.put("length", myPwdArray.size());
             respResult.setData(data);
         }
         return respResult;
