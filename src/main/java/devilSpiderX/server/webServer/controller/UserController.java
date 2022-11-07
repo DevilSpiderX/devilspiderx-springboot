@@ -24,6 +24,8 @@ import org.springframework.web.context.request.WebRequest;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -59,8 +61,8 @@ public class UserController {
      * </p>
      */
     @PostMapping("/login")
-    private ResponseEntity<ResultMap<Void>> login(@RequestBody JSONObject reqBody, HttpSession session, WebRequest req) {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResponseEntity<ResultMap<Object>> login(@RequestBody JSONObject reqBody, HttpSession session, WebRequest req) {
+        ResultMap<Object> respResult = new ResultMap<>();
         HttpHeaders headers = new HttpHeaders();
         if (!reqBody.containsKey("uid")) {
             respResult.setCode(3);
@@ -87,6 +89,11 @@ public class UserController {
 
                 respResult.setCode(0);
                 respResult.setMsg("密码正确，登录成功");
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("uid", uid);
+                data.put("admin", userService.isAdmin(uid));
+                respResult.setData(data);
             } else {
                 respResult.setCode(1);
                 respResult.setMsg("密码错误，登录失败");
@@ -167,7 +174,13 @@ public class UserController {
      * </p>
      * <p>
      * <b>返回代码：</b>
-     * 0 ；
+     * 0: <code>
+     * {
+     * uid:string,
+     * login:boolean,
+     * admin:boolean
+     * }
+     * </code>；
      * </p>
      */
     @PostMapping("/status")
@@ -177,13 +190,11 @@ public class UserController {
         respResult.setCode(0);
         respResult.setMsg("OK");
         JSONObject respJson = new JSONObject();
-        respJson.put("status", 0);
         respJson.put("login", false);
-        respJson.put("uid", "");
         if (UserFilter.isLogged(session)) {
-            respJson.put("status", 1);
             respJson.put("login", true);
             respJson.put("uid", session.getAttribute("uid"));
+            respJson.put("admin", userService.isAdmin(respJson.getString("uid")));
         }
         respResult.setData(respJson);
         return respResult;
