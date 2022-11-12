@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.lang;
+package devilSpiderX.server.webServer.langExtend;
 
 /**
  * ByteSequence是byte值的可读序列。

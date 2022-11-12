@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.lang;
+package devilSpiderX.server.webServer.langExtend;
 
 /**
  * 抛出异常来指示索引为负或大于字节串的大小。

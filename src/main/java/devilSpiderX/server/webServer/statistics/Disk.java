@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.service.information;
+package devilSpiderX.server.webServer.statistics;
 
 import org.jetbrains.annotations.NotNull;
 

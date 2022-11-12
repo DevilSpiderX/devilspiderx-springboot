@@ -2,7 +2,7 @@ package devilSpiderX.server.webServer.util;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.lang.Bytes;
+import devilSpiderX.server.webServer.langExtend.Bytes;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;

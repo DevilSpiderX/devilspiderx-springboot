@@ -2,18 +2,18 @@ package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.controller.response.ResultArray;
-import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
-import devilSpiderX.server.webServer.service.MyServerInfo;
-import devilSpiderX.server.webServer.service.information.CPU;
-import devilSpiderX.server.webServer.service.information.Disk;
-import devilSpiderX.server.webServer.service.information.Memory;
-import devilSpiderX.server.webServer.service.information.Network;
+import devilSpiderX.server.webServer.service.ServerInfoService;
+import devilSpiderX.server.webServer.statistics.CPU;
+import devilSpiderX.server.webServer.statistics.Disk;
+import devilSpiderX.server.webServer.statistics.Memory;
+import devilSpiderX.server.webServer.statistics.Network;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.annotation.Resource;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -28,7 +28,8 @@ import java.util.Map;
 @Controller
 @RequestMapping("/api/ServerInfo")
 public class ServerInfoController {
-    private final MyServerInfo serverInfo = MyServerInfo.serverInfo;
+    @Resource(name = "serverInfoService")
+    private ServerInfoService serverInfoService;
 
     /**
      * <b>CPU信息</b>
@@ -46,8 +47,8 @@ public class ServerInfoController {
         ResultMap<Object> respResult = new ResultMap<>();
         respResult.setCode(0);
         respResult.setMsg("获取成功");
-        CPU cpu = serverInfo.update().getCPU();
-        respResult.setData(serverInfo.constructCpuObject(cpu));
+        CPU cpu = serverInfoService.getCPU();
+        respResult.setData(serverInfoService.constructCpuObject(cpu));
         return respResult;
     }
 
@@ -67,8 +68,8 @@ public class ServerInfoController {
         ResultMap<Object> respResult = new ResultMap<>();
         respResult.setCode(0);
         respResult.setMsg("获取成功");
-        Memory memory = serverInfo.update().getMemory();
-        respResult.setData(serverInfo.constructMemoryObject(memory));
+        Memory memory = serverInfoService.getMemory();
+        respResult.setData(serverInfoService.constructMemoryObject(memory));
         return respResult;
     }
 
@@ -89,31 +90,11 @@ public class ServerInfoController {
         respResult.setCode(0);
         respResult.setMsg("获取成功");
         Network AllNet = new Network("All", 0, 0, 0);
-        for (Network network : serverInfo.update().getNetworks()) {
+        for (Network network : serverInfoService.getNetworks()) {
             AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
             AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
         }
-        respResult.setData(serverInfo.constructNetworkObject(AllNet));
-        return respResult;
-    }
-
-    /**
-     * <b>网络数量</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 成功；100 没有权限;
-     * </p>
-     */
-    @PostMapping("/network/size")
-    @ResponseBody
-    private ResultData<Integer> network_size() {
-        ResultData<Integer> respResult = new ResultData<>();
-        respResult.setCode(0);
-        respResult.setMsg("获取成功");
-        respResult.setData(serverInfo.update().getNetworks().size());
+        respResult.setData(serverInfoService.constructNetworkObject(AllNet));
         return respResult;
     }
 
@@ -134,30 +115,10 @@ public class ServerInfoController {
         respResult.setCode(0);
         respResult.setMsg("获取成功");
         List<JSONObject> dataArray = new LinkedList<>();
-        for (Disk disk : serverInfo.update().getDisks()) {
-            dataArray.add(serverInfo.constructDiskObject(disk));
+        for (Disk disk : serverInfoService.getDisks()) {
+            dataArray.add(serverInfoService.constructDiskObject(disk));
         }
         respResult.setData(dataArray);
-        return respResult;
-    }
-
-    /**
-     * <b>硬盘数量</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 成功；100 没有权限;
-     * </p>
-     */
-    @PostMapping("/disk/size")
-    @ResponseBody
-    private ResultData<Integer> disk_size() {
-        ResultData<Integer> respResult = new ResultData<>();
-        respResult.setCode(0);
-        respResult.setMsg("获取成功");
-        respResult.setData(serverInfo.update().getDisks().size());
         return respResult;
     }
 

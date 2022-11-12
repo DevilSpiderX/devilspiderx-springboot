@@ -15,7 +15,7 @@ spring:
   web:
     resources:
       static-locations:
-        - file:/C:/Code/Web/WebServerWeb
+        - file:./web
   banner:
     location: classpath:banner.txt
   main:

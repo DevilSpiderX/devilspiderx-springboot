@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.lang;
+package devilSpiderX.server.webServer.langExtend;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;

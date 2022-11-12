@@ -9,31 +9,35 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class WSSendTextThread extends Thread {
-    private static int count = 0;
-    private final BlockingQueue<Tuple2<WsSession, String>> msgQue = new LinkedBlockingQueue<>();
     private static final Logger logger = LoggerFactory.getLogger(WSSendTextThread.class);
+    private static final AtomicInteger count = new AtomicInteger();
+    private final BlockingQueue<Tuple2<WsSession, String>> msgQueue = new LinkedBlockingQueue<>();
 
     public WSSendTextThread() {
-        super("WS_sendText_thread_" + (count++));
+        super("WS_send_text_thread_" + (count.get()));
+        logger.info("实例化Websocket发送线程{}", count.getAndIncrement());
     }
 
     @Override
     public void run() {
         while (!isInterrupted()) {
             try {
-                Tuple2<WsSession, String> tu = msgQue.take();
+                Tuple2<WsSession, String> tu = msgQueue.take();
                 if (tu._1.isOpen()) {
                     tu._1.getBasicRemote().sendText(tu._2);
                 }
-            } catch (InterruptedException | IOException e) {
+            } catch (IOException e) {
                 logger.error(e.getMessage(), e);
+            } catch (InterruptedException e) {
+                break;
             }
         }
     }
 
     public void sendMessage(WsSession session, String message) throws InterruptedException {
-        msgQue.put(Tuple.of(session, message));
+        msgQueue.put(Tuple.of(session, message));
     }
 }
