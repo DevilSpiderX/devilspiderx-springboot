@@ -1,10 +1,10 @@
 #!/bin/sh
 
-cd /usr/local/webserver
+cd /usr/local/devilspiderx
 
-jarName=webserver-*.jar
+jarName=devilspiderx-*.jar
 nohup java --illegal-access=deny --add-opens=java.base/java.lang.invoke=ALL-UNNAMED -jar $jarName >/dev/null 2>&1 &
-javaPid=$!
-echo "Java Pid = $javaPid"
-echo $javaPid >webserver.pid
+DSXPid=$!
+echo "DevilSpiderX Pid = $DSXPid"
+echo $DSXPid >devilspiderx.pid
 exit 0

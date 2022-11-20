@@ -1,4 +1,4 @@
-DevilSpiderX ${application.title} ${application.version}
+${application.title} ${application.version}
 ----------------------------------------------------------
     ____            _ _______       _     __         _  __
    / __ \___ _   __(_) / ___/____  (_)___/ /__  ____| |/ /

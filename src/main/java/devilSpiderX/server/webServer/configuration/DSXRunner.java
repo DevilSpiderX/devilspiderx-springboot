@@ -19,9 +19,9 @@ public class DSXRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         FileWriter writer = null;
         try {
-            writer = new FileWriter("webserver.pid");
+            writer = new FileWriter("devilspiderx.pid");
             writer.write(String.valueOf(ManagementFactory.getRuntimeMXBean().getPid()));
-            writer.write("\n");
+            writer.write(System.lineSeparator());
             writer.flush();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
