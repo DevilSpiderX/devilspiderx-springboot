@@ -1,16 +1,16 @@
 package devilSpiderX.server.webServer.filter;
 
 import devilSpiderX.server.webServer.service.UserService;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Objects;
 
-@WebFilter(filterName = "AdminFilter", urlPatterns = {"/api/os/*", "/api/service/shutdown", "/api/v2ray/*"})
+@Component
 public class AdminFilter implements Filter {
 
     @Resource(name = "userService")

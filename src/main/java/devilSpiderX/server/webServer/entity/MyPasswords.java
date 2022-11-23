@@ -13,6 +13,8 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     private String remark;
     private String owner;
 
+    private Boolean deleted;
+
     public Integer getId() {
         return id;
     }
@@ -61,6 +63,14 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
         this.owner = owner;
     }
 
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     @Override
     public String toString() {
         return "MyPasswords{" +
@@ -70,6 +80,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
                 ", password='" + password + '\'' +
                 ", remark='" + remark + '\'' +
                 ", owner='" + owner + '\'' +
+                ", deleted=" + deleted +
                 '}';
     }
 

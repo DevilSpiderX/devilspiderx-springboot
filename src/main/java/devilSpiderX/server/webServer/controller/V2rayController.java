@@ -14,7 +14,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 
 @Controller
-@RequestMapping("/api/v2ray")
+@RequestMapping("/api/admin/v2ray")
 public class V2rayController {
     @Resource(name = "v2ray")
     private V2ray v2ray;

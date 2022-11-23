@@ -47,12 +47,16 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         myPwd.setAccount(account);
         myPwd.setPassword(MyCipher.encrypt(password));
         myPwd.setRemark(remark);
+        myPwd.setDeleted(false);
         return suid.insert(myPwd, IncludeType.INCLUDE_EMPTY) == 1;
     }
 
     @Override
     public boolean delete(int id) {
-        return suid.deleteById(MyPasswords.class, id) == 1;
+        MyPasswords deletingPwd = new MyPasswords();
+        deletingPwd.setId(id);
+        deletingPwd.setDeleted(true);
+        return suid.updateById(deletingPwd, new ConditionImpl().setIncludeType(IncludeType.EXCLUDE_BOTH)) == 1;
     }
 
     @Override
@@ -77,18 +81,22 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
 
     @Override
     public JSONArray query(String name, String owner) {
-        if (name == null) return query((List<String>) null, owner);
-        return query(List.of(name), owner);
+        if (name == null) return _query(null, owner);
+        return _query(List.of(name), owner);
     }
 
     @Override
     public JSONArray query(String[] names, String owner) {
-        if (names == null) return query((List<String>) null, owner);
-        return query(List.of(names), owner);
+        if (names == null) return _query(null, owner);
+        return _query(List.of(names), owner);
     }
 
     @Override
     public JSONArray query(List<String> names, String owner) {
+        return _query(names, owner);
+    }
+
+    private JSONArray _query(List<String> names, String owner) {
         JSONArray result = new JSONArray();
         List<MyPasswords> passwords;
         MyPasswords emptyMP = new MyPasswords();
@@ -122,6 +130,15 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
                 passwords.addAll(selectList);
             }
         }
+
+        List<MyPasswords> deletedPasswords = new ArrayList<>();
+        for (MyPasswords password : passwords) {
+            if (password.getDeleted()) {
+                deletedPasswords.add(password);
+            }
+        }
+        passwords.removeAll(deletedPasswords);
+
         passwords.sort(Comparator.naturalOrder());
         int lastId = -1;
         for (MyPasswords password : passwords) {
@@ -145,22 +162,22 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     @Override
     public Tuple2<JSONArray, Integer> query(String name, int page, String owner) {
         JSONArray array = query(name, owner);
-        return _query(array, page);
+        return subQueryResult(array, page);
     }
 
     @Override
     public Tuple2<JSONArray, Integer> query(String[] names, int page, String owner) {
         JSONArray array = query(names, owner);
-        return _query(array, page);
+        return subQueryResult(array, page);
     }
 
     @Override
     public Tuple2<JSONArray, Integer> query(List<String> names, int page, String owner) {
         JSONArray array = query(names, owner);
-        return _query(array, page);
+        return subQueryResult(array, page);
     }
 
-    private Tuple2<JSONArray, Integer> _query(JSONArray array, int page) {
+    private Tuple2<JSONArray, Integer> subQueryResult(JSONArray array, int page) {
         int pageSize = Integer.parseInt(settingsService.get("page_size"));
         int fromIndex = (page - 1) * pageSize;
         int toIndex = fromIndex + pageSize;

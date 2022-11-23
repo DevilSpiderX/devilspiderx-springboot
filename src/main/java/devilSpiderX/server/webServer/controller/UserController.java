@@ -83,8 +83,12 @@ public class UserController {
                 session.setAttribute("logged", true);
                 session.setAttribute("uid", uid);
 
-                ResponseCookie cookie = ResponseCookie.from("JSESSIONID", session.getId()).maxAge(SESSION_MAX_AGE)
-                        .path("/").httpOnly(true).secure(req.isSecure()).build();
+                ResponseCookie cookie = ResponseCookie.from("JSESSIONID", session.getId())
+                        .maxAge(SESSION_MAX_AGE)
+                        .path("/")
+                        .httpOnly(true)
+                        .secure(req.isSecure())
+                        .build();
                 headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
 
                 respResult.setCode(0);

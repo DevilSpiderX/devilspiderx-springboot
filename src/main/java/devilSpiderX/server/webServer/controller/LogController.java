@@ -15,16 +15,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @Controller
-@RequestMapping("/log")
+@RequestMapping("/api/admin/log")
 @SuppressWarnings("resource")
 public class LogController {
 
-    @GetMapping
-    public String logListView() {
-        return "log.html";
-    }
-
-    @PostMapping
+    @RequestMapping("/list")
     @ResponseBody
     public JSONArray list() throws IOException {
         JSONArray respList = new JSONArray();

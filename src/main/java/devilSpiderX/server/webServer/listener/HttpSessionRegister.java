@@ -1,13 +1,14 @@
 package devilSpiderX.server.webServer.listener;
 
-import javax.servlet.annotation.WebListener;
+import org.springframework.stereotype.Component;
+
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebListener
+@Component
 public class HttpSessionRegister implements HttpSessionListener {
     private static final Map<String, HttpSession> map = new HashMap<>();
 
