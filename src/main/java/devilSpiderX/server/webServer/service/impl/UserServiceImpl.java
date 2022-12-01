@@ -3,6 +3,7 @@ package devilSpiderX.server.webServer.service.impl;
 import devilSpiderX.server.webServer.entity.User;
 import devilSpiderX.server.webServer.service.UserService;
 import org.springframework.stereotype.Service;
+import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
@@ -22,11 +23,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean register(String uid, String password) {
+    public boolean register(String uid, String password, String ipAddr) {
         User user = new User();
         user.setUid(uid);
         user.setPassword(password);
         user.setAdmin(false);
+        user.setLastAddress(ipAddr);
         return suid.insert(user) > 0;
     }
 
@@ -43,5 +45,16 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         return suid.exist(new User(uid));
+    }
+
+    @Override
+    public boolean updateLastAddr(String uid, String ipAddr) {
+        if (uid == null || ipAddr == null) {
+            return false;
+        }
+        User user = new User(uid);
+        user.setLastAddress(ipAddr);
+        int n = suid.updateBy(user, "uid", IncludeType.INCLUDE_EMPTY);
+        return n > 0;
     }
 }

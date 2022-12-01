@@ -6,7 +6,6 @@ import com.alibaba.fastjson2.support.config.FastJsonConfig;
 import com.alibaba.fastjson2.support.spring.http.converter.FastJsonHttpMessageConverter;
 import devilSpiderX.server.webServer.util.BytesHttpMessageConverter;
 import devilSpiderX.server.webServer.util.FormToJSONHttpMessageConverter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.ErrorPageRegistrar;
 import org.springframework.boot.web.server.ErrorPageRegistry;
@@ -30,7 +29,7 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
         converters.add(new FormToJSONHttpMessageConverter());
     }
 
-    private @NotNull FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {
+    private FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {
         FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
         FastJsonConfig config = new FastJsonConfig();
         config.setWriterFeatures(JSONWriter.Feature.WriteBigDecimalAsPlain);

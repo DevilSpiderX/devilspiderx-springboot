@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -61,7 +61,7 @@ public class UserController {
      * </p>
      */
     @PostMapping("/login")
-    private ResponseEntity<ResultMap<Object>> login(@RequestBody JSONObject reqBody, HttpSession session, WebRequest req) {
+    private ResponseEntity<ResultMap<Object>> login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletRequest req) {
         ResultMap<Object> respResult = new ResultMap<>();
         HttpHeaders headers = new HttpHeaders();
         if (!reqBody.containsKey("uid")) {
@@ -97,10 +97,14 @@ public class UserController {
                 Map<String, Object> data = new HashMap<>();
                 data.put("uid", uid);
                 data.put("admin", userService.isAdmin(uid));
+                data.put("lastLoginAddr", user.getLastAddress());
                 respResult.setData(data);
+                logger.info("{}{}登录成功", ((boolean) data.get("admin")) ? "管理员" : "用户", uid);
+                userService.updateLastAddr(uid, req.getRemoteAddr());
             } else {
                 respResult.setCode(1);
                 respResult.setMsg("密码错误，登录失败");
+                logger.info("{}输入密码错误，登录失败", uid);
             }
         }
         return ResponseEntity.ok().headers(headers).body(respResult);
@@ -144,7 +148,7 @@ public class UserController {
      */
     @PostMapping("/register")
     @ResponseBody
-    private ResultMap<Void> register(@RequestBody JSONObject reqBody) {
+    private ResultMap<Void> register(@RequestBody JSONObject reqBody, HttpServletRequest req) {
         ResultMap<Void> respResult = new ResultMap<>();
         if (!reqBody.containsKey("uid")) {
             respResult.setCode(2);
@@ -159,7 +163,7 @@ public class UserController {
             if (userService.exist(uid)) {
                 respResult.setCode(4);
                 respResult.setMsg("该uid已存在");
-            } else if (userService.register(uid, pwd)) {
+            } else if (userService.register(uid, pwd, req.getRemoteAddr())) {
                 respResult.setCode(0);
                 respResult.setMsg("注册成功");
             } else {

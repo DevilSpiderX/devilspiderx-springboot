@@ -1,14 +1,16 @@
 package devilSpiderX.server.webServer.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class User implements Serializable {
-
-    private static final long serialVersionUID = -2043792648177787953L;
+    @Serial
+    private static final long serialVersionUID = 551625785764168103L;
 
     private String uid;
     private String password;
     private Boolean admin;
+    private String lastAddress;
 
     public User() {
     }
@@ -41,12 +43,22 @@ public class User implements Serializable {
         this.admin = admin;
     }
 
+    public String getLastAddress() {
+        return lastAddress;
+    }
+
+    public void setLastAddress(String lastAddress) {
+        this.lastAddress = lastAddress;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "uid='" + uid + '\'' +
                 ", password='" + password + '\'' +
                 ", admin=" + admin +
+                ", lastAddress='" + lastAddress + '\'' +
                 '}';
     }
 }
+
