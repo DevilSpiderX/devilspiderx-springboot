@@ -1,6 +1,8 @@
 package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson2.JSONObject;
+import devilSpiderX.server.webServer.controller.response.ResultBody;
+import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.entity.User;
 import devilSpiderX.server.webServer.filter.UserFilter;
@@ -24,9 +26,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Controller
@@ -61,23 +62,23 @@ public class UserController {
      * </p>
      */
     @PostMapping("/login")
-    private ResponseEntity<ResultMap<Object>> login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletRequest req) {
-        ResultMap<Object> respResult = new ResultMap<>();
+    private ResponseEntity<ResultBody<?>> login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletRequest req) {
+        var resultMap = new ResultMap<>();
         HttpHeaders headers = new HttpHeaders();
         if (!reqBody.containsKey("uid")) {
-            respResult.setCode(3);
-            respResult.setMsg("uid参数不存在");
+            resultMap.setCode(3);
+            resultMap.setMsg("uid参数不存在");
         } else if (!reqBody.containsKey("pwd")) {
-            respResult.setCode(4);
-            respResult.setMsg("pwd参数不存在");
+            resultMap.setCode(4);
+            resultMap.setMsg("pwd参数不存在");
         } else {
             String uid = reqBody.getString("uid");
             String pwd = reqBody.getString("pwd");
             User user = userService.get(uid);
 
             if (user == null) {
-                respResult.setCode(2);
-                respResult.setMsg("uid不存在");
+                resultMap.setCode(2);
+                resultMap.setMsg("uid不存在");
             } else if (Objects.equals(user.getPassword().toLowerCase(), pwd.toLowerCase())) {
                 session.setMaxInactiveInterval(SESSION_MAX_AGE);
                 session.setAttribute("logged", true);
@@ -91,23 +92,24 @@ public class UserController {
                         .build();
                 headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
 
-                respResult.setCode(0);
-                respResult.setMsg("密码正确，登录成功");
+                resultMap.setCode(0);
+                resultMap.setMsg("密码正确，登录成功");
 
-                Map<String, Object> data = new HashMap<>();
-                data.put("uid", uid);
-                data.put("admin", userService.isAdmin(uid));
-                data.put("lastLoginAddr", user.getLastAddress());
-                respResult.setData(data);
-                logger.info("{}{}登录成功", ((boolean) data.get("admin")) ? "管理员" : "用户", uid);
+                resultMap.set("uid", uid);
+                resultMap.set("admin", userService.isAdmin(uid));
+                resultMap.set("lastLoginAddr", user.getLastAddress());
+                logger.info("{}{}登录成功", ((boolean) resultMap.get("admin")) ? "管理员" : "用户", uid);
                 userService.updateLastAddr(uid, req.getRemoteAddr());
             } else {
-                respResult.setCode(1);
-                respResult.setMsg("密码错误，登录失败");
+                resultMap.setCode(1);
+                resultMap.setMsg("密码错误，登录失败");
                 logger.info("{}输入密码错误，登录失败", uid);
             }
         }
-        return ResponseEntity.ok().headers(headers).body(respResult);
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(resultMap);
     }
 
     /**
@@ -122,17 +124,16 @@ public class UserController {
      */
     @PostMapping("/logout")
     @ResponseBody
-    private ResultMap<Void> logout(HttpSession session) {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> logout(HttpSession session) {
+        var resultData = new ResultData<>();
         try {
             session.removeAttribute("logged");
             session.removeAttribute("uid");
         } catch (IllegalStateException ignored) {
         }
-
-        respResult.setCode(0);
-        respResult.setMsg("登出成功");
-        return respResult;
+        resultData.setCode(0);
+        resultData.setMsg("登出成功");
+        return resultData;
     }
 
     /**
@@ -148,31 +149,30 @@ public class UserController {
      */
     @PostMapping("/register")
     @ResponseBody
-    private ResultMap<Void> register(@RequestBody JSONObject reqBody, HttpServletRequest req) {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> register(@RequestBody JSONObject reqBody, HttpServletRequest req) {
+        var resultData = new ResultData<>();
         if (!reqBody.containsKey("uid")) {
-            respResult.setCode(2);
-            respResult.setMsg("uid参数不存在");
+            resultData.setCode(2);
+            resultData.setMsg("uid参数不存在");
         } else if (!reqBody.containsKey("pwd")) {
-            respResult.setCode(3);
-            respResult.setMsg("pwd参数不存在");
+            resultData.setCode(3);
+            resultData.setMsg("pwd参数不存在");
         } else {
             String uid = reqBody.getString("uid");
             String pwd = SHA256(reqBody.getString("pwd"));
 
             if (userService.exist(uid)) {
-                respResult.setCode(4);
-                respResult.setMsg("该uid已存在");
+                resultData.setCode(4);
+                resultData.setMsg("该uid已存在");
             } else if (userService.register(uid, pwd, req.getRemoteAddr())) {
-                respResult.setCode(0);
-                respResult.setMsg("注册成功");
+                resultData.setCode(0);
+                resultData.setMsg("注册成功");
             } else {
-                respResult.setCode(1);
-                respResult.setMsg("注册失败");
+                resultData.setCode(1);
+                resultData.setMsg("注册失败");
             }
-
         }
-        return respResult;
+        return resultData;
     }
 
     /**
@@ -193,19 +193,18 @@ public class UserController {
      */
     @PostMapping("/status")
     @ResponseBody
-    private ResultMap<Object> status(HttpSession session) {
-        ResultMap<Object> respResult = new ResultMap<>();
-        respResult.setCode(0);
-        respResult.setMsg("OK");
-        JSONObject respJson = new JSONObject();
-        respJson.put("login", false);
+    private ResultBody<?> status(HttpSession session) {
+        var resultMap = new ResultMap<>();
+        resultMap.setCode(0);
+        resultMap.setMsg("OK");
+        resultMap.put("login", false);
         if (UserFilter.isLogged(session)) {
-            respJson.put("login", true);
-            respJson.put("uid", session.getAttribute("uid"));
-            respJson.put("admin", userService.isAdmin(respJson.getString("uid")));
+            resultMap.put("login", true);
+            String uid = Optional.of(session.getAttribute("uid")).orElse("").toString();
+            resultMap.put("uid", uid);
+            resultMap.put("admin", userService.isAdmin(uid));
         }
-        respResult.setData(respJson);
-        return respResult;
+        return resultMap;
     }
 
     private static String SHA256(String value) {

@@ -1,7 +1,8 @@
 package devilSpiderX.server.webServer.controller;
 
 import devilSpiderX.server.webServer.MainApplication;
-import devilSpiderX.server.webServer.controller.response.ResultMap;
+import devilSpiderX.server.webServer.controller.response.ResultBody;
+import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.service.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +27,8 @@ public class MainController {
      */
     @PostMapping("/os/reboot")
     @ResponseBody
-    private ResultMap<Void> OSReboot() {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> OSReboot() {
+        var respResult = new ResultData<>();
         respResult.setCode(0);
         respResult.setMsg("成功\n服务器正在重启......");
         OS.reboot(500);
@@ -45,8 +46,8 @@ public class MainController {
      */
     @PostMapping("/os/shutdown")
     @ResponseBody
-    private ResultMap<Void> OSShutdown() {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> OSShutdown() {
+        var respResult = new ResultData<>();
         respResult.setCode(0);
         respResult.setMsg("成功\n服务器正在关机......");
         OS.shutdown(500);
@@ -65,8 +66,8 @@ public class MainController {
      */
     @RequestMapping("/service/shutdown")
     @ResponseBody
-    private ResultMap<Void> serviceShutdown() {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> serviceShutdown() {
+        var respResult = new ResultData<>();
         respResult.setCode(0);
         respResult.setMsg("关闭成功");
         new Thread(() -> {

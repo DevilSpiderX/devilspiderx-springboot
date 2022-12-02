@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.controller.response.ResultMap;
+import devilSpiderX.server.webServer.controller.response.ResultBody;
+import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.service.V2ray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,25 +33,25 @@ public class V2rayController {
      */
     @PostMapping("/start")
     @ResponseBody
-    private ResultMap<Void> start() {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> start() {
+        var resultData = new ResultData<>();
         if (v2ray.isAlive()) {
-            respResult.setCode(2);
-            respResult.setMsg("v2ray正在运行");
+            resultData.setCode(2);
+            resultData.setMsg("v2ray正在运行");
             logger.info("v2ray正在运行");
         } else {
             try {
                 long pid = v2ray.start();
                 logger.info("v2ray启动成功 PID={}", pid);
-                respResult.setCode(0);
-                respResult.setMsg("v2ray启动成功");
+                resultData.setCode(0);
+                resultData.setMsg("v2ray启动成功");
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
-                respResult.setCode(1);
-                respResult.setMsg("v2ray启动失败");
+                resultData.setCode(1);
+                resultData.setMsg("v2ray启动失败");
             }
         }
-        return respResult;
+        return resultData;
     }
 
     /**
@@ -67,24 +67,24 @@ public class V2rayController {
      */
     @PostMapping("/stop")
     @ResponseBody
-    private ResultMap<Void> stop() {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> stop() {
+        var resultData = new ResultData<>();
         if (v2ray.isAlive()) {
             if (v2ray.stop()) {
                 logger.info("v2ray关闭成功");
-                respResult.setCode(0);
-                respResult.setMsg("v2ray关闭成功");
+                resultData.setCode(0);
+                resultData.setMsg("v2ray关闭成功");
             } else {
                 logger.info("v2ray关闭失败");
-                respResult.setCode(1);
-                respResult.setMsg("v2ray关闭失败");
+                resultData.setCode(1);
+                resultData.setMsg("v2ray关闭失败");
             }
         } else {
             logger.info("v2ray没有运行");
-            respResult.setCode(2);
-            respResult.setMsg("v2ray没有运行");
+            resultData.setCode(2);
+            resultData.setMsg("v2ray没有运行");
         }
-        return respResult;
+        return resultData;
     }
 
     /**
@@ -100,15 +100,15 @@ public class V2rayController {
      */
     @PostMapping("/state")
     @ResponseBody
-    private ResultMap<JSONObject> state() {
-        ResultMap<JSONObject> respResult = new ResultMap<>();
+    private ResultBody<?> state() {
+        var resultData = new ResultData<>();
         if (v2ray.isAlive()) {
-            respResult.setCode(1);
-            respResult.setMsg("v2ray正在运行");
+            resultData.setCode(1);
+            resultData.setMsg("v2ray正在运行");
         } else {
-            respResult.setCode(0);
-            respResult.setMsg("v2ray没有运行");
+            resultData.setCode(0);
+            resultData.setMsg("v2ray没有运行");
         }
-        return respResult;
+        return resultData;
     }
 }

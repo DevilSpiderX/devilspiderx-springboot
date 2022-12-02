@@ -1,7 +1,8 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.controller.response.ResultArray;
+import devilSpiderX.server.webServer.controller.response.ResultBody;
+import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.service.ServerInfoService;
 import devilSpiderX.server.webServer.statistics.CPU;
@@ -20,10 +21,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/api/ServerInfo")
@@ -43,13 +41,13 @@ public class ServerInfoController {
      */
     @PostMapping("/cpu")
     @ResponseBody
-    private ResultMap<Object> cpu() {
-        ResultMap<Object> respResult = new ResultMap<>();
-        respResult.setCode(0);
-        respResult.setMsg("获取成功");
+    private ResultBody<?> cpu() {
+        var resultData = new ResultData<>();
+        resultData.setCode(0);
+        resultData.setMsg("获取成功");
         CPU cpu = serverInfoService.getCPU();
-        respResult.setData(serverInfoService.constructCpuObject(cpu));
-        return respResult;
+        resultData.setData(serverInfoService.constructCpuObject(cpu));
+        return resultData;
     }
 
     /**
@@ -64,13 +62,13 @@ public class ServerInfoController {
      */
     @PostMapping("/memory")
     @ResponseBody
-    private ResultMap<Object> memory() {
-        ResultMap<Object> respResult = new ResultMap<>();
-        respResult.setCode(0);
-        respResult.setMsg("获取成功");
+    private ResultBody<?> memory() {
+        var resultData = new ResultData<>();
+        resultData.setCode(0);
+        resultData.setMsg("获取成功");
         Memory memory = serverInfoService.getMemory();
-        respResult.setData(serverInfoService.constructMemoryObject(memory));
-        return respResult;
+        resultData.setData(serverInfoService.constructMemoryObject(memory));
+        return resultData;
     }
 
     /**
@@ -85,17 +83,17 @@ public class ServerInfoController {
      */
     @PostMapping("/network")
     @ResponseBody
-    private ResultMap<Object> network() {
-        ResultMap<Object> respResult = new ResultMap<>();
-        respResult.setCode(0);
-        respResult.setMsg("获取成功");
+    private ResultBody<?> network() {
+        var resultData = new ResultData<>();
+        resultData.setCode(0);
+        resultData.setMsg("获取成功");
         Network AllNet = new Network("All", 0, 0, 0);
         for (Network network : serverInfoService.getNetworks()) {
             AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
             AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
         }
-        respResult.setData(serverInfoService.constructNetworkObject(AllNet));
-        return respResult;
+        resultData.setData(serverInfoService.constructNetworkObject(AllNet));
+        return resultData;
     }
 
     /**
@@ -110,16 +108,14 @@ public class ServerInfoController {
      */
     @PostMapping("/disk")
     @ResponseBody
-    private ResultArray<JSONObject> disk() {
-        ResultArray<JSONObject> respResult = new ResultArray<>();
-        respResult.setCode(0);
-        respResult.setMsg("获取成功");
-        List<JSONObject> dataArray = new LinkedList<>();
+    private ResultBody<?> disk() {
+        var resultArray = new ResultArray<>();
+        resultArray.setCode(0);
+        resultArray.setMsg("获取成功");
         for (Disk disk : serverInfoService.getDisks()) {
-            dataArray.add(serverInfoService.constructDiskObject(disk));
+            resultArray.add(serverInfoService.constructDiskObject(disk));
         }
-        respResult.setData(dataArray);
-        return respResult;
+        return resultArray;
     }
 
     public static String makeToken(String timeStr) {
@@ -146,19 +142,20 @@ public class ServerInfoController {
      */
     @PostMapping("/token")
     @ResponseBody
-    private ResultMap<String> token() {
-        ResultMap<String> respResult = new ResultMap<>();
+    private ResultBody<?> token() {
+        var resultMap = new ResultMap<>();
         String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",
                 Locale.CHINA));
         String token = makeToken(timeStr);
         if (token == null) {
-            respResult.setCode(1);
-            respResult.setMsg("token生成失败");
-            return respResult;
+            resultMap.setCode(1);
+            resultMap.setMsg("token生成失败");
+            return resultMap;
         }
-        respResult.setCode(0);
-        respResult.setMsg("成功");
-        respResult.setData(Map.of("token", token, "timeStr", timeStr));
-        return respResult;
+        resultMap.setCode(0);
+        resultMap.setMsg("成功");
+        resultMap.set("token", token);
+        resultMap.set("timeStr", timeStr);
+        return resultMap;
     }
 }

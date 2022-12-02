@@ -1,15 +1,19 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson2.JSONArray;
+import devilSpiderX.server.webServer.controller.response.ResultBody;
+import devilSpiderX.server.webServer.controller.response.ResultArray;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,38 +22,27 @@ import java.nio.file.Paths;
 @RequestMapping("/api/admin/log")
 @SuppressWarnings("resource")
 public class LogController {
+    static final String logDir = "./log";
 
     @RequestMapping("/list")
     @ResponseBody
-    public JSONArray list() throws IOException {
-        JSONArray respList = new JSONArray();
-        Files.list(Paths.get("log")).forEach(path -> respList.add(path.getFileName().toString()));
-        return respList;
+    public ResultBody<?> list() throws IOException {
+        var result = new ResultArray<>();
+        result.setCode(0);
+        Files.list(Paths.get(logDir)).forEach(path -> result.add(path.getFileName().toString()));
+        return result;
     }
 
     @GetMapping("/{logName}")
-    public void logFile(@PathVariable String logName, HttpServletResponse resp) throws IOException {
-        File logFile = Paths.get("log", logName).toFile();
+    public ResponseEntity<Resource> logFile(@PathVariable String logName) {
+        File logFile = Paths.get(logDir, logName).toFile();
         if (!logFile.exists()) {
-            resp.sendError(404);
-            return;
+            return ResponseEntity.notFound().build();
         }
-        long fileLength = logFile.length();
-        resp.setContentLengthLong(fileLength);
-        resp.setContentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8).toString());
-        FileInputStream fileIn = new FileInputStream(logFile);
-        OutputStream webOut = resp.getOutputStream();
-        int offset = 0;
-        byte[] buffer = new byte[64 * 1024];
-        while (offset < fileLength) {
-            int count = fileIn.read(buffer);
-            if (count == -1) {
-                break;
-            }
-            offset += count;
-            webOut.write(buffer, 0, count);
-            webOut.flush();
-        }
-        fileIn.close();
+        FileSystemResource resource = new FileSystemResource(logFile);
+        MediaType contentType = new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .contentType(contentType)
+                .body(resource);
     }
 }

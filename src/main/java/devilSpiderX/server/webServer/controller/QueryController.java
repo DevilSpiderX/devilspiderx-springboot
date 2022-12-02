@@ -2,12 +2,17 @@ package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.controller.response.ResultMap;
+import devilSpiderX.server.webServer.controller.response.ResultArray;
+import devilSpiderX.server.webServer.controller.response.ResultBody;
+import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.service.MyPasswordsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -34,8 +39,8 @@ public class QueryController {
      */
     @PostMapping("/get")
     @ResponseBody
-    private ResultMap<Object> queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        ResultMap<Object> respResult = new ResultMap<>();
+    private ResultBody<?> queryPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        var resultArray = new ResultArray<>();
         String[] keys = new String[0];
         if (reqBody.containsKey("key")) {
             String keysStr = reqBody.getString("key").trim();
@@ -46,18 +51,14 @@ public class QueryController {
         JSONArray myPwdArray = myPasswordsService.query(keys, uid);
 
         if (myPwdArray.isEmpty()) {
-            respResult.setCode(1);
-            respResult.setMsg("空值");
+            resultArray.setCode(1);
+            resultArray.setMsg("空值");
         } else {
-            respResult.setCode(0);
-            respResult.setMsg("成功");
-
-            JSONObject data = new JSONObject();
-            data.put("list", myPwdArray);
-            data.put("length", myPwdArray.size());
-            respResult.setData(data);
+            resultArray.setCode(0);
+            resultArray.setMsg("成功");
+            resultArray.setData(myPwdArray);
         }
-        return respResult;
+        return resultArray;
     }
 
     /**
@@ -73,11 +74,11 @@ public class QueryController {
      */
     @PostMapping("/add")
     @ResponseBody
-    private ResultMap<Void> addPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> addPasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        var resultData = new ResultData<>();
         if (!reqBody.containsKey("name")) {
-            respResult.setCode(2);
-            respResult.setMsg("name参数不能为空或不存在");
+            resultData.setCode(2);
+            resultData.setMsg("name参数不能为空或不存在");
         } else {
             String name = reqBody.getString("name");
             String account = reqBody.getString("account");
@@ -86,14 +87,14 @@ public class QueryController {
             String owner = (String) session.getAttribute("uid");
             logger.info("用户{}添加记录：{}", owner, name);
             if (myPasswordsService.add(name, account, password, remark, owner)) {
-                respResult.setCode(0);
-                respResult.setMsg("添加成功");
+                resultData.setCode(0);
+                resultData.setMsg("添加成功");
             } else {
-                respResult.setCode(1);
-                respResult.setMsg("添加失败");
+                resultData.setCode(1);
+                resultData.setMsg("添加失败");
             }
         }
-        return respResult;
+        return resultData;
     }
 
     /**
@@ -109,11 +110,11 @@ public class QueryController {
      */
     @PostMapping("/update")
     @ResponseBody
-    private ResultMap<Void> updatePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> updatePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        var resultData = new ResultData<>();
         if (!reqBody.containsKey("id")) {
-            respResult.setCode(2);
-            respResult.setMsg("id参数不能为空或不存在");
+            resultData.setCode(2);
+            resultData.setMsg("id参数不能为空或不存在");
         } else {
             int id = reqBody.getInteger("id");
             String name = reqBody.getString("name");
@@ -122,14 +123,14 @@ public class QueryController {
             String remark = reqBody.getString("remark");
             logger.info("用户{}修改记录 id：{}", session.getAttribute("uid"), id);
             if (myPasswordsService.update(id, name, account, password, remark)) {
-                respResult.setCode(0);
-                respResult.setMsg("修改成功");
+                resultData.setCode(0);
+                resultData.setMsg("修改成功");
             } else {
-                respResult.setCode(1);
-                respResult.setMsg("修改失败");
+                resultData.setCode(1);
+                resultData.setMsg("修改失败");
             }
         }
-        return respResult;
+        return resultData;
     }
 
     /**
@@ -145,22 +146,22 @@ public class QueryController {
      */
     @PostMapping("/delete")
     @ResponseBody
-    private ResultMap<Void> deletePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
-        ResultMap<Void> respResult = new ResultMap<>();
+    private ResultBody<?> deletePasswords(@RequestBody JSONObject reqBody, HttpSession session) {
+        var resultData = new ResultData<>();
         if (!reqBody.containsKey("id")) {
-            respResult.setCode(2);
-            respResult.setMsg("id参数不能为空或不存在");
+            resultData.setCode(2);
+            resultData.setMsg("id参数不能为空或不存在");
         } else {
             int id = reqBody.getInteger("id");
             logger.info("用户{}删除记录 id：{}", session.getAttribute("uid"), id);
             if (myPasswordsService.delete(id)) {
-                respResult.setCode(0);
-                respResult.setMsg("删除成功");
+                resultData.setCode(0);
+                resultData.setMsg("删除成功");
             } else {
-                respResult.setCode(1);
-                respResult.setMsg("删除失败");
+                resultData.setCode(1);
+                resultData.setMsg("删除失败");
             }
         }
-        return respResult;
+        return resultData;
     }
 }
