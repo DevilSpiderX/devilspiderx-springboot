@@ -1,14 +1,11 @@
 package devilSpiderX.server.webServer.controller;
 
-import devilSpiderX.server.webServer.controller.response.ResultArray;
-import devilSpiderX.server.webServer.controller.response.ResultBody;
-import devilSpiderX.server.webServer.controller.response.ResultData;
-import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.service.ServerInfoService;
 import devilSpiderX.server.webServer.statistics.CPU;
 import devilSpiderX.server.webServer.statistics.Disk;
 import devilSpiderX.server.webServer.statistics.Memory;
 import devilSpiderX.server.webServer.statistics.Network;
+import devilSpiderX.server.webServer.util.AjaxResp;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +18,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/api/ServerInfo")
@@ -41,13 +40,9 @@ public class ServerInfoController {
      */
     @PostMapping("/cpu")
     @ResponseBody
-    private ResultBody<?> cpu() {
-        var resultData = new ResultData<>();
-        resultData.setCode(0);
-        resultData.setMsg("获取成功");
+    private AjaxResp<?> cpu() {
         CPU cpu = serverInfoService.getCPU();
-        resultData.setData(serverInfoService.constructCpuObject(cpu));
-        return resultData;
+        return AjaxResp.success(serverInfoService.constructCpuObject(cpu));
     }
 
     /**
@@ -62,13 +57,9 @@ public class ServerInfoController {
      */
     @PostMapping("/memory")
     @ResponseBody
-    private ResultBody<?> memory() {
-        var resultData = new ResultData<>();
-        resultData.setCode(0);
-        resultData.setMsg("获取成功");
+    private AjaxResp<?> memory() {
         Memory memory = serverInfoService.getMemory();
-        resultData.setData(serverInfoService.constructMemoryObject(memory));
-        return resultData;
+        return AjaxResp.success(serverInfoService.constructMemoryObject(memory));
     }
 
     /**
@@ -83,17 +74,13 @@ public class ServerInfoController {
      */
     @PostMapping("/network")
     @ResponseBody
-    private ResultBody<?> network() {
-        var resultData = new ResultData<>();
-        resultData.setCode(0);
-        resultData.setMsg("获取成功");
+    private AjaxResp<?> network() {
         Network AllNet = new Network("All", 0, 0, 0);
         for (Network network : serverInfoService.getNetworks()) {
             AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
             AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
         }
-        resultData.setData(serverInfoService.constructNetworkObject(AllNet));
-        return resultData;
+        return AjaxResp.success(serverInfoService.constructNetworkObject(AllNet));
     }
 
     /**
@@ -108,14 +95,12 @@ public class ServerInfoController {
      */
     @PostMapping("/disk")
     @ResponseBody
-    private ResultBody<?> disk() {
-        var resultArray = new ResultArray<>();
-        resultArray.setCode(0);
-        resultArray.setMsg("获取成功");
+    private AjaxResp<?> disk() {
+        var diskArray = new ArrayList<>();
         for (Disk disk : serverInfoService.getDisks()) {
-            resultArray.add(serverInfoService.constructDiskObject(disk));
+            diskArray.add(serverInfoService.constructDiskObject(disk));
         }
-        return resultArray;
+        return AjaxResp.success(diskArray);
     }
 
     public static String makeToken(String timeStr) {
@@ -142,20 +127,17 @@ public class ServerInfoController {
      */
     @PostMapping("/token")
     @ResponseBody
-    private ResultBody<?> token() {
-        var resultMap = new ResultMap<>();
-        String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss",
-                Locale.CHINA));
+    private AjaxResp<?> token() {
+        String timeStr = LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
+        );
         String token = makeToken(timeStr);
-        if (token == null) {
-            resultMap.setCode(1);
-            resultMap.setMsg("token生成失败");
-            return resultMap;
-        }
-        resultMap.setCode(0);
-        resultMap.setMsg("成功");
-        resultMap.set("token", token);
-        resultMap.set("timeStr", timeStr);
-        return resultMap;
+        return token != null ?
+                AjaxResp.success(Map.of(
+                        "token", token,
+                        "timeStr", timeStr
+                ))
+                :
+                AjaxResp.failure("token生成失败");
     }
 }

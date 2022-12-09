@@ -1,13 +1,11 @@
 package devilSpiderX.server.webServer.controller;
 
 import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.controller.response.ResultBody;
-import devilSpiderX.server.webServer.controller.response.ResultData;
-import devilSpiderX.server.webServer.controller.response.ResultMap;
 import devilSpiderX.server.webServer.entity.User;
-import devilSpiderX.server.webServer.filter.UserFilter;
+import devilSpiderX.server.webServer.interceptor.LoginInterceptor;
 import devilSpiderX.server.webServer.service.SettingsService;
 import devilSpiderX.server.webServer.service.UserService;
+import devilSpiderX.server.webServer.util.AjaxResp;
 import devilSpiderX.server.webServer.util.MyCipher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +24,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Controller
@@ -62,54 +61,46 @@ public class UserController {
      * </p>
      */
     @PostMapping("/login")
-    private ResponseEntity<ResultBody<?>> login(@RequestBody JSONObject reqBody, HttpSession session, HttpServletRequest req) {
-        var resultMap = new ResultMap<>();
-        HttpHeaders headers = new HttpHeaders();
-        if (!reqBody.containsKey("uid")) {
-            resultMap.setCode(3);
-            resultMap.setMsg("uid参数不存在");
-        } else if (!reqBody.containsKey("pwd")) {
-            resultMap.setCode(4);
-            resultMap.setMsg("pwd参数不存在");
-        } else {
-            String uid = reqBody.getString("uid");
-            String pwd = reqBody.getString("pwd");
-            User user = userService.get(uid);
-
-            if (user == null) {
-                resultMap.setCode(2);
-                resultMap.setMsg("uid不存在");
-            } else if (Objects.equals(user.getPassword().toLowerCase(), pwd.toLowerCase())) {
-                session.setMaxInactiveInterval(SESSION_MAX_AGE);
-                session.setAttribute("logged", true);
-                session.setAttribute("uid", uid);
-
-                ResponseCookie cookie = ResponseCookie.from("JSESSIONID", session.getId())
-                        .maxAge(SESSION_MAX_AGE)
-                        .path("/")
-                        .httpOnly(true)
-                        .secure(req.isSecure())
-                        .build();
-                headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
-
-                resultMap.setCode(0);
-                resultMap.setMsg("密码正确，登录成功");
-
-                resultMap.set("uid", uid);
-                resultMap.set("admin", userService.isAdmin(uid));
-                resultMap.set("lastLoginAddr", user.getLastAddress());
-                logger.info("{}{}登录成功", ((boolean) resultMap.get("admin")) ? "管理员" : "用户", uid);
-                userService.updateLastAddr(uid, req.getRemoteAddr());
-            } else {
-                resultMap.setCode(1);
-                resultMap.setMsg("密码错误，登录失败");
-                logger.info("{}输入密码错误，登录失败", uid);
-            }
+    private ResponseEntity<AjaxResp<?>> login(@RequestBody JSONObject reqBody, HttpServletRequest req) {
+        if (!reqBody.containsKey("uid") || !reqBody.containsKey("pwd")) {
+            return ResponseEntity.ok(AjaxResp.error());
         }
-        return ResponseEntity
-                .ok()
-                .headers(headers)
-                .body(resultMap);
+        String uid = reqBody.getString("uid");
+        String pwd = reqBody.getString("pwd");
+        User user = userService.get(uid);
+
+        if (user == null) {
+            return ResponseEntity.ok(AjaxResp.of(2, "用户不存在"));
+        } else if (Objects.equals(user.getPassword().toLowerCase(), pwd.toLowerCase())) {
+            HttpHeaders headers = new HttpHeaders();
+
+            HttpSession session = req.getSession();
+            session.setMaxInactiveInterval(SESSION_MAX_AGE);
+            session.setAttribute("uid", uid);
+            session.setAttribute("user", user);
+
+            ResponseCookie cookie = ResponseCookie.from("JSESSIONID", session.getId())
+                    .maxAge(SESSION_MAX_AGE)
+                    .path("/")
+                    .httpOnly(true)
+                    .secure(req.isSecure())
+                    .build();
+            headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            var admin = userService.isAdmin(uid);
+            logger.info("{}{}登录成功", admin ? "管理员" : "用户", uid);
+            userService.updateLastAddr(uid, req.getRemoteAddr());
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(AjaxResp.success(Map.of(
+                            "uid", uid,
+                            "admin", admin,
+                            "lastLoginAddr", user.getLastAddress()
+                    )));
+        } else {
+            logger.info("{}输入密码错误，登录失败", uid);
+            return ResponseEntity.ok(AjaxResp.failure("密码错误"));
+        }
     }
 
     /**
@@ -119,21 +110,18 @@ public class UserController {
      * </p>
      * <p>
      * <b>返回代码：</b>
-     * 0 登出成功；1 未登录过；
+     * 0 登出成功；
      * </p>
      */
     @PostMapping("/logout")
     @ResponseBody
-    private ResultBody<?> logout(HttpSession session) {
-        var resultData = new ResultData<>();
+    private AjaxResp<?> logout(HttpSession session) {
         try {
-            session.removeAttribute("logged");
             session.removeAttribute("uid");
+            session.removeAttribute("user");
         } catch (IllegalStateException ignored) {
         }
-        resultData.setCode(0);
-        resultData.setMsg("登出成功");
-        return resultData;
+        return AjaxResp.success();
     }
 
     /**
@@ -149,30 +137,21 @@ public class UserController {
      */
     @PostMapping("/register")
     @ResponseBody
-    private ResultBody<?> register(@RequestBody JSONObject reqBody, HttpServletRequest req) {
-        var resultData = new ResultData<>();
-        if (!reqBody.containsKey("uid")) {
-            resultData.setCode(2);
-            resultData.setMsg("uid参数不存在");
-        } else if (!reqBody.containsKey("pwd")) {
-            resultData.setCode(3);
-            resultData.setMsg("pwd参数不存在");
-        } else {
-            String uid = reqBody.getString("uid");
-            String pwd = SHA256(reqBody.getString("pwd"));
-
-            if (userService.exist(uid)) {
-                resultData.setCode(4);
-                resultData.setMsg("该uid已存在");
-            } else if (userService.register(uid, pwd, req.getRemoteAddr())) {
-                resultData.setCode(0);
-                resultData.setMsg("注册成功");
-            } else {
-                resultData.setCode(1);
-                resultData.setMsg("注册失败");
-            }
+    private AjaxResp<?> register(@RequestBody JSONObject reqBody, HttpServletRequest req)
+            throws NoSuchAlgorithmException {
+        if (!reqBody.containsKey("uid") || !reqBody.containsKey("pwd")) {
+            return AjaxResp.error();
         }
-        return resultData;
+        String uid = reqBody.getString("uid");
+        String pwd = MyCipher.bytes2Hex(MyCipher.SHA256(reqBody.getString("pwd")));
+
+        if (userService.exist(uid)) {
+            return AjaxResp.of(2, "该uid已存在");
+        } else if (userService.register(uid, pwd, req.getRemoteAddr())) {
+            return AjaxResp.success();
+        } else {
+            return AjaxResp.failure();
+        }
     }
 
     /**
@@ -193,28 +172,17 @@ public class UserController {
      */
     @PostMapping("/status")
     @ResponseBody
-    private ResultBody<?> status(HttpSession session) {
-        var resultMap = new ResultMap<>();
-        resultMap.setCode(0);
-        resultMap.setMsg("OK");
-        resultMap.put("login", false);
-        if (UserFilter.isLogged(session)) {
+    private AjaxResp<?> status(HttpSession session) {
+        Map<String, Object> resultMap = new HashMap<>(Map.of(
+                "login", false,
+                "admin", false
+        ));
+        if (LoginInterceptor.isLogin(session)) {
             resultMap.put("login", true);
-            String uid = Optional.of(session.getAttribute("uid")).orElse("").toString();
-            resultMap.put("uid", uid);
-            resultMap.put("admin", userService.isAdmin(uid));
+            User user = (User) session.getAttribute("user");
+            resultMap.put("uid", user.getUid());
+            resultMap.put("admin", user.getAdmin());
         }
-        return resultMap;
+        return AjaxResp.success(resultMap);
     }
-
-    private static String SHA256(String value) {
-        String result = null;
-        try {
-            result = MyCipher.SHA256(value);
-        } catch (NoSuchAlgorithmException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return result;
-    }
-
 }

@@ -1,8 +1,7 @@
 package devilSpiderX.server.webServer.controller;
 
-import devilSpiderX.server.webServer.controller.response.ResultBody;
-import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.service.V2ray;
+import devilSpiderX.server.webServer.util.AjaxResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -33,25 +32,20 @@ public class V2rayController {
      */
     @PostMapping("/start")
     @ResponseBody
-    private ResultBody<?> start() {
-        var resultData = new ResultData<>();
+    private AjaxResp<?> start() {
         if (v2ray.isAlive()) {
-            resultData.setCode(2);
-            resultData.setMsg("v2ray正在运行");
             logger.info("v2ray正在运行");
+            return AjaxResp.of(2, "v2ray正在运行");
         } else {
             try {
                 long pid = v2ray.start();
                 logger.info("v2ray启动成功 PID={}", pid);
-                resultData.setCode(0);
-                resultData.setMsg("v2ray启动成功");
+                return AjaxResp.success("v2ray启动成功");
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
-                resultData.setCode(1);
-                resultData.setMsg("v2ray启动失败");
+                return AjaxResp.failure("v2ray启动失败");
             }
         }
-        return resultData;
     }
 
     /**
@@ -67,24 +61,19 @@ public class V2rayController {
      */
     @PostMapping("/stop")
     @ResponseBody
-    private ResultBody<?> stop() {
-        var resultData = new ResultData<>();
+    private AjaxResp<?> stop() {
         if (v2ray.isAlive()) {
             if (v2ray.stop()) {
                 logger.info("v2ray关闭成功");
-                resultData.setCode(0);
-                resultData.setMsg("v2ray关闭成功");
+                return AjaxResp.success("v2ray关闭成功");
             } else {
                 logger.info("v2ray关闭失败");
-                resultData.setCode(1);
-                resultData.setMsg("v2ray关闭失败");
+                return AjaxResp.failure("v2ray关闭失败");
             }
         } else {
             logger.info("v2ray没有运行");
-            resultData.setCode(2);
-            resultData.setMsg("v2ray没有运行");
+            return AjaxResp.of(2, "v2ray没有运行");
         }
-        return resultData;
     }
 
     /**
@@ -100,15 +89,10 @@ public class V2rayController {
      */
     @PostMapping("/state")
     @ResponseBody
-    private ResultBody<?> state() {
-        var resultData = new ResultData<>();
-        if (v2ray.isAlive()) {
-            resultData.setCode(1);
-            resultData.setMsg("v2ray正在运行");
-        } else {
-            resultData.setCode(0);
-            resultData.setMsg("v2ray没有运行");
-        }
-        return resultData;
+    private AjaxResp<?> state() {
+        return AjaxResp.success(
+                v2ray.isAlive() ? "v2ray正在运行" : "v2ray没有运行",
+                v2ray.isAlive()
+        );
     }
 }

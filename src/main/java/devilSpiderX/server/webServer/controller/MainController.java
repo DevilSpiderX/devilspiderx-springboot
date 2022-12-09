@@ -1,9 +1,8 @@
 package devilSpiderX.server.webServer.controller;
 
 import devilSpiderX.server.webServer.MainApplication;
-import devilSpiderX.server.webServer.controller.response.ResultBody;
-import devilSpiderX.server.webServer.controller.response.ResultData;
 import devilSpiderX.server.webServer.service.OS;
+import devilSpiderX.server.webServer.util.AjaxResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -27,12 +26,9 @@ public class MainController {
      */
     @PostMapping("/os/reboot")
     @ResponseBody
-    private ResultBody<?> OSReboot() {
-        var respResult = new ResultData<>();
-        respResult.setCode(0);
-        respResult.setMsg("成功\n服务器正在重启......");
+    private AjaxResp<Void> OSReboot() {
         OS.reboot(500);
-        return respResult;
+        return AjaxResp.success("成功,服务器正在重启");
     }
 
     /**
@@ -46,12 +42,9 @@ public class MainController {
      */
     @PostMapping("/os/shutdown")
     @ResponseBody
-    private ResultBody<?> OSShutdown() {
-        var respResult = new ResultData<>();
-        respResult.setCode(0);
-        respResult.setMsg("成功\n服务器正在关机......");
+    private AjaxResp<Void> OSShutdown() {
         OS.shutdown(500);
-        return respResult;
+        return AjaxResp.success("成功,服务器正在关机");
     }
 
     /**
@@ -66,10 +59,7 @@ public class MainController {
      */
     @RequestMapping("/service/shutdown")
     @ResponseBody
-    private ResultBody<?> serviceShutdown() {
-        var respResult = new ResultData<>();
-        respResult.setCode(0);
-        respResult.setMsg("关闭成功");
+    private AjaxResp<Void> serviceShutdown() {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
@@ -78,6 +68,6 @@ public class MainController {
                 logger.error(e.getMessage(), e);
             }
         }, "service-shutdown-thread").start();
-        return respResult;
+        return AjaxResp.success("关闭成功");
     }
 }

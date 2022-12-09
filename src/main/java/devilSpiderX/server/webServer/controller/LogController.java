@@ -1,7 +1,6 @@
 package devilSpiderX.server.webServer.controller;
 
-import devilSpiderX.server.webServer.controller.response.ResultBody;
-import devilSpiderX.server.webServer.controller.response.ResultArray;
+import devilSpiderX.server.webServer.util.AjaxResp;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 @Controller
 @RequestMapping("/api/admin/log")
@@ -26,11 +26,10 @@ public class LogController {
 
     @RequestMapping("/list")
     @ResponseBody
-    public ResultBody<?> list() throws IOException {
-        var result = new ResultArray<>();
-        result.setCode(0);
-        Files.list(Paths.get(logDir)).forEach(path -> result.add(path.getFileName().toString()));
-        return result;
+    public AjaxResp<?> list() throws IOException {
+        var logArray = new ArrayList<>();
+        Files.list(Paths.get(logDir)).forEach(path -> logArray.add(path.getFileName().toString()));
+        return AjaxResp.success(logArray);
     }
 
     @GetMapping("/{logName}")

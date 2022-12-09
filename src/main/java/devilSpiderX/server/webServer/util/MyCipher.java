@@ -20,7 +20,7 @@ public class MyCipher {
         String key = "DevilSpiderX";
         byte[] keyBytes = new byte[0];
         try {
-            keyBytes = MessageDigest.getInstance("MD5").digest(key.getBytes(StandardCharsets.UTF_8));
+            keyBytes = MD5(key);
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage(), e);
             MainApplication.close(e.hashCode());
@@ -70,17 +70,25 @@ public class MyCipher {
         return cipher.doFinal(value);
     }
 
-    public static String SHA256(String value) throws NoSuchAlgorithmException {
-        StringBuilder resultBld = new StringBuilder();
-        MessageDigest SHA256Digest = MessageDigest.getInstance("SHA-256");
-        byte[] buff = SHA256Digest.digest(value.getBytes(StandardCharsets.UTF_8));
-        for (byte b : buff) {
+    public static String bytes2Hex(byte[] value) {
+        StringBuilder result = new StringBuilder();
+        for (byte b : value) {
             String hex = Integer.toHexString(b & 0xFF);
             if (hex.length() == 1) {
-                resultBld.append(0);
+                result.append(0);
             }
-            resultBld.append(hex);
+            result.append(hex);
         }
-        return resultBld.toString();
+        return result.toString();
+    }
+
+    public static byte[] MD5(String value) throws NoSuchAlgorithmException {
+        MessageDigest MD5Digest = MessageDigest.getInstance("MD5");
+        return MD5Digest.digest(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static byte[] SHA256(String value) throws NoSuchAlgorithmException {
+        MessageDigest SHA256Digest = MessageDigest.getInstance("SHA-256");
+        return SHA256Digest.digest(value.getBytes(StandardCharsets.UTF_8));
     }
 }

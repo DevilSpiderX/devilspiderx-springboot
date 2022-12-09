@@ -1,11 +1,11 @@
 package devilSpiderX.server.webServer.controller;
 
-import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.controller.response.ResultBody;
-import devilSpiderX.server.webServer.controller.response.ResultData;
+import devilSpiderX.server.webServer.util.AjaxResp;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Controller
 @RequestMapping("/error")
@@ -18,29 +18,22 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
 
     @PostMapping("/{status:\\d+}")
     @ResponseBody
-    public JSONObject error_post(@PathVariable int status) {
-        JSONObject respJson = new JSONObject();
-        respJson.put("timestamp", System.currentTimeMillis());
-        respJson.put("status", status);
-        respJson.put("error", HttpStatus.valueOf(status).getReasonPhrase());
-        return respJson;
+    public AjaxResp<?> error_post(@PathVariable int status) {
+        return AjaxResp.of(status, HttpStatus.valueOf(status).getReasonPhrase())
+                .setData(Map.of(
+                        "timestamp", System.currentTimeMillis()
+                ));
     }
 
-    @RequestMapping("/userNoLogin")
+    @RequestMapping("/notLogin")
     @ResponseBody
-    public ResultBody<?> UserNoLogin() {
-        var result = new ResultData<>();
-        result.setCode(100);
-        result.setMsg("没有权限，请登录");
-        return result;
+    public AjaxResp<?> UserNoLogin() {
+        return AjaxResp.notLogin();
     }
 
-    @RequestMapping("/noAdmin")
+    @RequestMapping("/notAdmin")
     @ResponseBody
-    public ResultBody<?> NoAdmin() {
-        var result = new ResultData<>();
-        result.setCode(100);
-        result.setMsg("没有管理员权限");
-        return result;
+    public AjaxResp<?> NoAdmin() {
+        return AjaxResp.notAdmin();
     }
 }
