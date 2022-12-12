@@ -1,7 +1,6 @@
 package devilSpiderX.server.webServer.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.entity.MyPasswords;
 import devilSpiderX.server.webServer.service.MyPasswordsService;
 import devilSpiderX.server.webServer.service.SettingsService;
@@ -97,38 +96,28 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     }
 
     private JSONArray _query(List<String> names, String owner) {
-        JSONArray result = new JSONArray();
         List<MyPasswords> passwords;
         MyPasswords emptyMP = new MyPasswords();
         if (names == null || names.isEmpty() || (names.size() == 1 && names.get(0).equals(""))) {
             emptyMP.setOwner(owner);
             passwords = suid.select(emptyMP);
         } else {
-            passwords = new ArrayList<>();
             Set<String> nameSet = new HashSet<>(names);
             List<String> nameList = new LinkedList<>(nameSet);
             nameList.remove("");
 
-            for (String name : nameList) {
-                Condition con = new ConditionImpl();
-                con.op("name", Op.like, name + '%').and().op("owner", Op.equal, owner);
-                List<MyPasswords> selectList = suid.select(emptyMP, con);
-                if (selectList.isEmpty()) {
-                    Condition con1 = new ConditionImpl();
-                    con1.op("name", Op.like, '%' + name + '%').and().op("owner", Op.equal, owner);
-                    selectList.addAll(suid.select(emptyMP, con1));
-                    if (selectList.isEmpty()) {
-                        StringBuilder nameKey = new StringBuilder("%");
-                        for (char c : name.toCharArray()) {
-                            nameKey.append(c).append('%');
-                        }
-                        Condition con2 = new ConditionImpl();
-                        con2.op("name", Op.like, nameKey.toString()).and().op("owner", Op.equal, owner);
-                        selectList.addAll(suid.select(emptyMP, con2));
-                    }
+            Condition con = new ConditionImpl();
+            con.lParentheses();
+            for (int i = 0; i < nameList.size(); i++) {
+                String name = nameList.get(i);
+                if (i == 0) {
+                    con.op("name", Op.like, '%' + name + '%');
+                    continue;
                 }
-                passwords.addAll(selectList);
+                con.or().op("name", Op.like, '%' + name + '%');
             }
+            con.rParentheses().and().op("owner", Op.equal, owner);
+            passwords = suid.select(emptyMP, con);
         }
 
         List<MyPasswords> deletedPasswords = new ArrayList<>();
@@ -140,21 +129,16 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         passwords.removeAll(deletedPasswords);
 
         passwords.sort(Comparator.naturalOrder());
-        int lastId = -1;
+
+        JSONArray result = new JSONArray();
         for (MyPasswords password : passwords) {
-            int id = password.getId();
-            putting:
-            {
-                if (id == lastId) break putting;
-                JSONObject one = new JSONObject();
-                one.put("id", id);
-                one.put("name", password.getName());
-                one.put("account", password.getAccount());
-                one.put("password", MyCipher.decrypt(password.getPassword()));
-                one.put("remark", password.getRemark());
-                result.add(one);
-            }
-            lastId = id;
+            result.add(Map.of(
+                    "id", password.getId(),
+                    "name", password.getName(),
+                    "account", password.getAccount(),
+                    "password", MyCipher.decrypt(password.getPassword()),
+                    "remark", password.getRemark()
+            ));
         }
         return result;
     }
