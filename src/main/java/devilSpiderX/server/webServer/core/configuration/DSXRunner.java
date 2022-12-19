@@ -1,12 +1,12 @@
 package devilSpiderX.server.webServer.core.configuration;
 
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;

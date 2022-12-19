@@ -2,12 +2,15 @@ package devilSpiderX.server.webServer.module.user.controller;
 
 import devilSpiderX.server.webServer.core.entity.User;
 import devilSpiderX.server.webServer.core.interceptor.LoginInterceptor;
-import devilSpiderX.server.webServer.module.user.request.LoginRequest;
-import devilSpiderX.server.webServer.module.user.request.RegisterRequest;
-import devilSpiderX.server.webServer.module.user.service.UserService;
 import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
+import devilSpiderX.server.webServer.module.user.request.LoginRequest;
+import devilSpiderX.server.webServer.module.user.request.RegisterRequest;
+import devilSpiderX.server.webServer.module.user.service.UserService;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -21,9 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;

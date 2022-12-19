@@ -1,7 +1,8 @@
 package devilSpiderX.server.webServer.module.v2ray.controller;
 
-import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
+import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 
 @Controller

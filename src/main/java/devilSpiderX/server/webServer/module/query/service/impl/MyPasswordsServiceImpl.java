@@ -2,12 +2,13 @@ package devilSpiderX.server.webServer.module.query.service.impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import devilSpiderX.server.webServer.core.entity.MyPasswords;
-import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import devilSpiderX.server.webServer.core.service.SettingsService;
-import devilSpiderX.server.webServer.module.user.service.UserService;
 import devilSpiderX.server.webServer.core.util.MyCipher;
+import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
+import devilSpiderX.server.webServer.module.user.service.UserService;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
@@ -16,7 +17,6 @@ import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 
-import javax.annotation.Resource;
 import java.util.*;
 
 @Service("myPasswordsService")

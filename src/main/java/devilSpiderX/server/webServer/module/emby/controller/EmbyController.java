@@ -1,10 +1,7 @@
 package devilSpiderX.server.webServer.module.emby.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -25,11 +22,11 @@ public class EmbyController {
 
     @RequestMapping("/admin/service/registration/getStatus")
     @ResponseBody
-    private Map<String, Object> getStatus(@RequestBody(required = false) Map<String, Object> reqBody) {
+    private Map<String, Object> getStatus(@RequestParam Map<String, String> reqBody) {
         return Map.of(
                 "deviceStatus", "0",
                 "planType", "Lifetime",
-                "subscriptions", reqBody == null ? Map.of() : reqBody
+                "subscriptions", reqBody
         );
     }
 

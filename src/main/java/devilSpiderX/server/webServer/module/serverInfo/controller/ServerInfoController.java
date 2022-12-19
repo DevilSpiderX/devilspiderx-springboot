@@ -1,17 +1,17 @@
 package devilSpiderX.server.webServer.module.serverInfo.controller;
 
+import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.statistics.CPU;
 import devilSpiderX.server.webServer.module.serverInfo.statistics.Disk;
 import devilSpiderX.server.webServer.module.serverInfo.statistics.Memory;
 import devilSpiderX.server.webServer.module.serverInfo.statistics.Network;
-import devilSpiderX.server.webServer.core.util.AjaxResp;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
