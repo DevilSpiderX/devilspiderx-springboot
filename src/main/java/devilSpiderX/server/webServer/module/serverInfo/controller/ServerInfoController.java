@@ -2,24 +2,19 @@ package devilSpiderX.server.webServer.module.serverInfo.controller;
 
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
-import devilSpiderX.server.webServer.module.serverInfo.statistics.CPU;
-import devilSpiderX.server.webServer.module.serverInfo.statistics.Disk;
-import devilSpiderX.server.webServer.module.serverInfo.statistics.Memory;
-import devilSpiderX.server.webServer.module.serverInfo.statistics.Network;
+import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.CPU;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.Disk;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.Memory;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.Network;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Map;
 
 @Controller
@@ -27,6 +22,9 @@ import java.util.Map;
 public class ServerInfoController {
     @Resource(name = "serverInfoService")
     private ServerInfoService serverInfoService;
+
+    @Resource(name = "tokenService")
+    private TokenService tokenService;
 
     /**
      * <b>CPU信息</b>
@@ -103,18 +101,6 @@ public class ServerInfoController {
         return AjaxResp.success(diskArray);
     }
 
-    public static String makeToken(String timeStr) {
-        byte[] digest;
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("md5");
-            digest = md5.digest(timeStr.getBytes(StandardCharsets.UTF_8));
-            return new BigInteger(1, digest).toString(16);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     /**
      * <b>获取token</b>
      * <p>
@@ -127,15 +113,11 @@ public class ServerInfoController {
      */
     @PostMapping("/token")
     @ResponseBody
-    private AjaxResp<?> token() {
-        String timeStr = LocalDateTime.now().format(
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
-        );
-        String token = makeToken(timeStr);
+    private AjaxResp<?> token(@SessionAttribute String uid) {
+        String token = tokenService.generate(uid);
         return token != null ?
                 AjaxResp.success(Map.of(
-                        "token", token,
-                        "timeStr", timeStr
+                        "token", token
                 ))
                 :
                 AjaxResp.failure("token生成失败");

@@ -1,28 +1,29 @@
 package devilSpiderX.server.webServer.module.serverInfo.service;
 
-import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.module.serverInfo.statistics.*;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 public interface ServerInfoService {
     CPU getCPU();
 
-    JSONObject constructCpuObject(CPU cpu);
+    Map<String, Serializable> constructCpuObject(CPU cpu);
 
     Memory getMemory();
 
-    JSONObject constructMemoryObject(Memory memory);
+    Map<String, Serializable> constructMemoryObject(Memory memory);
 
     List<Disk> getDisks();
 
-    JSONObject constructDiskObject(Disk disk);
+    Map<String, Serializable> constructDiskObject(Disk disk);
 
     List<Network> getNetworks();
 
-    JSONObject constructNetworkObject(Network network);
+    Map<String, Serializable> constructNetworkObject(Network network);
 
     CurrentOS getCurrentOS();
 
-    JSONObject constructCurrentOSObject(CurrentOS currentOS);
+    Map<String, Serializable> constructCurrentOSObject(CurrentOS currentOS);
 }

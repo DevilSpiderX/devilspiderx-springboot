@@ -1,13 +1,10 @@
 package devilSpiderX.server.webServer.module.query.service.impl;
 
-import com.alibaba.fastjson2.JSONArray;
 import devilSpiderX.server.webServer.core.entity.MyPasswords;
 import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import devilSpiderX.server.webServer.module.user.service.UserService;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.Condition;
@@ -17,6 +14,7 @@ import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 
+import java.io.Serializable;
 import java.util.*;
 
 @Service("myPasswordsService")
@@ -79,23 +77,23 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     }
 
     @Override
-    public JSONArray query(String name, String owner) {
+    public List<Map<String, Serializable>> query(String name, String owner) {
         if (name == null) return _query(null, owner);
         return _query(List.of(name), owner);
     }
 
     @Override
-    public JSONArray query(String[] names, String owner) {
+    public List<Map<String, Serializable>> query(String[] names, String owner) {
         if (names == null) return _query(null, owner);
         return _query(List.of(names), owner);
     }
 
     @Override
-    public JSONArray query(List<String> names, String owner) {
+    public List<Map<String, Serializable>> query(List<String> names, String owner) {
         return _query(names, owner);
     }
 
-    private JSONArray _query(List<String> names, String owner) {
+    private List<Map<String, Serializable>> _query(List<String> names, String owner) {
         List<MyPasswords> passwords;
         MyPasswords emptyMP = new MyPasswords();
         if (names == null || names.isEmpty() || (names.size() == 1 && names.get(0).equals(""))) {
@@ -130,7 +128,7 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
 
         passwords.sort(Comparator.naturalOrder());
 
-        JSONArray result = new JSONArray();
+        List<Map<String, Serializable>> result = new ArrayList<>();
         for (MyPasswords password : passwords) {
             result.add(Map.of(
                     "id", password.getId(),
@@ -144,35 +142,41 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     }
 
     @Override
-    public Tuple2<JSONArray, Integer> query(String name, int page, String owner) {
-        JSONArray array = query(name, owner);
+    public pageQueryRecord query(String name, int page, String owner) {
+        List<Map<String, Serializable>> array = query(name, owner);
         return subQueryResult(array, page);
     }
 
     @Override
-    public Tuple2<JSONArray, Integer> query(String[] names, int page, String owner) {
-        JSONArray array = query(names, owner);
+    public pageQueryRecord query(String[] names, int page, String owner) {
+        List<Map<String, Serializable>> array = query(names, owner);
         return subQueryResult(array, page);
     }
 
     @Override
-    public Tuple2<JSONArray, Integer> query(List<String> names, int page, String owner) {
-        JSONArray array = query(names, owner);
+    public pageQueryRecord query(List<String> names, int page, String owner) {
+        List<Map<String, Serializable>> array = query(names, owner);
         return subQueryResult(array, page);
     }
 
-    private Tuple2<JSONArray, Integer> subQueryResult(JSONArray array, int page) {
+    private pageQueryRecord subQueryResult(List<Map<String, Serializable>> array, int page) {
         int pageSize = Integer.parseInt(settingsService.get("page_size"));
         int fromIndex = (page - 1) * pageSize;
         int toIndex = fromIndex + pageSize;
         int arraySize = array.size();
-        if (fromIndex < 0) fromIndex = 0;
-        if (fromIndex > arraySize) fromIndex = arraySize - pageSize;
-        if (toIndex < 0) toIndex = pageSize;
-        if (toIndex > arraySize) toIndex = arraySize;
-        JSONArray t_1 = new JSONArray(array.subList(fromIndex, toIndex));
+
+        if (fromIndex < 0)
+            fromIndex = 0;
+        if (fromIndex > arraySize)
+            fromIndex = arraySize - pageSize;
+        if (toIndex < 0)
+            toIndex = pageSize;
+        if (toIndex > arraySize)
+            toIndex = arraySize;
+
+        List<Map<String, Serializable>> sub = array.subList(fromIndex, toIndex);
         int pageCount = array.size() / pageSize;
         if (array.size() % pageSize > 0) pageCount++;
-        return Tuple.of(t_1, pageCount);
+        return new pageQueryRecord(sub, pageCount);
     }
 }

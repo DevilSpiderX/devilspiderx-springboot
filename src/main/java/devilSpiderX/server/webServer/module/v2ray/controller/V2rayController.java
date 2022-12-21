@@ -15,9 +15,9 @@ import java.io.IOException;
 @Controller
 @RequestMapping("/api/admin/v2ray")
 public class V2rayController {
+    private static final Logger logger = LoggerFactory.getLogger(V2rayController.class);
     @Resource(name = "v2ray")
     private V2ray v2ray;
-    private static final Logger logger = LoggerFactory.getLogger(V2rayController.class);
 
     /**
      * <b>启动v2ray</b>

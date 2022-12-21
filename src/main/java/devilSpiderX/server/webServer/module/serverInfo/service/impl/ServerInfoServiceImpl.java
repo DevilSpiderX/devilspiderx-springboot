@@ -1,10 +1,8 @@
 package devilSpiderX.server.webServer.module.serverInfo.service.impl;
 
-import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
-import devilSpiderX.server.webServer.module.serverInfo.statistics.*;
 import devilSpiderX.server.webServer.core.util.FormatUtil;
-import io.vavr.Tuple2;
+import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
 import org.springframework.stereotype.Service;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
@@ -16,9 +14,8 @@ import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -182,6 +179,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                         .setFree(free)
                         .setUsed(used);
             }
+            disks.sort(Comparator.naturalOrder());
         }
     }
 
@@ -231,131 +229,125 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public JSONObject constructCpuObject(CPU cpu) {
-        JSONObject result = new JSONObject();
-        result.put("name", cpu.getName());
-        result.put("physicalNum", cpu.getPhysicalNum());
-        result.put("logicalNum", cpu.getLogicalNum());
-        result.put("usedRate", cpu.getUsedRate());
-        result.put("is64bit", cpu.isA64bit());
-        result.put("cpuTemperature", cpu.getTemperature());
-        return result;
+    public Map<String, Serializable> constructCpuObject(CPU cpu) {
+        return Map.of(
+                "name", cpu.getName(),
+                "physicalNum", cpu.getPhysicalNum(),
+                "logicalNum", cpu.getLogicalNum(),
+                "usedRate", cpu.getUsedRate(),
+                "is64bit", cpu.isA64bit(),
+                "cpuTemperature", cpu.getTemperature()
+        );
     }
 
     @Override
-    public JSONObject constructMemoryObject(Memory memory) {
-        JSONObject result = new JSONObject();
+    public Map<String, Serializable> constructMemoryObject(Memory memory) {
         long total = memory.getTotal();
         long used = memory.getUsed();
         long free = memory.getFree();
 
-        result.put("total", total);
-        result.put("used", used);
-        result.put("free", free);
-
         //格式化数据
-        JSONObject format = new JSONObject();
+        HashMap<String, Object> format = new HashMap<>();
 
-        JSONObject totalFormat = new JSONObject();
-        Tuple2<Double, String> totalUnit = FormatUtil.unitBytes(total, 2);
-        totalFormat.put("value", totalUnit._1);
-        totalFormat.put("unit", totalUnit._2);
-        format.put("total", totalFormat);
+        FormatUtil.UnitRecord totalUnit = FormatUtil.unitBytes(total, 2);
+        format.put("total", Map.of(
+                "value", totalUnit.value(),
+                "unit", totalUnit.unit()
+        ));
 
-        JSONObject usedFormat = new JSONObject();
-        Tuple2<Double, String> usedUnit = FormatUtil.unitBytes(used, 2);
-        usedFormat.put("value", usedUnit._1);
-        usedFormat.put("unit", usedUnit._2);
-        format.put("used", usedFormat);
+        FormatUtil.UnitRecord usedUnit = FormatUtil.unitBytes(used, 2);
+        format.put("used", Map.of(
+                "value", usedUnit.value(),
+                "unit", usedUnit.unit()
+        ));
 
-        JSONObject freeFormat = new JSONObject();
-        Tuple2<Double, String> freeUnit = FormatUtil.unitBytes(free, 2);
-        freeFormat.put("value", freeUnit._1);
-        freeFormat.put("unit", freeUnit._2);
-        format.put("free", freeFormat);
+        FormatUtil.UnitRecord freeUnit = FormatUtil.unitBytes(free, 2);
+        format.put("free", Map.of(
+                "value", freeUnit.value(),
+                "unit", freeUnit.unit()
+        ));
 
-        result.put("format", format);
-
-        return result;
+        return Map.of(
+                "total", total,
+                "used", used,
+                "free", free,
+                "format", format
+        );
     }
 
     @Override
-    public JSONObject constructDiskObject(Disk disk) {
-        JSONObject result = new JSONObject();
+    public Map<String, Serializable> constructDiskObject(Disk disk) {
         long total = disk.getTotal();
         long free = disk.getFree();
         long used = disk.getUsed();
 
-        result.put("label", disk.getLabel());
-        result.put("mount", disk.getMount());
-        result.put("fSType", disk.getFSType());
-        result.put("name", disk.getName());
-        result.put("total", total);
-        result.put("free", free);
-        result.put("used", used);
-
         //格式化数据
-        JSONObject format = new JSONObject();
+        HashMap<String, Object> format = new HashMap<>();
 
-        JSONObject totalFormat = new JSONObject();
-        Tuple2<Double, String> totalUnit = FormatUtil.unitBytes(total, 2);
-        totalFormat.put("value", totalUnit._1);
-        totalFormat.put("unit", totalUnit._2);
-        format.put("total", totalFormat);
+        FormatUtil.UnitRecord totalUnit = FormatUtil.unitBytes(total, 2);
+        format.put("total", Map.of(
+                "value", totalUnit.value(),
+                "unit", totalUnit.unit()
+        ));
 
-        JSONObject freeFormat = new JSONObject();
-        Tuple2<Double, String> freeUnit = FormatUtil.unitBytes(free, 2);
-        freeFormat.put("value", freeUnit._1);
-        freeFormat.put("unit", freeUnit._2);
-        format.put("free", freeFormat);
+        FormatUtil.UnitRecord freeUnit = FormatUtil.unitBytes(free, 2);
+        format.put("free", Map.of(
+                "value", freeUnit.value(),
+                "unit", freeUnit.unit()
+        ));
 
-        JSONObject usedFormat = new JSONObject();
-        Tuple2<Double, String> usedUnit = FormatUtil.unitBytes(used, 2);
-        usedFormat.put("value", usedUnit._1);
-        usedFormat.put("unit", usedUnit._2);
-        format.put("used", usedFormat);
+        FormatUtil.UnitRecord usedUnit = FormatUtil.unitBytes(used, 2);
+        format.put("used", Map.of(
+                "value", usedUnit.value(),
+                "unit", usedUnit.unit()
+        ));
 
-        result.put("format", format);
-
-        return result;
+        return Map.of(
+                "label", disk.getLabel(),
+                "mount", disk.getMount(),
+                "fSType", disk.getFSType(),
+                "name", disk.getName(),
+                "total", total,
+                "free", free,
+                "used", used,
+                "format", format
+        );
     }
 
     @Override
-    public JSONObject constructNetworkObject(Network network) {
-        JSONObject result = new JSONObject();
+    public Map<String, Serializable> constructNetworkObject(Network network) {
         long uploadSpeed = network.getUploadSpeed();
         long downloadSpeed = network.getDownloadSpeed();
 
-        result.put("uploadSpeed", uploadSpeed);
-        result.put("downloadSpeed", downloadSpeed);
-
         //格式化数据
-        JSONObject format = new JSONObject();
+        HashMap<String, Object> format = new HashMap<>();
 
-        JSONObject uploadSpeedFormat = new JSONObject();
-        Tuple2<Double, String> uploadSpeedUnit = FormatUtil.unitBytes(uploadSpeed, 2);
-        uploadSpeedFormat.put("value", uploadSpeedUnit._1);
-        uploadSpeedFormat.put("unit", uploadSpeedUnit._2 + "/s");
-        format.put("uploadSpeed", uploadSpeedFormat);
+        FormatUtil.UnitRecord uploadSpeedUnit = FormatUtil.unitBytes(uploadSpeed, 2);
+        format.put("uploadSpeed", Map.of(
+                "value", uploadSpeedUnit.value(),
+                "unit", uploadSpeedUnit.unit() + "/s"
+        ));
 
-        JSONObject downloadSpeedFormat = new JSONObject();
-        Tuple2<Double, String> downloadSpeedUnit = FormatUtil.unitBytes(downloadSpeed, 2);
-        downloadSpeedFormat.put("value", downloadSpeedUnit._1);
-        downloadSpeedFormat.put("unit", downloadSpeedUnit._2 + "/s");
-        format.put("downloadSpeed", downloadSpeedFormat);
+        FormatUtil.UnitRecord downloadSpeedUnit = FormatUtil.unitBytes(downloadSpeed, 2);
+        format.put("downloadSpeed", Map.of(
+                "value", downloadSpeedUnit.value(),
+                "unit", downloadSpeedUnit.unit() + "/s"
+        ));
 
-        result.put("format", format);
-
-        return result;
+        return Map.of(
+                "uploadSpeed", uploadSpeed,
+                "downloadSpeed", downloadSpeed,
+                "format", format
+        );
     }
 
     @Override
-    public JSONObject constructCurrentOSObject(CurrentOS currentOS) {
-        JSONObject result = new JSONObject();
-        result.put("name", currentOS.getName());
-        result.put("bitness", currentOS.getBitness());
-        result.put("processCount", currentOS.getProcessCount());
-        return result;
+    public Map<String, Serializable> constructCurrentOSObject(CurrentOS currentOS) {
+        return Map.of(
+                "name", currentOS.getName(),
+                "bitness", currentOS.getBitness(),
+                "processCount", currentOS.getProcessCount()
+        );
     }
 
     private class UpdateThread extends Thread {

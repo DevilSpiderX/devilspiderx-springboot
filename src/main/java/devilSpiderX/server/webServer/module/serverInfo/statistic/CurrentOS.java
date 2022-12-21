@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.module.serverInfo.statistics;
+package devilSpiderX.server.webServer.module.serverInfo.statistic;
 
 public class CurrentOS {
     /**

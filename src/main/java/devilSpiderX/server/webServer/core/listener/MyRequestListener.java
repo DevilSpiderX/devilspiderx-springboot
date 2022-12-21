@@ -18,7 +18,7 @@ public class MyRequestListener implements ServletRequestListener {
         HttpServletRequest req = (HttpServletRequest) sre.getServletRequest();
         HttpSession session = req.getSession();
         session.setAttribute("address", req.getRemoteAddr());
-        logger.info(String.format("（%s） %s %s %s", req.getRemoteAddr(), req.getMethod(),
+        logger.info(String.format("（%s:%d） %s %s %s", req.getRemoteAddr(), req.getRemotePort(), req.getMethod(),
                 req.getRequestURI(), req.getProtocol()));
     }
 }

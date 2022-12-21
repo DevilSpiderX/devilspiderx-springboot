@@ -5,8 +5,6 @@ import devilSpiderX.server.webServer.core.interceptor.LoginInterceptor;
 import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
-import devilSpiderX.server.webServer.module.user.request.LoginRequest;
-import devilSpiderX.server.webServer.module.user.request.RegisterRequest;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,10 +49,25 @@ public class UserController {
     }
 
     /**
+     * 登录请求参数
+     *
+     * @param uid 用户id
+     * @param pwd 密码
+     */
+    record LoginRequest(String uid, String pwd) {
+        /**
+         * @return 密码
+         */
+        public String password() {
+            return pwd;
+        }
+    }
+
+    /**
      * <b>登录</b>
      * <p>
      * <b>应包含参数：</b>
-     * uid, pwd
+     * {@link LoginRequest}
      * </p>
      * <p>
      * <b>返回代码：</b>
@@ -63,16 +76,16 @@ public class UserController {
      */
     @PostMapping("/login")
     private ResponseEntity<AjaxResp<?>> login(@RequestBody LoginRequest reqBody, HttpServletRequest req) {
-        if (reqBody.getUid() == null || reqBody.getPwd() == null) {
+        if (reqBody.uid() == null || reqBody.pwd() == null) {
             return ResponseEntity.ok(AjaxResp.error());
         }
-        String uid = reqBody.getUid();
-        String pwd = reqBody.getPwd();
+        String uid = reqBody.uid();
+        String password = reqBody.password();
         User user = userService.get(uid);
 
         if (user == null) {
             return ResponseEntity.ok(AjaxResp.of(2, "用户不存在"));
-        } else if (Objects.equals(user.getPassword().toLowerCase(), pwd.toLowerCase())) {
+        } else if (Objects.equals(user.getPassword().toLowerCase(), password.toLowerCase())) {
             HttpHeaders headers = new HttpHeaders();
 
             HttpSession session = req.getSession();
@@ -126,6 +139,21 @@ public class UserController {
     }
 
     /**
+     * 注册请求参数
+     *
+     * @param uid 用户id
+     * @param pwd 密码
+     */
+    record RegisterRequest(String uid, String pwd) {
+        /**
+         * @return 密码
+         */
+        public String password() {
+            return pwd;
+        }
+    }
+
+    /**
      * <b>注册</b>
      * <p>
      * <b>应包含参数：</b>
@@ -140,16 +168,16 @@ public class UserController {
     @ResponseBody
     private AjaxResp<?> register(@RequestBody RegisterRequest reqBody, HttpServletRequest req)
             throws NoSuchAlgorithmException {
-        String uid = reqBody.getUid();
-        String pwd = reqBody.getPwd();
-        if (uid == null || pwd == null) {
+        String uid = reqBody.uid();
+        String password = reqBody.password();
+        if (uid == null || password == null) {
             return AjaxResp.error();
         }
-        pwd = MyCipher.bytes2Hex(MyCipher.SHA256(pwd));
+        password = MyCipher.bytes2Hex(MyCipher.SHA256(password));
 
         if (userService.exist(uid)) {
             return AjaxResp.of(2, "该uid已存在");
-        } else if (userService.register(uid, pwd, req.getRemoteAddr())) {
+        } else if (userService.register(uid, password, req.getRemoteAddr())) {
             return AjaxResp.success();
         } else {
             return AjaxResp.failure();
