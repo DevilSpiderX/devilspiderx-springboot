@@ -63,7 +63,7 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         String sessionId = session.getId();
-        Thread timingSendInfoThread = timingSendInfoThreadMap.get(sessionId);
+        Thread timingSendInfoThread = timingSendInfoThreadMap.remove(sessionId);
         if (timingSendInfoThread != null && !timingSendInfoThread.isInterrupted()) {
             timingSendInfoThread.interrupt();
         }
@@ -82,22 +82,20 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         info(attr.address(), "来自客户端" + attr.uid() + "的消息 - " + msg);
         JSONObject data = JSON.parseObject(msg);
         if ("start".equals(data.getString("cmd"))) {
-            Thread timingSendInfoThread = timingSendInfoThreadMap.get(sessionId);
-            if (timingSendInfoThread != null) {
-                timingSendInfoThread.interrupt();
-                logger.info("中止上个定时线程");
-            }
-            timingSendInfoThread = new Thread(
+            Thread timingSendInfoThread = new Thread(
                     () -> sendServerInfo(session, data.getLong("cd")),
                     "timing_send_info_" + sessionId
             );
-            timingSendInfoThreadMap.put(sessionId, timingSendInfoThread);
+            Thread lastThread = timingSendInfoThreadMap.put(sessionId, timingSendInfoThread);
+            if (lastThread != null) {
+                lastThread.interrupt();
+                logger.info("中止上个定时线程");
+            }
             timingSendInfoThread.start();
         }
     }
 
     public void sendServerInfo(WebSocketSession session, long cd) {
-        Logger logger = LoggerFactory.getLogger(Thread.currentThread().getName());
         logger.info("定时线程任务开始");
         try {
             while (!Thread.currentThread().isInterrupted()) {
