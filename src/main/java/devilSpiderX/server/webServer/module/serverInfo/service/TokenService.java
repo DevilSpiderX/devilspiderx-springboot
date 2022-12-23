@@ -12,26 +12,26 @@ import java.util.*;
 
 @Service("tokenService")
 public class TokenService {
-    private static final Logger logger = LoggerFactory.getLogger(TokenService.class);
-    private final Map<String, List<String>> tokens = new HashMap<>();
+    private final Logger logger = LoggerFactory.getLogger(TokenService.class);
+    private final Map<String, List<String>> tokenMap = new HashMap<>();
 
-    public String generate(String uid) {
+    public String create(String uid) {
         if (uid == null) {
             return null;
         }
-        List<String> tokens = this.tokens.computeIfAbsent(uid, k -> new ArrayList<>());
-        String token = _generate();
+        List<String> tokens = tokenMap.computeIfAbsent(uid, k -> new ArrayList<>());
+        String token = _create(uid);
         if (token != null)
             tokens.add(token);
         return token;
     }
 
-    private String _generate() {
+    private String _create(String uid) {
         String timeStr = LocalDateTime.now().format(
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA)
         );
         try {
-            byte[] digest = MyCipher.MD5(timeStr);
+            byte[] digest = MyCipher.MD5(uid + timeStr);
             return MyCipher.bytes2Hex(digest);
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage(), e);
@@ -43,7 +43,7 @@ public class TokenService {
         if (uid == null || token == null) {
             return false;
         }
-        List<String> tokens = this.tokens.get(uid);
+        List<String> tokens = tokenMap.get(uid);
         if (tokens == null) {
             return false;
         }
@@ -59,7 +59,7 @@ public class TokenService {
         if (uid == null || token == null) {
             return;
         }
-        List<String> tokens = this.tokens.get(uid);
+        List<String> tokens = tokenMap.get(uid);
         if (tokens == null) {
             return;
         }

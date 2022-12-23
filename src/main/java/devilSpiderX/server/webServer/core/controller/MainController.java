@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping("/api/admin")
 public class MainController {
-    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
+    private final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     /**
      * <b>重启服务器</b>

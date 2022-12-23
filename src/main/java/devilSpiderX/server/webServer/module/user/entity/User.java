@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.core.entity;
+package devilSpiderX.server.webServer.module.user.entity;
 
 import java.io.Serial;
 import java.io.Serializable;

@@ -20,7 +20,7 @@ import java.util.Map;
 @Configuration
 @EnableWebSocket
 public class ServerInfoWSConfig implements WebSocketConfigurer {
-    private static final Logger logger = LoggerFactory.getLogger(ServerInfoWSConfig.class);
+    private final Logger logger = LoggerFactory.getLogger(ServerInfoWSConfig.class);
     @Resource(name = "tokenService")
     private TokenService tokenService;
     private final ServerInfoWSHandler serverInfoWSHandler;
@@ -32,34 +32,36 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(serverInfoWSHandler, "/websocket/getServerInfo")
-                .addInterceptors(new HttpSessionHandshakeInterceptor() {
-                    @Override
-                    public boolean beforeHandshake(
-                            ServerHttpRequest request,
-                            ServerHttpResponse response,
-                            WebSocketHandler wsHandler,
-                            Map<String, Object> attributes
-                    ) throws Exception {
-                        super.beforeHandshake(request, response, wsHandler, attributes);
-                        HttpServletRequest httpReq = ((ServletServerHttpRequest) request).getServletRequest();
-                        attributes.put("address", String.format(
-                                "%s:%d",
-                                httpReq.getRemoteAddr(),
-                                httpReq.getRemotePort()
-                        ));
-                        String uid = (String) attributes.get("uid");
-                        if (uid == null) {
-                            logger.info("未登录，拒绝连接");
-                            return false;
-                        }
-                        String token = httpReq.getParameter("token");
-                        if (tokenService.check(uid, token)) {
-                            attributes.put("token", token);
-                            return true;
-                        }
-                        logger.info("用户{}:token验证失败", uid);
-                        return false;
-                    }
-                });
+                .addInterceptors(new ServerInfoWSInterceptor());
+    }
+
+    private class ServerInfoWSInterceptor extends HttpSessionHandshakeInterceptor {
+        @Override
+        public boolean beforeHandshake(
+                ServerHttpRequest request,
+                ServerHttpResponse response,
+                WebSocketHandler wsHandler,
+                Map<String, Object> attributes
+        ) throws Exception {
+            super.beforeHandshake(request, response, wsHandler, attributes);
+            HttpServletRequest httpReq = ((ServletServerHttpRequest) request).getServletRequest();
+            attributes.put("address", String.format(
+                    "%s:%d",
+                    httpReq.getRemoteAddr(),
+                    httpReq.getRemotePort()
+            ));
+            String uid = (String) attributes.get("uid");
+            if (uid == null) {
+                logger.info("未登录，拒绝连接");
+                return false;
+            }
+            String token = httpReq.getParameter("token");
+            if (tokenService.check(uid, token)) {
+                attributes.put("token", token);
+                return true;
+            }
+            logger.info("用户{}:token验证失败", uid);
+            return false;
+        }
     }
 }

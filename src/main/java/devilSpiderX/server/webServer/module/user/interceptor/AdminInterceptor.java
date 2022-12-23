@@ -1,6 +1,6 @@
-package devilSpiderX.server.webServer.core.interceptor;
+package devilSpiderX.server.webServer.module.user.interceptor;
 
-import devilSpiderX.server.webServer.core.entity.User;
+import devilSpiderX.server.webServer.module.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;

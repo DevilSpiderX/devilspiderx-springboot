@@ -16,7 +16,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/api/query")
 public class QueryController {
-    private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
+    private final Logger logger = LoggerFactory.getLogger(QueryController.class);
     @Resource(name = "myPasswordsService")
     private MyPasswordsService myPasswordsService;
 
@@ -53,7 +53,7 @@ public class QueryController {
      */
     @PostMapping("/get")
     @ResponseBody
-    private AjaxResp<?> get(@RequestBody GetRequest reqBody, @SessionAttribute() String uid) {
+    private AjaxResp<?> get(@RequestBody GetRequest reqBody, @SessionAttribute String uid) {
         String[] keys = reqBody.keys();
         logger.info("用户{}查询记录：{}", uid, Arrays.toString(keys));
         List<Map<String, Serializable>> myPwdArray = myPasswordsService.query(keys, uid);
@@ -125,7 +125,7 @@ public class QueryController {
      */
     @PostMapping("/update")
     @ResponseBody
-    private AjaxResp<?> update(@RequestBody UpdateRequest reqBody, @SessionAttribute() String uid) {
+    private AjaxResp<?> update(@RequestBody UpdateRequest reqBody, @SessionAttribute String uid) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
@@ -162,7 +162,7 @@ public class QueryController {
      */
     @PostMapping("/delete")
     @ResponseBody
-    private AjaxResp<?> delete(@RequestBody DeleteRequest reqBody, @SessionAttribute() String uid) {
+    private AjaxResp<?> delete(@RequestBody DeleteRequest reqBody, @SessionAttribute String uid) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }

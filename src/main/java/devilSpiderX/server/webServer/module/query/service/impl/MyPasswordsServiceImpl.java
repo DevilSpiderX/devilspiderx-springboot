@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.module.query.service.impl;
 
-import devilSpiderX.server.webServer.core.entity.MyPasswords;
+import devilSpiderX.server.webServer.module.query.entity.MyPasswords;
 import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;

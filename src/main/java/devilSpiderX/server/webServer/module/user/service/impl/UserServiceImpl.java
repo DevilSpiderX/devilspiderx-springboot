@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.module.user.service.impl;
 
-import devilSpiderX.server.webServer.core.entity.User;
+import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.IncludeType;

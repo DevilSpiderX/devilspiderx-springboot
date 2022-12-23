@@ -14,7 +14,7 @@ import java.util.List;
 public class WindowsOS implements OS {
     public static final String OS_NAME = "Windows";
     private static final Charset CHARSET = Charset.forName("GBK");
-    private static final Logger logger = LoggerFactory.getLogger(WindowsOS.class);
+    private final Logger logger = LoggerFactory.getLogger(WindowsOS.class);
 
     @Override
     public String getOSName() {

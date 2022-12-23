@@ -3,7 +3,7 @@ package devilSpiderX.server.webServer.module.serverInfo.websocket;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import devilSpiderX.server.webServer.core.entity.User;
+import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.core.listener.HttpSessionRegister;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class ServerInfoWSHandler extends TextWebSocketHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ServerInfoWSHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ServerInfoWSHandler.class);
     private final AtomicInteger onlineCount = new AtomicInteger();
     @Resource(name = "serverInfoService")
     private ServerInfoService serverInfoService;

@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.module.user.controller;
 
-import devilSpiderX.server.webServer.core.entity.User;
-import devilSpiderX.server.webServer.core.interceptor.LoginInterceptor;
+import devilSpiderX.server.webServer.module.user.entity.User;
+import devilSpiderX.server.webServer.module.user.interceptor.LoginInterceptor;
 import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/api/user")
 @EnableScheduling
 public class UserController {
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private final Logger logger = LoggerFactory.getLogger(UserController.class);
     @Resource(name = "userService")
     private UserService userService;
     @Resource(name = "settingsService")

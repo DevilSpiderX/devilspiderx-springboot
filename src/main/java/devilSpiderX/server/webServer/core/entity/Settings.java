@@ -1,9 +1,10 @@
 package devilSpiderX.server.webServer.core.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class Settings implements Serializable {
-
+    @Serial
     private static final long serialVersionUID = 965457075416128487L;
 
     private Integer id;

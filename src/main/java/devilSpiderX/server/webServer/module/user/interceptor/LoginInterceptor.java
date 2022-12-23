@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.core.interceptor;
+package devilSpiderX.server.webServer.module.user.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

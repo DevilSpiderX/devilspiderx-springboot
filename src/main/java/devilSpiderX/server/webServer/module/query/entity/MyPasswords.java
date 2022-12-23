@@ -1,9 +1,10 @@
-package devilSpiderX.server.webServer.core.entity;
+package devilSpiderX.server.webServer.module.query.entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class MyPasswords implements Serializable, Comparable<MyPasswords> {
-
+    @Serial
     private static final long serialVersionUID = 1594978966205L;
 
     private Integer id;

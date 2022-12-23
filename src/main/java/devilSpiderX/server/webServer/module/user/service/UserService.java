@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.module.user.service;
 
-import devilSpiderX.server.webServer.core.entity.User;
+import devilSpiderX.server.webServer.module.user.entity.User;
 
 public interface UserService {
     User get(String uid);

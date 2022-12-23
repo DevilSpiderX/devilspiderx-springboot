@@ -15,7 +15,7 @@ import java.util.List;
 public class LinuxOS implements OS {
     public static final String OS_NAME = "Linux";
     private static final Charset CHARSET = StandardCharsets.UTF_8;
-    private static final Logger logger = LoggerFactory.getLogger(LinuxOS.class);
+    private final Logger logger = LoggerFactory.getLogger(LinuxOS.class);
 
     @Override
     public String getOSName() {

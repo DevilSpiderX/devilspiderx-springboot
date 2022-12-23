@@ -114,7 +114,7 @@ public class ServerInfoController {
     @PostMapping("/token")
     @ResponseBody
     private AjaxResp<?> token(@SessionAttribute String uid) {
-        String token = tokenService.generate(uid);
+        String token = tokenService.create(uid);
         return token != null ?
                 AjaxResp.success(Map.of(
                         "token", token
