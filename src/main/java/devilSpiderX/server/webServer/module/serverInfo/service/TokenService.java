@@ -13,16 +13,33 @@ import java.util.*;
 @Service("tokenService")
 public class TokenService {
     private final Logger logger = LoggerFactory.getLogger(TokenService.class);
-    private final Map<String, List<String>> tokenMap = new HashMap<>();
+
+    record Token(String value, long createdTime) {
+        boolean isAlive() {
+            return System.currentTimeMillis() - createdTime <= 10 * 60 * 1000;
+        }
+    }
+
+    private final Map<String, List<Token>> tokenMap = new HashMap<>();
+
 
     public String create(String uid) {
         if (uid == null) {
             return null;
         }
-        List<String> tokens = tokenMap.computeIfAbsent(uid, k -> new ArrayList<>());
+        List<Token> tokens = tokenMap.computeIfAbsent(uid, k -> new ArrayList<>());
+
+        List<Token> expired = new ArrayList<>();
+        for (Token token : tokens) {
+            if (!token.isAlive()) {
+                expired.add(token);
+            }
+        }
+        tokens.removeAll(expired);
+
         String token = _create(uid);
         if (token != null)
-            tokens.add(token);
+            tokens.add(new Token(token, System.currentTimeMillis()));
         return token;
     }
 
@@ -43,12 +60,12 @@ public class TokenService {
         if (uid == null || token == null) {
             return false;
         }
-        List<String> tokens = tokenMap.get(uid);
+        List<Token> tokens = tokenMap.get(uid);
         if (tokens == null) {
             return false;
         }
-        for (String _token : tokens) {
-            if (Objects.equals(token, _token)) {
+        for (Token _token : tokens) {
+            if (_token.isAlive() && Objects.equals(token, _token.value())) {
                 return true;
             }
         }
@@ -59,10 +76,16 @@ public class TokenService {
         if (uid == null || token == null) {
             return;
         }
-        List<String> tokens = tokenMap.get(uid);
+        List<Token> tokens = tokenMap.get(uid);
         if (tokens == null) {
             return;
         }
-        tokens.remove(token);
+        List<Token> willRemove = new ArrayList<>();
+        for (Token _token : tokens) {
+            if (!_token.isAlive() || Objects.equals(_token.value, token)) {
+                willRemove.add(_token);
+            }
+        }
+        tokens.removeAll(willRemove);
     }
 }

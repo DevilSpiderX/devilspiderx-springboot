@@ -1,10 +1,10 @@
 package devilSpiderX.server.webServer.module.user.controller;
 
-import devilSpiderX.server.webServer.module.user.entity.User;
-import devilSpiderX.server.webServer.module.user.interceptor.LoginInterceptor;
 import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
+import devilSpiderX.server.webServer.module.user.entity.User;
+import devilSpiderX.server.webServer.module.user.interceptor.LoginInterceptor;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +25,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 @RequestMapping("/api/user")
@@ -37,16 +35,6 @@ public class UserController {
     private UserService userService;
     @Resource(name = "settingsService")
     private SettingsService settingsService;
-    private int SESSION_MAX_AGE = 0;
-
-    @Scheduled(fixedDelay = 10, timeUnit = TimeUnit.MINUTES)
-    private void pollingSettings() {
-        int newMaxAge = Integer.parseInt(settingsService.get("session_max_age"));
-        if (SESSION_MAX_AGE != newMaxAge) {
-            SESSION_MAX_AGE = newMaxAge;
-            logger.info("SESSION_MAX_AGE 设置为: {}s", SESSION_MAX_AGE);
-        }
-    }
 
     /**
      * 登录请求参数
@@ -87,6 +75,8 @@ public class UserController {
             return ResponseEntity.ok(AjaxResp.of(2, "用户不存在"));
         } else if (Objects.equals(user.getPassword().toLowerCase(), password.toLowerCase())) {
             HttpHeaders headers = new HttpHeaders();
+
+            int SESSION_MAX_AGE = settingsService.getSessionMaxAge();
 
             HttpSession session = req.getSession();
             session.setMaxInactiveInterval(SESSION_MAX_AGE);

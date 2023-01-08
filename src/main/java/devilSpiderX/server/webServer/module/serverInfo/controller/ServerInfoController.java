@@ -116,9 +116,7 @@ public class ServerInfoController {
     private AjaxResp<?> token(@SessionAttribute String uid) {
         String token = tokenService.create(uid);
         return token != null ?
-                AjaxResp.success(Map.of(
-                        "token", token
-                ))
+                AjaxResp.success(Map.of("token", token))
                 :
                 AjaxResp.failure("token生成失败");
     }

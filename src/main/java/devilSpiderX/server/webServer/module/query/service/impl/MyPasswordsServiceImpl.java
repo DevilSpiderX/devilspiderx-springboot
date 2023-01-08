@@ -160,7 +160,7 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     }
 
     private pageQueryRecord subQueryResult(List<Map<String, Serializable>> array, int page) {
-        int pageSize = Integer.parseInt(settingsService.get("page_size"));
+        int pageSize = settingsService.getPageSize();
         int fromIndex = (page - 1) * pageSize;
         int toIndex = fromIndex + pageSize;
         int arraySize = array.size();
