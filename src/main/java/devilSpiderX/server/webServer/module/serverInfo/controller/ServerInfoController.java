@@ -3,13 +3,10 @@ package devilSpiderX.server.webServer.module.serverInfo.controller;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
-import devilSpiderX.server.webServer.module.serverInfo.statistic.CPU;
-import devilSpiderX.server.webServer.module.serverInfo.statistic.Disk;
-import devilSpiderX.server.webServer.module.serverInfo.statistic.Memory;
-import devilSpiderX.server.webServer.module.serverInfo.statistic.Network;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
@@ -36,7 +33,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/cpu")
+    @GetMapping("/cpu")
     @ResponseBody
     private AjaxResp<?> cpu() {
         CPU cpu = serverInfoService.getCPU();
@@ -53,7 +50,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/memory")
+    @GetMapping("/memory")
     @ResponseBody
     private AjaxResp<?> memory() {
         Memory memory = serverInfoService.getMemory();
@@ -70,7 +67,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/network")
+    @GetMapping("/network")
     @ResponseBody
     private AjaxResp<?> network() {
         Network AllNet = new Network("All", 0, 0, 0);
@@ -91,7 +88,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @PostMapping("/disk")
+    @GetMapping("/disk")
     @ResponseBody
     private AjaxResp<?> disk() {
         var diskArray = new ArrayList<>();
@@ -99,6 +96,23 @@ public class ServerInfoController {
             diskArray.add(serverInfoService.constructDiskObject(disk));
         }
         return AjaxResp.success(diskArray);
+    }
+
+    /**
+     * <b>系统信息</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 成功；100 没有权限;
+     * </p>
+     */
+    @GetMapping("/os")
+    @ResponseBody
+    private AjaxResp<?> os() {
+        CurrentOS os = serverInfoService.getCurrentOS();
+        return AjaxResp.success(serverInfoService.constructCurrentOSObject(os));
     }
 
     /**
@@ -111,7 +125,7 @@ public class ServerInfoController {
      * 0 成功；1 token生成失败；100 没有权限;
      * </p>
      */
-    @PostMapping("/token")
+    @GetMapping("/token")
     @ResponseBody
     private AjaxResp<?> token(@SessionAttribute String uid) {
         String token = tokenService.create(uid);
