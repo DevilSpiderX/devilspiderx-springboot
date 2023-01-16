@@ -1,8 +1,8 @@
 package devilSpiderX.server.webServer.core.properties;
 
 public class V2rayProperties {
-    private String exePath;
-    private String configPath;
+    private String exePath = "v2ray";
+    private String configPath = "";
 
     public String getExePath() {
         return exePath;

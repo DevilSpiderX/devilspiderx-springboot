@@ -1,6 +1,16 @@
 {
   "properties": [
     {
+      "name": "application.title",
+      "type": "java.lang.String",
+      "description": "项目名."
+    },
+    {
+      "name": "application.version",
+      "type": "java.lang.String",
+      "description": "项目版本号."
+    },
+    {
       "name": "devilspiderx.v2ray.exe-path",
       "type": "java.lang.String",
       "defaultValue": "v2ray",

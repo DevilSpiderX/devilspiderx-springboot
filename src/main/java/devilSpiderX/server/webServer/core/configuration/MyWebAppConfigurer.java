@@ -3,7 +3,7 @@ package devilSpiderX.server.webServer.core.configuration;
 import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
 import com.alibaba.fastjson2.support.config.FastJsonConfig;
-import com.alibaba.fastjson2.support.spring.http.converter.FastJsonHttpMessageConverter;
+import com.alibaba.fastjson2.support.spring6.http.converter.FastJsonHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.BytesHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.FormToJSONHttpMessageConverter;
 import org.springframework.boot.web.server.ErrorPage;
