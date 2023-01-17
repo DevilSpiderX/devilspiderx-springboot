@@ -1,6 +1,5 @@
 package devilSpiderX.server.webServer.module.v2ray.service;
 
-import devilSpiderX.server.webServer.core.property.DSXProperties;
 import devilSpiderX.server.webServer.core.property.V2rayProperties;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +12,7 @@ public class V2ray {
     private boolean alive = false;
     private Process p = null;
 
-    public V2ray(DSXProperties config) {
-        V2rayProperties v2rayConfig = config.getV2ray();
+    public V2ray(V2rayProperties v2rayConfig) {
         exePath = v2rayConfig.getExePath();
         configPath = v2rayConfig.getConfigPath();
     }

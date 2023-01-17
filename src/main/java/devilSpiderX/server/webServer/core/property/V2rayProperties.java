@@ -1,5 +1,10 @@
 package devilSpiderX.server.webServer.core.property;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "devilspiderx.v2ray")
 public class V2rayProperties {
     private String exePath = "v2ray";
     private String configPath = "";

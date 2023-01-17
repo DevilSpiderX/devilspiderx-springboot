@@ -21,6 +21,12 @@
       "type": "java.lang.String",
       "defaultValue": "",
       "description": "."
+    },
+    {
+      "name": "devilspiderx.pid-file-name",
+      "type": "java.lang.String",
+      "defaultValue": "devilspiderx.pid",
+      "description": "processID文件名."
     }
   ]
 }

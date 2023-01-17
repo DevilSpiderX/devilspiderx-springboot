@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.core.configuration;
 
+import devilSpiderX.server.webServer.core.property.DSXProperties;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,25 +15,20 @@ import java.lang.management.ManagementFactory;
 @Component
 public class DSXRunner implements ApplicationRunner {
     private final Logger logger = LoggerFactory.getLogger(DSXRunner.class);
+    private final String pidFileName;
+
+    public DSXRunner(DSXProperties dsxProperties) {
+        pidFileName = dsxProperties.getPidFileName();
+    }
 
     @Override
     public void run(ApplicationArguments args) {
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter("devilspiderx.pid");
+        try (FileWriter writer = new FileWriter(pidFileName)) {
             writer.write(String.valueOf(ManagementFactory.getRuntimeMXBean().getPid()));
             writer.write(System.lineSeparator());
             writer.flush();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
         }
     }
 
