@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.core.properties;
+package devilSpiderX.server.webServer.core.property;
 
 public class V2rayProperties {
     private String exePath = "v2ray";

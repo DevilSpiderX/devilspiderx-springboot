@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.module.v2ray.service;
 
-import devilSpiderX.server.webServer.core.properties.DSXProperties;
-import devilSpiderX.server.webServer.core.properties.V2rayProperties;
+import devilSpiderX.server.webServer.core.property.DSXProperties;
+import devilSpiderX.server.webServer.core.property.V2rayProperties;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

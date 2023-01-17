@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.core.properties;
+package devilSpiderX.server.webServer.core.property;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
