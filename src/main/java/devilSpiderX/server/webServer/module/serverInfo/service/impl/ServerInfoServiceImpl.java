@@ -1,6 +1,5 @@
 package devilSpiderX.server.webServer.module.serverInfo.service.impl;
 
-import devilSpiderX.server.webServer.core.util.FormatUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
 import org.springframework.stereotype.Service;
@@ -246,32 +245,10 @@ public class ServerInfoServiceImpl implements ServerInfoService {
         long used = memory.getUsed();
         long free = memory.getFree();
 
-        //格式化数据
-        HashMap<String, Object> format = new HashMap<>();
-
-        FormatUtil.UnitRecord totalUnit = FormatUtil.unitBytes(total, 2);
-        format.put("total", Map.of(
-                "value", totalUnit.value(),
-                "unit", totalUnit.unit()
-        ));
-
-        FormatUtil.UnitRecord usedUnit = FormatUtil.unitBytes(used, 2);
-        format.put("used", Map.of(
-                "value", usedUnit.value(),
-                "unit", usedUnit.unit()
-        ));
-
-        FormatUtil.UnitRecord freeUnit = FormatUtil.unitBytes(free, 2);
-        format.put("free", Map.of(
-                "value", freeUnit.value(),
-                "unit", freeUnit.unit()
-        ));
-
         return Map.of(
                 "total", total,
                 "used", used,
-                "free", free,
-                "format", format
+                "free", free
         );
     }
 
@@ -281,27 +258,6 @@ public class ServerInfoServiceImpl implements ServerInfoService {
         long free = disk.getFree();
         long used = disk.getUsed();
 
-        //格式化数据
-        HashMap<String, Object> format = new HashMap<>();
-
-        FormatUtil.UnitRecord totalUnit = FormatUtil.unitBytes(total, 2);
-        format.put("total", Map.of(
-                "value", totalUnit.value(),
-                "unit", totalUnit.unit()
-        ));
-
-        FormatUtil.UnitRecord freeUnit = FormatUtil.unitBytes(free, 2);
-        format.put("free", Map.of(
-                "value", freeUnit.value(),
-                "unit", freeUnit.unit()
-        ));
-
-        FormatUtil.UnitRecord usedUnit = FormatUtil.unitBytes(used, 2);
-        format.put("used", Map.of(
-                "value", usedUnit.value(),
-                "unit", usedUnit.unit()
-        ));
-
         return Map.of(
                 "label", disk.getLabel(),
                 "mount", disk.getMount(),
@@ -309,8 +265,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 "name", disk.getName(),
                 "total", total,
                 "free", free,
-                "used", used,
-                "format", format
+                "used", used
         );
     }
 
@@ -319,25 +274,9 @@ public class ServerInfoServiceImpl implements ServerInfoService {
         long uploadSpeed = network.getUploadSpeed();
         long downloadSpeed = network.getDownloadSpeed();
 
-        //格式化数据
-        HashMap<String, Object> format = new HashMap<>();
-
-        FormatUtil.UnitRecord uploadSpeedUnit = FormatUtil.unitBytes(uploadSpeed, 2);
-        format.put("uploadSpeed", Map.of(
-                "value", uploadSpeedUnit.value(),
-                "unit", uploadSpeedUnit.unit() + "/s"
-        ));
-
-        FormatUtil.UnitRecord downloadSpeedUnit = FormatUtil.unitBytes(downloadSpeed, 2);
-        format.put("downloadSpeed", Map.of(
-                "value", downloadSpeedUnit.value(),
-                "unit", downloadSpeedUnit.unit() + "/s"
-        ));
-
         return Map.of(
                 "uploadSpeed", uploadSpeed,
-                "downloadSpeed", downloadSpeed,
-                "format", format
+                "downloadSpeed", downloadSpeed
         );
     }
 
