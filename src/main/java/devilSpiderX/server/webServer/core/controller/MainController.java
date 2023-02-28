@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.core.controller;
 
-import devilSpiderX.server.webServer.MainApplication;
+import devilSpiderX.server.webServer.DSXApplication;
 import devilSpiderX.server.webServer.core.service.factory.OSFactory;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class MainController {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
-                MainApplication.close();
+                DSXApplication.close();
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }

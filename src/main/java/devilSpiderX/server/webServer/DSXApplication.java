@@ -8,11 +8,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 @EnableConfigurationProperties
-public class MainApplication {
+public class DSXApplication {
     private static ConfigurableApplicationContext context = null;
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(MainApplication.class);
+        SpringApplication app = new SpringApplication(DSXApplication.class);
         context = app.run(args);
     }
 

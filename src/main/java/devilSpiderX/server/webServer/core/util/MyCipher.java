@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.core.util;
 
-import devilSpiderX.server.webServer.MainApplication;
+import devilSpiderX.server.webServer.DSXApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public class MyCipher {
             keyBytes = MD5(key);
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage(), e);
-            MainApplication.close(e.hashCode());
+            DSXApplication.close(e.hashCode());
         }
         key128 = keyBytes;
     }

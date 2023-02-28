@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.core.service.impl;
 
-import devilSpiderX.server.webServer.MainApplication;
+import devilSpiderX.server.webServer.DSXApplication;
 import devilSpiderX.server.webServer.core.service.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class WindowsOS implements OS {
                 Thread.sleep(millis);
                 String result = system(rebootCMD);
                 logger.info(result);
-                MainApplication.close();
+                DSXApplication.close();
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -54,7 +54,7 @@ public class WindowsOS implements OS {
                 Thread.sleep(millis);
                 String result = system(shutdownCMD);
                 logger.info(result);
-                MainApplication.close();
+                DSXApplication.close();
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             }
