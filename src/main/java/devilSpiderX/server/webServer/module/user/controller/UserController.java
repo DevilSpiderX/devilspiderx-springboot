@@ -6,11 +6,11 @@ import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.interceptor.LoginInterceptor;
 import devilSpiderX.server.webServer.module.user.service.UserService;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +31,18 @@ import java.util.Objects;
 @EnableScheduling
 public class UserController {
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
-    @Resource(name = "userService")
-    private UserService userService;
-    @Resource(name = "settingsService")
-    private SettingsService settingsService;
+    private final UserService userService;
+    private final SettingsService settingsService;
+    private final String sessionName;
+
+    public UserController(UserService userService,
+                          SettingsService settingsService,
+                          @Value("${server.servlet.session.cookie.name:JSESSIONID}")
+                          String sessionName) {
+        this.userService = userService;
+        this.settingsService = settingsService;
+        this.sessionName = sessionName;
+    }
 
     /**
      * 登录请求参数
@@ -83,7 +91,7 @@ public class UserController {
             session.setAttribute("uid", uid);
             session.setAttribute("user", user);
 
-            ResponseCookie cookie = ResponseCookie.from("JSESSIONID", session.getId())
+            ResponseCookie cookie = ResponseCookie.from(sessionName, session.getId())
                     .maxAge(SESSION_MAX_AGE)
                     .path("/")
                     .httpOnly(true)
