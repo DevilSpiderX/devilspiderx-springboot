@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.module.serverInfo.service;
 
+import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +15,15 @@ import java.util.*;
 public class TokenService {
     private final Logger logger = LoggerFactory.getLogger(TokenService.class);
 
-    record Token(String value, long createdTime) {
+    private final SettingsService settingsService;
+
+    public TokenService(SettingsService settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    record Token(String value, long expiredTime) {
         boolean isAlive() {
-            return System.currentTimeMillis() - createdTime <= 10 * 60 * 1000;
+            return System.currentTimeMillis() <= expiredTime;
         }
     }
 
@@ -39,7 +46,9 @@ public class TokenService {
 
         String token = _create(uid);
         if (token != null)
-            tokens.add(new Token(token, System.currentTimeMillis()));
+            tokens.add(new Token(token,
+                    System.currentTimeMillis() + settingsService.getSessionMaxAge() * 1000L
+            ));
         return token;
     }
 

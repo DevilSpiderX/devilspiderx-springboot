@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
+import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +14,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
-import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
+import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
@@ -35,33 +36,41 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
                 .addInterceptors(new ServerInfoWSInterceptor());
     }
 
-    private class ServerInfoWSInterceptor extends HttpSessionHandshakeInterceptor {
+    private class ServerInfoWSInterceptor implements HandshakeInterceptor {
         @Override
         public boolean beforeHandshake(
                 ServerHttpRequest request,
                 ServerHttpResponse response,
                 WebSocketHandler wsHandler,
                 Map<String, Object> attributes
-        ) throws Exception {
-            super.beforeHandshake(request, response, wsHandler, attributes);
-            HttpServletRequest httpReq = ((ServletServerHttpRequest) request).getServletRequest();
-            attributes.put("address", String.format(
-                    "%s:%d",
-                    httpReq.getRemoteAddr(),
-                    httpReq.getRemotePort()
-            ));
-            String uid = (String) attributes.get("uid");
-            if (uid == null) {
+        ) {
+            if (!StpUtil.isLogin()) {
                 logger.info("未登录，拒绝连接");
                 return false;
             }
-            String token = httpReq.getParameter("token");
-            if (tokenService.check(uid, token)) {
-                attributes.put("token", token);
-                return true;
+
+            String uid = StpUtil.getLoginIdAsString();
+            attributes.put("uid", uid);
+            attributes.put("user", StpUtil.getSession().get("user"));
+            if (request instanceof ServletServerHttpRequest _request) {
+                HttpServletRequest httpReq = _request.getServletRequest();
+                attributes.put("address", "%s:%d".formatted(
+                        httpReq.getRemoteAddr(),
+                        httpReq.getRemotePort()
+                ));
+
+                String token = httpReq.getParameter("token");
+                if (tokenService.check(uid, token)) {
+                    attributes.put("token", token);
+                    return true;
+                }
+                logger.info("用户{}:token验证失败", uid);
             }
-            logger.info("用户{}:token验证失败", uid);
             return false;
+        }
+
+        @Override
+        public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
         }
     }
 }

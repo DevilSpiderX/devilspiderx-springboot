@@ -1,12 +1,17 @@
 package devilSpiderX.server.webServer.module.query.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -15,6 +20,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/api/query")
+@SaCheckLogin
 public class QueryController {
     private final Logger logger = LoggerFactory.getLogger(QueryController.class);
     @Resource(name = "myPasswordsService")
@@ -53,7 +59,8 @@ public class QueryController {
      */
     @PostMapping("/get")
     @ResponseBody
-    private AjaxResp<?> get(@RequestBody GetRequest reqBody, @SessionAttribute String uid) {
+    private AjaxResp<?> get(@RequestBody GetRequest reqBody) {
+        String uid = StpUtil.getLoginIdAsString();
         String[] keys = reqBody.keys();
         logger.info("用户{}查询记录：{}", uid, Arrays.toString(keys));
         List<Map<String, Serializable>> myPwdArray = myPasswordsService.query(keys, uid);
@@ -85,7 +92,7 @@ public class QueryController {
      */
     @PostMapping("/add")
     @ResponseBody
-    private AjaxResp<?> add(@RequestBody AddRequest reqBody, @SessionAttribute("uid") String owner) {
+    private AjaxResp<?> add(@RequestBody AddRequest reqBody) {
         if (reqBody.name() == null) {
             return AjaxResp.error("name参数不能为空或不存在");
         }
@@ -93,6 +100,7 @@ public class QueryController {
         String account = reqBody.account();
         String password = reqBody.password();
         String remark = reqBody.remark();
+        String owner = StpUtil.getLoginIdAsString();
         logger.info("用户{}添加记录：{}", owner, name);
         return myPasswordsService.add(name, account, password, remark, owner) ?
                 AjaxResp.success()
@@ -125,11 +133,12 @@ public class QueryController {
      */
     @PostMapping("/update")
     @ResponseBody
-    private AjaxResp<?> update(@RequestBody UpdateRequest reqBody, @SessionAttribute String uid) {
+    private AjaxResp<?> update(@RequestBody UpdateRequest reqBody) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
         int id = reqBody.id();
+        String uid = StpUtil.getLoginIdAsString();
         String name = reqBody.name();
         String account = reqBody.account();
         String password = reqBody.password();
@@ -162,11 +171,12 @@ public class QueryController {
      */
     @PostMapping("/delete")
     @ResponseBody
-    private AjaxResp<?> delete(@RequestBody DeleteRequest reqBody, @SessionAttribute String uid) {
+    private AjaxResp<?> delete(@RequestBody DeleteRequest reqBody) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
         int id = reqBody.id();
+        String uid = StpUtil.getLoginIdAsString();
         logger.info("用户{}删除记录 id：{}", uid, id);
         return myPasswordsService.delete(id) ?
                 AjaxResp.success()

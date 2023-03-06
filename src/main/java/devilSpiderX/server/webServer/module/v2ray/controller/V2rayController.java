@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.module.v2ray.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
 import jakarta.annotation.Resource;
@@ -14,6 +15,7 @@ import java.io.IOException;
 
 @Controller
 @RequestMapping("/api/admin/v2ray")
+@SaCheckRole("admin")
 public class V2rayController {
     private final Logger logger = LoggerFactory.getLogger(V2rayController.class);
     @Resource(name = "v2ray")

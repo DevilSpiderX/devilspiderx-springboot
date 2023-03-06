@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Map;
 
 public class AjaxResp<T> implements Serializable {
     @Serial
@@ -13,8 +14,9 @@ public class AjaxResp<T> implements Serializable {
     public static final int CODE_FAILURE = 1;           // 失败状态码
     public static final int CODE_ERROR = 1000;           // 错误状态码
     public static final int CODE_WARNING = 1001;         // 警告状态码
-    public static final int CODE_NOT_LOGIN = 1002;           // 未登录状态码
-    public static final int CODE_NOT_ADMIN = 1003;           // 无权限状态码
+    public static final int CODE_NOT_LOGIN = 1002;          // 未登录状态码
+    public static final int CODE_NOT_ROLE = 1003;           // 非指定角色状态码
+    public static final int CODE_NOT_PERMISSION = 1004;     // 非指定权限状态码
 
     private final Integer code;
     private String msg;
@@ -128,9 +130,14 @@ public class AjaxResp<T> implements Serializable {
         return new AjaxResp<>(CODE_NOT_LOGIN, "未登录，请登录后再次访问");
     }
 
+    // 返回无角色权限
+    public static AjaxResp<?> notRole(String role) {
+        return new AjaxResp<>(CODE_NOT_ROLE, "没有%s角色权限".formatted(role), Map.of("role", role));
+    }
+
     // 返回无权限
-    public static AjaxResp<Void> notAdmin() {
-        return new AjaxResp<>(CODE_NOT_ADMIN, "不是管理员，没有权限");
+    public static AjaxResp<?> notPermission(String permission) {
+        return new AjaxResp<>(CODE_NOT_ROLE, "没有%s权限".formatted(permission), Map.of("permission", permission));
     }
 
     // 返回一个自定义状态码的

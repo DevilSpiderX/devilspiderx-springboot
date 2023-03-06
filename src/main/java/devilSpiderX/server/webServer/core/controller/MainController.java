@@ -1,17 +1,19 @@
 package devilSpiderX.server.webServer.core.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import devilSpiderX.server.webServer.DSXApplication;
 import devilSpiderX.server.webServer.core.service.factory.OSFactory;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequestMapping("/api/admin")
+@SaCheckRole("admin")
 public class MainController {
     private final Logger logger = LoggerFactory.getLogger(MainController.class);
 
@@ -25,7 +27,7 @@ public class MainController {
      * </p>
      */
     @PostMapping("/os/reboot")
-    @ResponseBody
+    @SaCheckPermission("system.reboot")
     private AjaxResp<Void> OSReboot() {
         OSFactory.getOS().reboot(500);
         return AjaxResp.success("成功,服务器正在重启");
@@ -41,7 +43,7 @@ public class MainController {
      * </p>
      */
     @PostMapping("/os/shutdown")
-    @ResponseBody
+    @SaCheckPermission("system.shutdown")
     private AjaxResp<Void> OSShutdown() {
         OSFactory.getOS().shutdown(500);
         return AjaxResp.success("成功,服务器正在关机");
@@ -58,7 +60,7 @@ public class MainController {
      * </p>
      */
     @RequestMapping("/service/shutdown")
-    @ResponseBody
+    @SaCheckPermission("process.shutdown")
     private AjaxResp<Void> serviceShutdown() {
         new Thread(() -> {
             try {

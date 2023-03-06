@@ -1,5 +1,7 @@
 package devilSpiderX.server.webServer.module.serverInfo.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
@@ -9,13 +11,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.SessionAttribute;
 
 import java.util.ArrayList;
 import java.util.Map;
 
 @Controller
 @RequestMapping("/api/ServerInfo")
+@SaCheckLogin
 public class ServerInfoController {
     @Resource(name = "serverInfoService")
     private ServerInfoService serverInfoService;
@@ -127,8 +129,8 @@ public class ServerInfoController {
      */
     @GetMapping("/token")
     @ResponseBody
-    private AjaxResp<?> token(@SessionAttribute String uid) {
-        String token = tokenService.create(uid);
+    private AjaxResp<?> token() {
+        String token = tokenService.create(StpUtil.getLoginIdAsString());
         return token != null ?
                 AjaxResp.success(Map.of("token", token))
                 :

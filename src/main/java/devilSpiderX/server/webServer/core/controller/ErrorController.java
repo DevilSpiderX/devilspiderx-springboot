@@ -1,7 +1,5 @@
 package devilSpiderX.server.webServer.core.controller;
 
-import devilSpiderX.server.webServer.core.exception.NotAdminException;
-import devilSpiderX.server.webServer.core.exception.NotLoginException;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -31,15 +29,5 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
                 .setData(Map.of(
                         "timestamp", System.currentTimeMillis()
                 ));
-    }
-
-    @RequestMapping("/notLogin")
-    public void UserNoLogin() throws NotLoginException {
-        throw new NotLoginException();
-    }
-
-    @RequestMapping("/notAdmin")
-    public void NoAdmin() throws NotAdminException {
-        throw new NotAdminException();
     }
 }

@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.module.log.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -15,12 +16,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 @Controller
 @RequestMapping("/api/admin/log")
-@SuppressWarnings("resource")
+@SaCheckRole("admin")
 public class LogController {
     static final String logDir = "./log";
 
@@ -28,7 +31,9 @@ public class LogController {
     @ResponseBody
     public AjaxResp<?> list() throws IOException {
         var logArray = new ArrayList<>();
-        Files.list(Paths.get(logDir)).forEach(path -> logArray.add(path.getFileName().toString()));
+        try (Stream<Path> pathStream = Files.list(Paths.get(logDir))) {
+            pathStream.forEach(path -> logArray.add(path.getFileName().toString()));
+        }
         return AjaxResp.success(logArray);
     }
 

@@ -1,19 +1,15 @@
 package devilSpiderX.server.webServer.module.user.controller;
 
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.module.user.entity.User;
-import devilSpiderX.server.webServer.module.user.interceptor.LoginInterceptor;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,15 +29,11 @@ public class UserController {
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
     private final SettingsService settingsService;
-    private final String sessionName;
 
     public UserController(UserService userService,
-                          SettingsService settingsService,
-                          @Value("${server.servlet.session.cookie.name:JSESSIONID}")
-                          String sessionName) {
+                          SettingsService settingsService) {
         this.userService = userService;
         this.settingsService = settingsService;
-        this.sessionName = sessionName;
     }
 
     /**
@@ -71,47 +63,34 @@ public class UserController {
      * </p>
      */
     @PostMapping("/login")
-    private ResponseEntity<AjaxResp<?>> login(@RequestBody LoginRequest reqBody, HttpServletRequest req) {
+    @ResponseBody
+    private AjaxResp<?> login(@RequestBody LoginRequest reqBody, HttpServletRequest req) {
         if (reqBody.uid() == null || reqBody.pwd() == null) {
-            return ResponseEntity.ok(AjaxResp.error());
+            return AjaxResp.error();
         }
         String uid = reqBody.uid();
         String password = reqBody.password();
         User user = userService.get(uid);
 
         if (user == null) {
-            return ResponseEntity.ok(AjaxResp.of(2, "用户不存在"));
+            return AjaxResp.of(2, "用户不存在");
         } else if (Objects.equals(user.getPassword().toLowerCase(), password.toLowerCase())) {
-            HttpHeaders headers = new HttpHeaders();
+            StpUtil.login(uid, settingsService.getSessionMaxAge());
+            SaSession session = StpUtil.getSession();
+            session.set("user", user);
 
-            int SESSION_MAX_AGE = settingsService.getSessionMaxAge();
-
-            HttpSession session = req.getSession();
-            session.setMaxInactiveInterval(SESSION_MAX_AGE);
-            session.setAttribute("uid", uid);
-            session.setAttribute("user", user);
-
-            ResponseCookie cookie = ResponseCookie.from(sessionName, session.getId())
-                    .maxAge(SESSION_MAX_AGE)
-                    .path("/")
-                    .httpOnly(true)
-                    .secure(req.isSecure())
-                    .build();
-            headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
-
-            var admin = userService.isAdmin(uid);
+            var admin = StpUtil.hasRole("admin");
             logger.info("{}{}登录成功", admin ? "管理员" : "用户", uid);
             userService.updateLastAddr(uid, req.getRemoteAddr());
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(AjaxResp.success(Map.of(
-                            "uid", uid,
-                            "admin", admin,
-                            "lastLoginAddr", user.getLastAddress()
-                    )));
+            return AjaxResp.success(Map.of(
+                    "uid", uid,
+                    "admin", admin,
+                    "roles", StpUtil.getRoleList(),
+                    "lastLoginAddr", user.getLastAddress()
+            ));
         } else {
             logger.info("{}输入密码错误，登录失败", uid);
-            return ResponseEntity.ok(AjaxResp.failure("密码错误"));
+            return AjaxResp.failure("密码错误");
         }
     }
 
@@ -127,12 +106,8 @@ public class UserController {
      */
     @PostMapping("/logout")
     @ResponseBody
-    private AjaxResp<?> logout(HttpSession session) {
-        try {
-            session.removeAttribute("uid");
-            session.removeAttribute("user");
-        } catch (IllegalStateException ignored) {
-        }
+    private AjaxResp<?> logout() {
+        StpUtil.logout();
         return AjaxResp.success();
     }
 
@@ -200,16 +175,15 @@ public class UserController {
      */
     @PostMapping("/status")
     @ResponseBody
-    private AjaxResp<?> status(HttpSession session) {
+    private AjaxResp<?> status() {
         Map<String, Object> resultMap = new HashMap<>(Map.of(
                 "login", false,
                 "admin", false
         ));
-        if (LoginInterceptor.isLogin(session)) {
+        if (StpUtil.isLogin()) {
             resultMap.put("login", true);
-            User user = (User) session.getAttribute("user");
-            resultMap.put("uid", user.getUid());
-            resultMap.put("admin", user.getAdmin());
+            resultMap.put("uid", StpUtil.getLoginId());
+            resultMap.put("admin", StpUtil.hasRole("admin"));
         }
         return AjaxResp.success(resultMap);
     }
