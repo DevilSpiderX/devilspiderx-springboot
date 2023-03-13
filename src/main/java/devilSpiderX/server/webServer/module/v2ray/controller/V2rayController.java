@@ -3,7 +3,6 @@ package devilSpiderX.server.webServer.module.v2ray.controller;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
-import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -18,8 +17,11 @@ import java.io.IOException;
 @SaCheckRole("admin")
 public class V2rayController {
     private final Logger logger = LoggerFactory.getLogger(V2rayController.class);
-    @Resource(name = "v2ray")
-    private V2ray v2ray;
+    private final V2ray v2ray;
+
+    public V2rayController(V2ray v2ray) {
+        this.v2ray = v2ray;
+    }
 
     /**
      * <b>启动v2ray</b>

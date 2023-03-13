@@ -1,11 +1,10 @@
 package devilSpiderX.server.webServer.module.query.service.impl;
 
-import devilSpiderX.server.webServer.module.query.entity.MyPasswords;
-import devilSpiderX.server.webServer.core.service.SettingsService;
 import devilSpiderX.server.webServer.core.util.MyCipher;
+import devilSpiderX.server.webServer.module.query.entity.MyPasswords;
+import devilSpiderX.server.webServer.module.query.record.MyPasswordsResp;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import devilSpiderX.server.webServer.module.user.service.UserService;
-import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
@@ -14,18 +13,16 @@ import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 
-import java.io.Serializable;
 import java.util.*;
 
-@Service("myPasswordsService")
+@Service
 public class MyPasswordsServiceImpl implements MyPasswordsService {
     private final SuidRich suid = BeeFactoryHelper.getSuidRich();
+    private final UserService userService;
 
-    @Resource(name = "userService")
-    private UserService userService;
-
-    @Resource(name = "settingsService")
-    private SettingsService settingsService;
+    public MyPasswordsServiceImpl(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public boolean add(String name, String account, String password, String remark, String owner) {
@@ -77,106 +74,60 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     }
 
     @Override
-    public List<Map<String, Serializable>> query(String name, String owner) {
+    public List<MyPasswordsResp> query(String name, String owner) {
         if (name == null) return _query(null, owner);
         return _query(List.of(name), owner);
     }
 
     @Override
-    public List<Map<String, Serializable>> query(String[] names, String owner) {
+    public List<MyPasswordsResp> query(String[] names, String owner) {
         if (names == null) return _query(null, owner);
         return _query(List.of(names), owner);
     }
 
     @Override
-    public List<Map<String, Serializable>> query(List<String> names, String owner) {
+    public List<MyPasswordsResp> query(List<String> names, String owner) {
         return _query(names, owner);
     }
 
-    private List<Map<String, Serializable>> _query(List<String> names, String owner) {
+    private boolean isEmptyNames(List<String> names) {
+        return names == null || names.isEmpty() || (names.size() == 1 && names.get(0).equals(""));
+    }
+
+    private List<MyPasswordsResp> _query(List<String> names, String owner) {
         List<MyPasswords> passwords;
         MyPasswords emptyMP = new MyPasswords();
-        if (names == null || names.isEmpty() || (names.size() == 1 && names.get(0).equals(""))) {
+        if (isEmptyNames(names)) {
             emptyMP.setOwner(owner);
             passwords = suid.select(emptyMP);
         } else {
-            Set<String> nameSet = new HashSet<>(names);
-            List<String> nameList = new LinkedList<>(nameSet);
-            nameList.remove("");
+            final Set<String> nameSet = new HashSet<>(names);
+            final List<String> nameList = nameSet.stream().filter(name -> !Objects.equals(name, "")).toList();
 
             Condition con = new ConditionImpl();
             con.lParentheses();
             for (int i = 0; i < nameList.size(); i++) {
-                String name = nameList.get(i);
-                if (i == 0) {
-                    con.op("name", Op.like, '%' + name + '%');
-                    continue;
-                }
-                con.or().op("name", Op.like, '%' + name + '%');
+                final String name = nameList.get(i);
+                if (i != 0) con.or();
+                con.op("name", Op.like, '%' + name + '%');
             }
             con.rParentheses().and().op("owner", Op.equal, owner);
             passwords = suid.select(emptyMP, con);
         }
-
-        List<MyPasswords> deletedPasswords = new ArrayList<>();
-        for (MyPasswords password : passwords) {
-            if (password.getDeleted()) {
-                deletedPasswords.add(password);
-            }
-        }
-        passwords.removeAll(deletedPasswords);
-
         passwords.sort(Comparator.naturalOrder());
 
-        List<Map<String, Serializable>> result = new ArrayList<>();
+        passwords = passwords.stream().filter(password -> !password.getDeleted()).toList();
+
+        List<MyPasswordsResp> result = new ArrayList<>();
         for (MyPasswords password : passwords) {
-            result.add(Map.of(
-                    "id", password.getId(),
-                    "name", password.getName(),
-                    "account", password.getAccount(),
-                    "password", MyCipher.decrypt(password.getPassword()),
-                    "remark", password.getRemark()
+            result.add(new MyPasswordsResp(
+                    password.getId(),
+                    password.getName(),
+                    password.getAccount(),
+                    MyCipher.decrypt(password.getPassword()),
+                    password.getRemark()
             ));
         }
         return result;
-    }
-
-    @Override
-    public pageQueryRecord query(String name, int page, String owner) {
-        List<Map<String, Serializable>> array = query(name, owner);
-        return subQueryResult(array, page);
-    }
-
-    @Override
-    public pageQueryRecord query(String[] names, int page, String owner) {
-        List<Map<String, Serializable>> array = query(names, owner);
-        return subQueryResult(array, page);
-    }
-
-    @Override
-    public pageQueryRecord query(List<String> names, int page, String owner) {
-        List<Map<String, Serializable>> array = query(names, owner);
-        return subQueryResult(array, page);
-    }
-
-    private pageQueryRecord subQueryResult(List<Map<String, Serializable>> array, int page) {
-        int pageSize = settingsService.getPageSize();
-        int fromIndex = (page - 1) * pageSize;
-        int toIndex = fromIndex + pageSize;
-        int arraySize = array.size();
-
-        if (fromIndex < 0)
-            fromIndex = 0;
-        if (fromIndex > arraySize)
-            fromIndex = arraySize - pageSize;
-        if (toIndex < 0)
-            toIndex = pageSize;
-        if (toIndex > arraySize)
-            toIndex = arraySize;
-
-        List<Map<String, Serializable>> sub = array.subList(fromIndex, toIndex);
-        int pageCount = array.size() / pageSize;
-        if (array.size() % pageSize > 0) pageCount++;
-        return new pageQueryRecord(sub, pageCount);
     }
 }

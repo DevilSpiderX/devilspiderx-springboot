@@ -1,0 +1,6 @@
+application:
+  title: Development
+  version: dev
+
+sa-token:
+  is-log: true

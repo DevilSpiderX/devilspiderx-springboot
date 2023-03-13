@@ -2,7 +2,6 @@ package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +21,11 @@ import java.util.Map;
 @EnableWebSocket
 public class ServerInfoWSConfig implements WebSocketConfigurer {
     private final Logger logger = LoggerFactory.getLogger(ServerInfoWSConfig.class);
-    @Resource(name = "tokenService")
-    private TokenService tokenService;
+    private final TokenService tokenService;
     private final ServerInfoWSHandler serverInfoWSHandler;
 
-    public ServerInfoWSConfig(ServerInfoWSHandler serverInfoWSHandler) {
+    public ServerInfoWSConfig(TokenService tokenService, ServerInfoWSHandler serverInfoWSHandler) {
+        this.tokenService = tokenService;
         this.serverInfoWSHandler = serverInfoWSHandler;
     }
 
@@ -49,7 +48,7 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
                 return false;
             }
 
-            String uid = StpUtil.getLoginIdAsString();
+            final String uid = StpUtil.getLoginIdAsString();
             attributes.put("uid", uid);
             attributes.put("user", StpUtil.getSession().get("user"));
             if (request instanceof ServletServerHttpRequest _request) {
@@ -59,7 +58,7 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
                         httpReq.getRemotePort()
                 ));
 
-                String token = httpReq.getParameter("token");
+                final String token = httpReq.getParameter("token");
                 if (tokenService.check(uid, token)) {
                     attributes.put("token", token);
                     return true;

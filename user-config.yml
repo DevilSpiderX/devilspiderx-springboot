@@ -1,0 +1,12 @@
+spring:
+  profiles:
+    active: dev
+
+server:
+  port: 10048
+
+devilspiderx:
+  v2ray:
+    exe-path: C:/Downloads/v2ray - Server/v2ray-windows-64/v2ray.exe
+    config-path: C:/Downloads/v2ray - Server/v2ray-windows-64/config.json
+  pid-file-name: devilspiderx.pid

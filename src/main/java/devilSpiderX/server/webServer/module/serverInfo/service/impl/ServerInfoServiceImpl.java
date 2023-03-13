@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Service("serverInfoService")
+@Service
 public class ServerInfoServiceImpl implements ServerInfoService {
     private static final int coolDownTime = 1000;
     private static final AtomicInteger updateThreadCount = new AtomicInteger();

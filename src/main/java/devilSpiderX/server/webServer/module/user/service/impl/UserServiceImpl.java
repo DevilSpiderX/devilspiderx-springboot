@@ -9,7 +9,7 @@ import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.util.List;
 
-@Service("userService")
+@Service
 public class UserServiceImpl implements UserService {
     private final SuidRich suid = BeeFactoryHelper.getSuidRich();
 

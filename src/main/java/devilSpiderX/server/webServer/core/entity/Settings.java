@@ -11,6 +11,12 @@ public class Settings implements Serializable {
     private String key;
     private String value;
 
+    public Settings() {
+    }
+
+    public Settings(String key) {
+        this.key = key;
+    }
 
     public Integer getId() {
         return id;
@@ -39,10 +45,10 @@ public class Settings implements Serializable {
     @Override
     public String toString() {
         return "Settings{" +
-                "id=" + id +
-                ", key='" + key + '\'' +
-                ", value='" + value + '\'' +
-                '}';
+               "id=" + id +
+               ", key='" + key + '\'' +
+               ", value='" + value + '\'' +
+               '}';
     }
 }
 

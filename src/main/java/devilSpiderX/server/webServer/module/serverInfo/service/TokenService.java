@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@Service("tokenService")
+@Service
 public class TokenService {
     private final Logger logger = LoggerFactory.getLogger(TokenService.class);
 

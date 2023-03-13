@@ -6,7 +6,6 @@ import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
-import jakarta.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,11 +18,13 @@ import java.util.Map;
 @RequestMapping("/api/ServerInfo")
 @SaCheckLogin
 public class ServerInfoController {
-    @Resource(name = "serverInfoService")
-    private ServerInfoService serverInfoService;
+    private final ServerInfoService serverInfoService;
+    private final TokenService tokenService;
 
-    @Resource(name = "tokenService")
-    private TokenService tokenService;
+    public ServerInfoController(ServerInfoService serverInfoService, TokenService tokenService) {
+        this.serverInfoService = serverInfoService;
+        this.tokenService = tokenService;
+    }
 
     /**
      * <b>CPU信息</b>

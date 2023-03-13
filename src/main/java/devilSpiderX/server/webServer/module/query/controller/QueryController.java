@@ -4,7 +4,6 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
-import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -13,18 +12,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/api/query")
 @SaCheckLogin
 public class QueryController {
     private final Logger logger = LoggerFactory.getLogger(QueryController.class);
-    @Resource(name = "myPasswordsService")
-    private MyPasswordsService myPasswordsService;
+    private final MyPasswordsService myPasswordsService;
+
+    public QueryController(MyPasswordsService myPasswordsService) {
+        this.myPasswordsService = myPasswordsService;
+    }
 
     /**
      * 查询密码记录请求参数
@@ -63,9 +62,9 @@ public class QueryController {
         String uid = StpUtil.getLoginIdAsString();
         String[] keys = reqBody.keys();
         logger.info("用户{}查询记录：{}", uid, Arrays.toString(keys));
-        List<Map<String, Serializable>> myPwdArray = myPasswordsService.query(keys, uid);
+        var myPwdList = myPasswordsService.query(keys, uid);
 
-        return AjaxResp.success(myPwdArray);
+        return AjaxResp.success(myPwdList);
     }
 
     /**

@@ -7,7 +7,6 @@ import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
 import devilSpiderX.server.webServer.module.user.entity.User;
-import jakarta.annotation.Resource;
 import jakarta.websocket.CloseReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +26,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerInfoWSHandler extends TextWebSocketHandler {
     private final Logger logger = LoggerFactory.getLogger(ServerInfoWSHandler.class);
     private final AtomicInteger onlineCount = new AtomicInteger();
-    @Resource(name = "serverInfoService")
-    private ServerInfoService serverInfoService;
-    @Resource(name = "tokenService")
-    private TokenService tokenService;
+    private final ServerInfoService serverInfoService;
+    private final TokenService tokenService;
     private final Map<String, Attribute> attributeMap = new HashMap<>();
+
+    public ServerInfoWSHandler(ServerInfoService serverInfoService, TokenService tokenService) {
+        this.serverInfoService = serverInfoService;
+        this.tokenService = tokenService;
+    }
 
     record Attribute(String uid, User user, String address, String token) {
     }

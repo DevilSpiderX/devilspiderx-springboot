@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
-@Service(value = "v2ray")
+@Service
 public class V2ray {
     private final String exePath;
     private final String configPath;
