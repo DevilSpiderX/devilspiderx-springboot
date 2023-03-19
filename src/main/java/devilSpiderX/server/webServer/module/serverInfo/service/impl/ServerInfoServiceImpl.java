@@ -2,6 +2,8 @@ package devilSpiderX.server.webServer.module.serverInfo.service.impl;
 
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
@@ -16,12 +18,10 @@ import oshi.util.Util;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class ServerInfoServiceImpl implements ServerInfoService {
     private static final int coolDownTime = 1000;
-    private static final AtomicInteger updateThreadCount = new AtomicInteger();
     private final UpdateThread updateThread = new UpdateThread();
     private final AtomicBoolean allowUpdate = new AtomicBoolean();
     private final HardwareAbstractionLayer hw;
@@ -290,27 +290,33 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     private class UpdateThread extends Thread {
+        private final Logger logger = LoggerFactory.getLogger(UpdateThread.class);
+
         public UpdateThread() {
-            super("ServerInfo_update_thread_" + (updateThreadCount.getAndIncrement()));
+            super("ServerInfo_update_thread");
             setDaemon(true);
         }
 
         @Override
         public void run() {
             while (!isInterrupted()) {
-                setCPUInfo();
-                setMemoryInfo();
-                setDisksInfo();
-                setNetworkInfo();
-                setCurrentOSInfo();
-                Util.sleep(coolDownTime);
-                allowUpdate.set(true);
-                synchronized (this) {
-                    try {
-                        this.wait();
-                    } catch (InterruptedException e) {
-                        break;
+                try {
+                    setCPUInfo();
+                    setMemoryInfo();
+                    setDisksInfo();
+                    setNetworkInfo();
+                    setCurrentOSInfo();
+                    Util.sleep(coolDownTime);
+                    allowUpdate.set(true);
+                    synchronized (this) {
+                        try {
+                            this.wait();
+                        } catch (InterruptedException e) {
+                            break;
+                        }
                     }
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
                 }
             }
         }
