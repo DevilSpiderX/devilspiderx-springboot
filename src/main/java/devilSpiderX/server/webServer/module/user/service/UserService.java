@@ -12,4 +12,6 @@ public interface UserService {
     boolean exist(String uid);
 
     boolean updateLastAddr(String uid, String ipAddr);
+
+    boolean updatePassword(String uid, String password);
 }

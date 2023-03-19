@@ -7,8 +7,6 @@ import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
-import java.util.List;
-
 @Service
 public class UserServiceImpl implements UserService {
     private final SuidRich suid = BeeFactoryHelper.getSuidRich();
@@ -18,11 +16,7 @@ public class UserServiceImpl implements UserService {
         if (uid == null) {
             return null;
         }
-        List<User> list = suid.select(new User(uid));
-        if (list.isEmpty()) {
-            return null;
-        }
-        return list.get(0);
+        return suid.selectOne(new User(uid));
     }
 
     @Override
@@ -38,7 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isAdmin(String uid) {
         if (uid == null) return false;
-        User user = suid.select(new User(uid)).get(0);
+        User user = suid.selectOne(new User(uid));
         return user != null && user.getAdmin();
     }
 
@@ -58,6 +52,17 @@ public class UserServiceImpl implements UserService {
         User user = new User(uid);
         user.setLastAddress(ipAddr);
         int n = suid.updateBy(user, "uid", IncludeType.INCLUDE_EMPTY);
+        return n > 0;
+    }
+
+    @Override
+    public boolean updatePassword(String uid, String password) {
+        if (uid == null || password == null) {
+            return false;
+        }
+        User user = new User(uid);
+        user.setPassword(password);
+        int n = suid.updateBy(user, "uid", IncludeType.EXCLUDE_BOTH);
         return n > 0;
     }
 }

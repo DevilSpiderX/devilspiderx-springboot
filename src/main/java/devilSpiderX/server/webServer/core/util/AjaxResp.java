@@ -137,7 +137,11 @@ public class AjaxResp<T> implements Serializable {
 
     // 返回无权限
     public static AjaxResp<?> notPermission(String permission) {
-        return new AjaxResp<>(CODE_NOT_ROLE, "没有%s权限".formatted(permission), Map.of("permission", permission));
+        return new AjaxResp<>(
+                CODE_NOT_PERMISSION,
+                "没有%s权限".formatted(permission),
+                Map.of("permission", permission)
+        );
     }
 
     // 返回一个自定义状态码的
