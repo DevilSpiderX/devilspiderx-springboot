@@ -15,6 +15,10 @@ spring:
   config:
     import:
       - file:user-config.yml
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 sa-token:
   token-name: DSXSessionId

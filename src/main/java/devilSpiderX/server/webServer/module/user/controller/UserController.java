@@ -206,8 +206,6 @@ public class UserController {
         final String uid = StpUtil.getLoginIdAsString();
         final User user = userService.get(uid);
 
-        if (user == null) return AjaxResp.of(2, "用户不存在");
-
         if (Objects.equals(user.getPassword().toLowerCase(), oldPassword.toLowerCase())) {
             boolean flag = userService.updatePassword(uid, newPassword.toLowerCase());
             return flag ? AjaxResp.success() : AjaxResp.failure();
@@ -238,7 +236,7 @@ public class UserController {
     @SaCheckLogin
     public ResponseEntity<Resource> getAvatar() {
         Resource resource = userService.getAvatarImage(StpUtil.getLoginIdAsString());
-        if (resource == null) {
+        if (resource == null || !resource.exists()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok()

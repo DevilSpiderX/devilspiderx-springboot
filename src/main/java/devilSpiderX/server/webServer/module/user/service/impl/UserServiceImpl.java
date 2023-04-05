@@ -6,7 +6,6 @@ import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
-import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
@@ -80,7 +79,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String uploadAvatarImage(String uid, MultipartFile imageFile, Path avatarDirPath) throws IOException {
-        final MediaType type = MediaTypeFactory.getMediaType(imageFile.getResource()).orElseThrow();
+        if (uid == null) {
+            throw new NullPointerException("uid不能为null");
+        }
+
+        User user = get(uid);
+        final String lastPath = user.getAvatarPath();
+        if (lastPath != null) {
+            Files.deleteIfExists(Paths.get(lastPath));
+        }
+
+        final String contentType = imageFile.getContentType();
+        final MediaType type = contentType == null ? MediaType.ALL : MediaType.parseMediaType(contentType);
         String suffix;
         switch (type.getSubtype()) {
             case "jpeg" -> suffix = "jpg";
@@ -94,9 +104,8 @@ public class UserServiceImpl implements UserService {
 
         imageFile.transferTo(savePath);
 
-        User user = new User(uid);
         user.setAvatarPath(savePath.toAbsolutePath().toString());
-        suid.updateBy(user, "uid");
+        suid.update(user, "avatarPath");
 
         return fileName;
     }
