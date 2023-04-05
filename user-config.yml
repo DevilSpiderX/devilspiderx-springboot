@@ -10,3 +10,4 @@ devilspiderx:
     exe-path: C:/Downloads/v2ray - Server/v2ray-windows-64/v2ray.exe
     config-path: C:/Downloads/v2ray - Server/v2ray-windows-64/config.json
   pid-file-name: devilspiderx.pid
+  avatar-dir-path: target/avatarImages

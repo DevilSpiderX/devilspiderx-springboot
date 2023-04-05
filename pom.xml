@@ -12,7 +12,7 @@
     </parent>
 
     <groupId>devilspiderx.server</groupId>
-    <artifactId>devilspiderx</artifactId>
+    <artifactId>devilspiderx-springboot</artifactId>
     <name>DevilSpiderX</name>
     <version>2.1.7</version>
     <packaging>jar</packaging>

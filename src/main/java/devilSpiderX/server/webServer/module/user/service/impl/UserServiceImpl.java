@@ -1,11 +1,23 @@
 package devilSpiderX.server.webServer.module.user.service.impl;
 
+import cn.dev33.satoken.secure.SaSecureUtil;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -64,5 +76,43 @@ public class UserServiceImpl implements UserService {
         user.setPassword(password);
         int n = suid.updateBy(user, "uid", IncludeType.EXCLUDE_BOTH);
         return n > 0;
+    }
+
+    @Override
+    public String uploadAvatarImage(String uid, MultipartFile imageFile, Path avatarDirPath) throws IOException {
+        final MediaType type = MediaTypeFactory.getMediaType(imageFile.getResource()).orElseThrow();
+        String suffix;
+        switch (type.getSubtype()) {
+            case "jpeg" -> suffix = "jpg";
+            case "png" -> suffix = "png";
+            default -> throw new UnsupportedMediaTypeStatusException("不是图片类型的文件");
+        }
+        final String fileName = "%s.%s".formatted(SaSecureUtil.md5(uid), suffix);
+        final Path savePath = avatarDirPath.resolve(fileName);
+
+        Files.createDirectories(avatarDirPath);
+
+        imageFile.transferTo(savePath);
+
+        User user = new User(uid);
+        user.setAvatarPath(savePath.toAbsolutePath().toString());
+        suid.updateBy(user, "uid");
+
+        return fileName;
+    }
+
+    @Override
+    public Resource getAvatarImage(String uid) {
+        User user = get(uid);
+        if (user == null) {
+            return null;
+        }
+
+        final String avatarPath = user.getAvatarPath();
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            return null;
+        }
+
+        return new FileSystemResource(Paths.get(avatarPath));
     }
 }

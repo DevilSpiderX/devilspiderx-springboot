@@ -12,6 +12,7 @@ public class DSXProperties {
     private final Path LOCAL_PATH = Paths.get(".").toAbsolutePath();
     private V2rayProperties v2ray;
     private String pidFileName = "devilspiderx.pid";
+    private String avatarDirPath = "web/avatarImages";
 
     public Path getLocalPath() {
         return LOCAL_PATH;
@@ -31,5 +32,13 @@ public class DSXProperties {
 
     public void setPidFileName(String pidFileName) {
         this.pidFileName = pidFileName;
+    }
+
+    public String getAvatarDirPath() {
+        return avatarDirPath;
+    }
+
+    public void setAvatarDirPath(String avatarDirPath) {
+        this.avatarDirPath = avatarDirPath;
     }
 }

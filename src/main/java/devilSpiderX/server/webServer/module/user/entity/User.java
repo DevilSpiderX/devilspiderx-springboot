@@ -11,6 +11,7 @@ public class User implements Serializable {
     private String password;
     private Boolean admin;
     private String lastAddress;
+    private String avatarPath;
 
     public User() {
     }
@@ -51,14 +52,23 @@ public class User implements Serializable {
         this.lastAddress = lastAddress;
     }
 
+    public String getAvatarPath() {
+        return avatarPath;
+    }
+
+    public void setAvatarPath(String avatarPath) {
+        this.avatarPath = avatarPath;
+    }
+
     @Override
     public String toString() {
         return "User{" +
-                "uid='" + uid + '\'' +
-                ", password='" + password + '\'' +
-                ", admin=" + admin +
-                ", lastAddress='" + lastAddress + '\'' +
-                '}';
+               "uid='" + uid + '\'' +
+               ", password='" + password + '\'' +
+               ", admin=" + admin +
+               ", lastAddress='" + lastAddress + '\'' +
+               ", avatarPath='" + avatarPath + '\'' +
+               '}';
     }
 }
 

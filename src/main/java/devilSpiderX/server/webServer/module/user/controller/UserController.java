@@ -11,12 +11,18 @@ import devilSpiderX.server.webServer.module.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +68,7 @@ public class UserController {
      * 0 密码正确；1 密码错误；2 uid不存在；3 uid参数不存在；4 pwd参数不存在；
      * </p>
      */
-    @PostMapping("/login")
+    @PostMapping("login")
     public AjaxResp<?> login(@RequestBody LoginRequest reqBody, HttpServletRequest req) {
         if (reqBody.uid() == null || reqBody.pwd() == null) {
             return AjaxResp.error();
@@ -103,7 +109,7 @@ public class UserController {
      * 0 登出成功；
      * </p>
      */
-    @PostMapping("/logout")
+    @PostMapping("logout")
     public AjaxResp<?> logout() {
         StpUtil.logout();
         return AjaxResp.success();
@@ -135,7 +141,7 @@ public class UserController {
      * 0 注册成功；1 注册失败；2 uid参数不存在；3 pwd参数不存在；4 该uid已存在；
      * </p>
      */
-    @PostMapping("/register")
+    @PostMapping("register")
     public AjaxResp<?> register(@RequestBody RegisterRequest reqBody, HttpServletRequest req)
             throws NoSuchAlgorithmException {
         final String uid = reqBody.uid();
@@ -170,7 +176,7 @@ public class UserController {
      * </code>；
      * </p>
      */
-    @PostMapping("/status")
+    @PostMapping("status")
     public AjaxResp<?> status() {
         final Map<String, Object> resultMap = new HashMap<>(Map.of(
                 "login", false,
@@ -208,5 +214,35 @@ public class UserController {
         } else {
             return AjaxResp.failure("旧密码错误");
         }
+    }
+
+    @PostMapping("uploadAvatar")
+    @SaCheckLogin
+    public AjaxResp<?> uploadAvatar(@RequestParam("image") MultipartFile imageFile,
+                                    @Value("#{DSXProperties.avatarDirPath}") String avatarDirPath) {
+        final String uid = StpUtil.getLoginIdAsString();
+        try {
+            String avatarFileName = userService.uploadAvatarImage(uid, imageFile, Paths.get(avatarDirPath));
+            return AjaxResp.success(Map.of(
+                    "avatarImageName", avatarFileName
+            ));
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return AjaxResp.error(e.getMessage());
+        } catch (UnsupportedMediaTypeStatusException e) {
+            return AjaxResp.error("上传的文件不是图片");
+        }
+    }
+
+    @GetMapping("avatar")
+    @SaCheckLogin
+    public ResponseEntity<Resource> getAvatar() {
+        Resource resource = userService.getAvatarImage(StpUtil.getLoginIdAsString());
+        if (resource == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.IMAGE_JPEG))
+                .body(resource);
     }
 }
