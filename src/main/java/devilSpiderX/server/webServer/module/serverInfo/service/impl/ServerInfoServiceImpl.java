@@ -65,7 +65,16 @@ public class ServerInfoServiceImpl implements ServerInfoService {
 
         for (NetworkIF nIf : hw.getNetworkIFs()) {
             if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
-                networks.add(new Network(nIf.getName(), nIf.getTimeStamp(), nIf.getBytesSent(), nIf.getBytesRecv()));
+                networks.add(new Network(
+                        nIf.getName(),
+                        nIf.getDisplayName(),
+                        nIf.getMacaddr(),
+                        nIf.getTimeStamp(),
+                        nIf.getBytesSent(),
+                        nIf.getBytesRecv(),
+                        nIf.getIPv4addr(),
+                        nIf.getIPv6addr()
+                ));
             }
         }
 
@@ -95,18 +104,18 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public List<Disk> getDisks() {
+    public Disk[] getDisks() {
         this.update();
         synchronized (disks) {
-            return disks;
+            return disks.toArray(new Disk[0]);
         }
     }
 
     @Override
-    public List<Network> getNetworks() {
+    public Network[] getNetworks() {
         this.update();
         synchronized (networks) {
-            return networks;
+            return networks.toArray(new Network[0]);
         }
     }
 
@@ -194,7 +203,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
         }
         synchronized (networks) {
             for (Network network : networks) {
-                NetworkIF nif = nIfMap.get(network.getName());
+                NetworkIF nif = nIfMap.remove(network.getName());
                 if (nif == null) {
                     networks.remove(network);
                     continue;
@@ -207,14 +216,20 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 network.setTimeStamp(nif.getTimeStamp());
                 network.setBytesSent(nif.getBytesSent());
                 network.setBytesRecv(nif.getBytesRecv());
-                network.setIPv4addr(nif.getIPv4addr());
-                network.setIPv6addr(nif.getIPv6addr());
-
-                nIfMap.remove(network.getName(), nif);
+                network.setIPv4Addr(nif.getIPv4addr());
+                network.setIPv6Addr(nif.getIPv6addr());
             }
             if (nIfMap.size() != 0) {
-                nIfMap.forEach((k, v) -> networks.add(new Network(v.getName(), v.getTimeStamp(), v.getBytesSent(),
-                        v.getBytesRecv())));
+                nIfMap.forEach((k, v) -> networks.add(new Network(
+                        v.getName(),
+                        v.getDisplayName(),
+                        v.getMacaddr(),
+                        v.getTimeStamp(),
+                        v.getBytesSent(),
+                        v.getBytesRecv(),
+                        v.getIPv4addr(),
+                        v.getIPv6addr()
+                )));
             }
         }
     }
@@ -241,43 +256,39 @@ public class ServerInfoServiceImpl implements ServerInfoService {
 
     @Override
     public Map<String, Serializable> constructMemoryObject(Memory memory) {
-        long total = memory.getTotal();
-        long used = memory.getUsed();
-        long free = memory.getFree();
-
         return Map.of(
-                "total", total,
-                "used", used,
-                "free", free
+                "total", memory.getTotal(),
+                "used", memory.getUsed(),
+                "free", memory.getFree()
         );
     }
 
     @Override
     public Map<String, Serializable> constructDiskObject(Disk disk) {
-        long total = disk.getTotal();
-        long free = disk.getFree();
-        long used = disk.getUsed();
-
         return Map.of(
                 "label", disk.getLabel(),
                 "mount", disk.getMount(),
                 "fSType", disk.getFSType(),
                 "name", disk.getName(),
-                "total", total,
-                "free", free,
-                "used", used
+                "total", disk.getTotal(),
+                "free", disk.getFree(),
+                "used", disk.getUsed()
         );
     }
 
     @Override
     public Map<String, Serializable> constructNetworkObject(Network network) {
-        long uploadSpeed = network.getUploadSpeed();
-        long downloadSpeed = network.getDownloadSpeed();
-
-        return Map.of(
-                "uploadSpeed", uploadSpeed,
-                "downloadSpeed", downloadSpeed
-        );
+        final Map<String, Serializable> result = new HashMap<>();
+        result.put("name", network.getName());
+        result.put("displayName", network.getDisplayName());
+        result.put("macAddr", network.getMacAddr());
+        result.put("bytesSent", network.getBytesSent());
+        result.put("bytesRecv", network.getBytesRecv());
+        result.put("uploadSpeed", network.getUploadSpeed());
+        result.put("downloadSpeed", network.getDownloadSpeed());
+        result.put("IPv4addr", network.getIPv4Addr());
+        result.put("IPv6addr", network.getIPv6Addr());
+        return result;
     }
 
     @Override

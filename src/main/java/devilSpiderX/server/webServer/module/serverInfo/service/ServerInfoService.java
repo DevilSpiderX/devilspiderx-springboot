@@ -3,7 +3,6 @@ package devilSpiderX.server.webServer.module.serverInfo.service;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
 public interface ServerInfoService {
@@ -15,11 +14,11 @@ public interface ServerInfoService {
 
     Map<String, Serializable> constructMemoryObject(Memory memory);
 
-    List<Disk> getDisks();
+    Disk[] getDisks();
 
     Map<String, Serializable> constructDiskObject(Disk disk);
 
-    List<Network> getNetworks();
+    Network[] getNetworks();
 
     Map<String, Serializable> constructNetworkObject(Network network);
 

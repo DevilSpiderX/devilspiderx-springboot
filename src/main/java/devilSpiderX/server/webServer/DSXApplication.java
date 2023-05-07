@@ -1,5 +1,7 @@
 package devilSpiderX.server.webServer;
 
+import cn.dev33.satoken.SaManager;
+import cn.dev33.satoken.dao.SaTokenDaoDefaultImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -21,6 +23,14 @@ public class DSXApplication {
     }
 
     public static void close(int Code) {
+        if (SaManager.getSaTokenDao() instanceof SaTokenDaoDefaultImpl saTokenDao) {
+            saTokenDao.endRefreshThread();
+            saTokenDao.refreshThread.interrupt();
+            try {
+                saTokenDao.refreshThread.join();
+            } catch (InterruptedException ignore) {
+            }
+        }
         int code = SpringApplication.exit(context, () -> Code);
         System.exit(code);
     }

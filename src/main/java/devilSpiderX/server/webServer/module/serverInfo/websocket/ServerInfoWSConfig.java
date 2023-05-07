@@ -53,10 +53,6 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
             attributes.put("user", StpUtil.getSession().get("user"));
             if (request instanceof ServletServerHttpRequest _request) {
                 HttpServletRequest httpReq = _request.getServletRequest();
-                attributes.put("address", "%s:%d".formatted(
-                        httpReq.getRemoteAddr(),
-                        httpReq.getRemotePort()
-                ));
 
                 final String token = httpReq.getParameter("token");
                 if (tokenService.check(uid, token)) {

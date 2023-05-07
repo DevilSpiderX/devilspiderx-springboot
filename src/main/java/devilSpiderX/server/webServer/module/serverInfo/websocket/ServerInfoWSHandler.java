@@ -1,13 +1,15 @@
 package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
-import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.Network;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import jakarta.websocket.CloseReason;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,7 +30,7 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     private final ServerInfoService serverInfoService;
     private final TokenService tokenService;
     private final Map<String, Attribute> attributeMap = new HashMap<>();
-    private final Timer senderTimer = new Timer();
+    private final Timer senderTimer = new Timer("send-server-info-thread", true);
     private final Map<String, TimerTask> sendTaskMap = new HashMap<>();
 
     public ServerInfoWSHandler(ServerInfoService serverInfoService, TokenService tokenService) {
@@ -36,44 +38,45 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         this.tokenService = tokenService;
     }
 
-    record Attribute(String uid, User user, String address, String token) {
+    record Attribute(String uid, User user, String token) {
     }
 
+    @OnOpen
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         final String sessionId = session.getId();
         final Map<String, Object> map = session.getAttributes();
         final String uid = (String) map.get("uid");
         final User user = (User) map.get("user");
-        final String address = (String) map.get("address");
         final String token = (String) map.get("token");
-        attributeMap.put(sessionId, new Attribute(uid, user, address, token));
-        info(address, "用户%s接入，客户端id为%s".formatted(uid, sessionId));
-        info(address, "当前在线数量为：%d".formatted(onlineCount.incrementAndGet()));
+        attributeMap.put(sessionId, new Attribute(uid, user, token));
+        logger.info("用户{}接入，客户端id为{}", uid, sessionId);
+        logger.info("当前在线数量为：{}", onlineCount.incrementAndGet());
     }
 
+    @OnClose
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         final String sessionId = session.getId();
         final Attribute attr = attributeMap.remove(sessionId);
         tokenService.destroy(attr.uid(), attr.token());
-        info(attr.address(), "客户端%s退出 - %s".formatted(
-                sessionId,
-                CloseReason.CloseCodes.getCloseCode(status.getCode())
-        ));
-        info(attr.address(), "当前在线数量为：%d".formatted(onlineCount.decrementAndGet()));
+        logger.info("客户端{}退出 - {}{}", sessionId,
+                CloseReason.CloseCodes.getCloseCode(status.getCode()),
+                status.getReason() == null ? "" : " - %s".formatted(status.getReason())
+        );
+        logger.info("当前在线数量为：{}", onlineCount.decrementAndGet());
         final TimerTask task = sendTaskMap.remove(sessionId);
         if (task != null) {
             task.cancel();
         }
     }
 
+    @OnMessage
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         final String msg = message.getPayload();
         final String sessionId = session.getId();
-        final Attribute attr = attributeMap.get(sessionId);
-        info(attr.address(), "来自客户端%s的消息 - %s".formatted(sessionId, msg));
+        logger.info("来自客户端{}的消息 - {}", sessionId, msg);
         final JSONObject data = JSON.parseObject(msg);
         if ("start".equals(data.getString("cmd"))) {
             logger.info("客户端{}开始定时任务", sessionId);
@@ -94,36 +97,37 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     }
 
     public JSONObject getServerInfo() {
-        final JSONObject data = new JSONObject();
+        final var data = new JSONObject();
 
-        final CPU cpu = serverInfoService.getCPU();
+        final var cpu = serverInfoService.getCPU();
         data.put("cpu", serverInfoService.constructCpuObject(cpu));
 
-        final Memory memory = serverInfoService.getMemory();
+        final var memory = serverInfoService.getMemory();
         data.put("memory", serverInfoService.constructMemoryObject(memory));
 
-        final JSONArray diskDataArray = new JSONArray();
-        final List<Disk> disks = serverInfoService.getDisks();
-        for (Disk disk : disks) {
-            diskDataArray.add(serverInfoService.constructDiskObject(disk));
+        final var diskDataList = new ArrayList<>();
+        for (var disk : serverInfoService.getDisks()) {
+            diskDataList.add(serverInfoService.constructDiskObject(disk));
         }
-        data.put("disk", diskDataArray);
+        data.put("disks", diskDataList);
 
-        final Network AllNet = new Network("All", 0, 0, 0);
-        for (Network network : serverInfoService.getNetworks()) {
+        final var networks = serverInfoService.getNetworks();
+        final var networkDataList = new ArrayList<>(networks.length);
+        final var AllNet = new Network("All");
+        for (var network : networks) {
+            AllNet.setBytesSent(AllNet.getBytesSent() + network.getBytesSent());
+            AllNet.setBytesRecv(AllNet.getBytesRecv() + network.getBytesRecv());
             AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
             AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
+            networkDataList.add(serverInfoService.constructNetworkObject(network));
         }
-        data.put("network", serverInfoService.constructNetworkObject(AllNet));
+        networkDataList.add(serverInfoService.constructNetworkObject(AllNet));
+        data.put("networks", networkDataList);
 
-        final CurrentOS currentOS = serverInfoService.getCurrentOS();
+        final var currentOS = serverInfoService.getCurrentOS();
         data.put("os", serverInfoService.constructCurrentOSObject(currentOS));
 
         return data;
-    }
-
-    private void info(String address, String msg) {
-        logger.info("（{}） {}", address, msg);
     }
 
     private class SendTask extends TimerTask {
@@ -158,8 +162,6 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                     logger.error("关闭WebSocket失败,uid: {} ,sessionId: {}", attr.uid(), sessionId);
-                } finally {
-                    sendTaskMap.get(sessionId).cancel();
                 }
             }
         }

@@ -176,7 +176,7 @@ public class UserController {
      * </code>；
      * </p>
      */
-    @PostMapping("status")
+    @RequestMapping("status")
     public AjaxResp<?> status() {
         final Map<String, Object> resultMap = new HashMap<>(Map.of(
                 "login", false,

@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 public class Network {
     private final String name;
+    private final String displayName;
+    private final String macAddr;
     private long timeStamp;
     private long bytesSent;
     private long bytesRecv;
@@ -16,19 +18,45 @@ public class Network {
      */
     private long downloadSpeed;
 
-    private String[] IPv4addr;
+    private String[] IPv4Addr;
 
-    private String[] IPv6addr;
+    private String[] IPv6Addr;
 
-    public Network(String name, long timeStamp, long bytesSent, long bytesRecv) {
+    public Network(String name) {
         this.name = name;
+        this.displayName = null;
+        this.macAddr = null;
+        this.timeStamp = System.currentTimeMillis();
+    }
+
+    public Network(String name,
+                   String displayName,
+                   String macAddr,
+                   long timeStamp,
+                   long bytesSent,
+                   long bytesRecv,
+                   String[] IPv4Addr,
+                   String[] IPv6Addr) {
+        this.name = name;
+        this.displayName = displayName;
+        this.macAddr = macAddr;
         this.timeStamp = timeStamp;
         this.bytesSent = bytesSent;
         this.bytesRecv = bytesRecv;
+        this.IPv4Addr = IPv4Addr;
+        this.IPv6Addr = IPv6Addr;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getMacAddr() {
+        return macAddr;
     }
 
     public long getTimeStamp() {
@@ -71,33 +99,35 @@ public class Network {
         this.downloadSpeed = downloadSpeed;
     }
 
-    public String[] getIPv4addr() {
-        return IPv4addr;
+    public String[] getIPv4Addr() {
+        return IPv4Addr;
     }
 
-    public void setIPv4addr(String[] IPv4addr) {
-        this.IPv4addr = IPv4addr;
+    public void setIPv4Addr(String[] IPv4Addr) {
+        this.IPv4Addr = IPv4Addr;
     }
 
-    public String[] getIPv6addr() {
-        return IPv6addr;
+    public String[] getIPv6Addr() {
+        return IPv6Addr;
     }
 
-    public void setIPv6addr(String[] IPv6addr) {
-        this.IPv6addr = IPv6addr;
+    public void setIPv6Addr(String[] IPv6Addr) {
+        this.IPv6Addr = IPv6Addr;
     }
 
     @Override
     public String toString() {
         return "Network{" +
-                "name='" + name + '\'' +
-                ", timeStamp=" + timeStamp +
-                ", bytesSent=" + bytesSent +
-                ", bytesRecv=" + bytesRecv +
-                ", uploadSpeed=" + uploadSpeed +
-                ", downloadSpeed=" + downloadSpeed +
-                ", IPv4addr=" + Arrays.toString(IPv4addr) +
-                ", IPv6addr=" + Arrays.toString(IPv6addr) +
-                '}';
+               "name='" + name + '\'' +
+               ", displayName='" + displayName + '\'' +
+               ", macAddr='" + macAddr + '\'' +
+               ", timeStamp=" + timeStamp +
+               ", bytesSent=" + bytesSent +
+               ", bytesRecv=" + bytesRecv +
+               ", uploadSpeed=" + uploadSpeed +
+               ", downloadSpeed=" + downloadSpeed +
+               ", IPv4Addr=" + Arrays.toString(IPv4Addr) +
+               ", IPv6Addr=" + Arrays.toString(IPv6Addr) +
+               '}';
     }
 }

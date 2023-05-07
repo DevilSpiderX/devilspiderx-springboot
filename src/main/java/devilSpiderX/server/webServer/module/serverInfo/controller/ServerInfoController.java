@@ -36,7 +36,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @GetMapping("/cpu")
+    @GetMapping("cpu")
     @ResponseBody
     private AjaxResp<?> cpu() {
         CPU cpu = serverInfoService.getCPU();
@@ -53,7 +53,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @GetMapping("/memory")
+    @GetMapping("memory")
     @ResponseBody
     private AjaxResp<?> memory() {
         Memory memory = serverInfoService.getMemory();
@@ -70,15 +70,21 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @GetMapping("/network")
+    @GetMapping("networks")
     @ResponseBody
-    private AjaxResp<?> network() {
-        Network AllNet = new Network("All", 0, 0, 0);
-        for (Network network : serverInfoService.getNetworks()) {
+    private AjaxResp<?> networks() {
+        final var networks = serverInfoService.getNetworks();
+        final var networkDataList = new ArrayList<>(networks.length);
+        final var AllNet = new Network("All");
+        for (var network : networks) {
+            AllNet.setBytesSent(AllNet.getBytesSent() + network.getBytesSent());
+            AllNet.setBytesRecv(AllNet.getBytesRecv() + network.getBytesRecv());
             AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
             AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
+            networkDataList.add(serverInfoService.constructNetworkObject(network));
         }
-        return AjaxResp.success(serverInfoService.constructNetworkObject(AllNet));
+        networkDataList.add(serverInfoService.constructNetworkObject(AllNet));
+        return AjaxResp.success(networkDataList);
     }
 
     /**
@@ -91,9 +97,9 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @GetMapping("/disk")
+    @GetMapping("disks")
     @ResponseBody
-    private AjaxResp<?> disk() {
+    private AjaxResp<?> disks() {
         var diskArray = new ArrayList<>();
         for (Disk disk : serverInfoService.getDisks()) {
             diskArray.add(serverInfoService.constructDiskObject(disk));
@@ -111,7 +117,7 @@ public class ServerInfoController {
      * 0 成功；100 没有权限;
      * </p>
      */
-    @GetMapping("/os")
+    @GetMapping("os")
     @ResponseBody
     private AjaxResp<?> os() {
         CurrentOS os = serverInfoService.getCurrentOS();
@@ -128,7 +134,7 @@ public class ServerInfoController {
      * 0 成功；1 token生成失败；100 没有权限;
      * </p>
      */
-    @GetMapping("/token")
+    @GetMapping("token")
     @ResponseBody
     private AjaxResp<?> token() {
         String token = tokenService.create(StpUtil.getLoginIdAsString());
