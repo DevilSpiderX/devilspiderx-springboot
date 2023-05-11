@@ -11,7 +11,7 @@ public class User implements Serializable {
     private String password;
     private Boolean admin;
     private String lastAddress;
-    private String avatarPath;
+    private String avatar;
 
     public User() {
     }
@@ -52,12 +52,12 @@ public class User implements Serializable {
         this.lastAddress = lastAddress;
     }
 
-    public String getAvatarPath() {
-        return avatarPath;
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setAvatarPath(String avatarPath) {
-        this.avatarPath = avatarPath;
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class User implements Serializable {
                ", password='" + password + '\'' +
                ", admin=" + admin +
                ", lastAddress='" + lastAddress + '\'' +
-               ", avatarPath='" + avatarPath + '\'' +
+               ", avatarPath='" + avatar + '\'' +
                '}';
     }
 }

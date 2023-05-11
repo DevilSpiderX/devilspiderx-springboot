@@ -1,7 +1,6 @@
 package devilSpiderX.server.webServer.module.user.service;
 
 import devilSpiderX.server.webServer.module.user.entity.User;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -22,5 +21,5 @@ public interface UserService {
 
     String uploadAvatarImage(String uid, MultipartFile imageFile, Path avatarDirPath) throws IOException;
 
-    Resource getAvatarImage(String uid);
+    String getAvatarImage(String uid);
 }

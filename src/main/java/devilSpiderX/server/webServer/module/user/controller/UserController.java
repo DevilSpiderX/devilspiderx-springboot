@@ -12,10 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.MediaTypeFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -220,9 +216,9 @@ public class UserController {
                                     @Value("#{DSXProperties.avatarDirPath}") String avatarDirPath) {
         final String uid = StpUtil.getLoginIdAsString();
         try {
-            String avatarFileName = userService.uploadAvatarImage(uid, imageFile, Paths.get(avatarDirPath));
+            final String avatarName = userService.uploadAvatarImage(uid, imageFile, Paths.get(avatarDirPath));
             return AjaxResp.success(Map.of(
-                    "avatarImageName", avatarFileName
+                    "avatar", "/user/avatar/%s".formatted(avatarName)
             ));
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -234,13 +230,11 @@ public class UserController {
 
     @GetMapping("avatar")
     @SaCheckLogin
-    public ResponseEntity<Resource> getAvatar() {
-        Resource resource = userService.getAvatarImage(StpUtil.getLoginIdAsString());
-        if (resource == null || !resource.exists()) {
-            return ResponseEntity.notFound().build();
+    public AjaxResp<?> getAvatar() {
+        final String avatarName = userService.getAvatarImage(StpUtil.getLoginIdAsString());
+        if (avatarName == null) {
+            return AjaxResp.failure("Not Found");
         }
-        return ResponseEntity.ok()
-                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.IMAGE_JPEG))
-                .body(resource);
+        return AjaxResp.of(AjaxResp.success(), "/user/avatar/%s".formatted(avatarName));
     }
 }

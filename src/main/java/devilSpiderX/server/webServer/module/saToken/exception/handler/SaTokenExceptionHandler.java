@@ -13,10 +13,10 @@ public class SaTokenExceptionHandler {
     public AjaxResp<?> handleNotLoginException(NotLoginException nle) {
         var result = AjaxResp.notLogin();
         switch (nle.getType()) {
-            case NotLoginException.INVALID_TOKEN -> result.setMsg("用户请求携带无效token");
-            case NotLoginException.TOKEN_TIMEOUT -> result.setMsg("用户登录已过期");
-            case NotLoginException.BE_REPLACED -> result.setMsg("用户登录已被顶下线");
-            case NotLoginException.KICK_OUT -> result.setMsg("用户已被踢下线");
+            case NotLoginException.INVALID_TOKEN -> result = AjaxResp.notLogin("用户请求携带无效token");
+            case NotLoginException.TOKEN_TIMEOUT -> result = AjaxResp.notLogin("用户登录已过期");
+            case NotLoginException.BE_REPLACED -> result = AjaxResp.notLogin("用户登录已被顶下线");
+            case NotLoginException.KICK_OUT -> result = AjaxResp.notLogin("用户已被踢下线");
         }
         return result;
     }

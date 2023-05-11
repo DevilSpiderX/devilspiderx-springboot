@@ -3,8 +3,6 @@ package devilSpiderX.server.webServer.module.user.service.impl;
 import cn.dev33.satoken.secure.SaSecureUtil;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,7 +82,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = get(uid);
-        final String lastPath = user.getAvatarPath();
+        final String lastPath = user.getAvatar();
         if (lastPath != null) {
             Files.deleteIfExists(Paths.get(lastPath));
         }
@@ -95,6 +93,7 @@ public class UserServiceImpl implements UserService {
         switch (type.getSubtype()) {
             case "jpeg" -> suffix = "jpg";
             case "png" -> suffix = "png";
+            case "gif" -> suffix = "gif";
             default -> throw new UnsupportedMediaTypeStatusException("不是图片类型的文件");
         }
         final String fileName = "%s.%s".formatted(SaSecureUtil.md5(uid), suffix);
@@ -104,24 +103,24 @@ public class UserServiceImpl implements UserService {
 
         imageFile.transferTo(savePath);
 
-        user.setAvatarPath(savePath.toAbsolutePath().toString());
-        suid.update(user, "avatarPath");
+        user.setAvatar(fileName);
+        suid.update(user, "avatar");
 
         return fileName;
     }
 
     @Override
-    public Resource getAvatarImage(String uid) {
-        User user = get(uid);
+    public String getAvatarImage(String uid) {
+        final User user = get(uid);
         if (user == null) {
             return null;
         }
 
-        final String avatarPath = user.getAvatarPath();
+        final String avatarPath = user.getAvatar();
         if (avatarPath == null || avatarPath.isEmpty()) {
             return null;
         }
 
-        return new FileSystemResource(Paths.get(avatarPath));
+        return avatarPath;
     }
 }
