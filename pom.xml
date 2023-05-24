@@ -8,7 +8,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.0.5</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>devilspiderx.server</groupId>
@@ -90,7 +90,7 @@
     </dependencies>
 
     <build>
-        <finalName>devilspiderx-${version}</finalName>
+        <finalName>devilspiderx-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
