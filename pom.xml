@@ -7,14 +7,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.6</version>
+        <version>3.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>devilspiderx.server</groupId>
     <artifactId>devilspiderx-springboot</artifactId>
     <name>DevilSpiderX</name>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -57,13 +57,13 @@
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
-            <version>2.0.31</version>
+            <version>2.0.33</version>
         </dependency>
 
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2-extension-spring6</artifactId>
-            <version>2.0.31</version>
+            <version>2.0.33</version>
         </dependency>
 
         <!-- 一个用于系统资源检测的库 -->
