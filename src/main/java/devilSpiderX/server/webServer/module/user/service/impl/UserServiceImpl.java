@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import org.teasoft.bee.osql.IncludeType;
-import org.teasoft.bee.osql.SuidRich;
+import org.teasoft.bee.osql.api.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.io.IOException;
@@ -58,9 +58,9 @@ public class UserServiceImpl implements UserService {
         if (uid == null || ipAddr == null) {
             return false;
         }
-        User user = new User(uid);
+        final User user = new User(uid);
         user.setLastAddress(ipAddr);
-        int n = suid.updateBy(user, "uid", IncludeType.INCLUDE_EMPTY);
+        final int n = suid.updateBy(user, IncludeType.INCLUDE_EMPTY, "uid");
         return n > 0;
     }
 
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
         }
         User user = new User(uid);
         user.setPassword(password);
-        int n = suid.updateBy(user, "uid", IncludeType.EXCLUDE_BOTH);
+        int n = suid.updateBy(user, IncludeType.EXCLUDE_BOTH, "uid");
         return n > 0;
     }
 

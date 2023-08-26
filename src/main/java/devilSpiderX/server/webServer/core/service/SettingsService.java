@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.IncludeType;
-import org.teasoft.bee.osql.SuidRich;
+import org.teasoft.bee.osql.api.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.util.LinkedList;
@@ -44,7 +44,7 @@ public class SettingsService {
         Settings settings = new Settings();
         settings.setKey("session_max_age");
         settings.setValue(String.valueOf(sessionMaxAge));
-        int n = suid.updateBy(settings, "key", IncludeType.EXCLUDE_BOTH);
+        int n = suid.updateBy(settings, IncludeType.EXCLUDE_BOTH, "key");
         if (n > 0) {
             logger.info("session_max_age设置为{}", sessionMaxAge);
         }

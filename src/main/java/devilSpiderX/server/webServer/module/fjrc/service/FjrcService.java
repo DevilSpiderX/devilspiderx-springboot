@@ -2,7 +2,7 @@ package devilSpiderX.server.webServer.module.fjrc.service;
 
 import devilSpiderX.server.webServer.module.fjrc.entity.Fjrc;
 import org.springframework.stereotype.Service;
-import org.teasoft.bee.osql.SuidRich;
+import org.teasoft.bee.osql.api.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.util.List;

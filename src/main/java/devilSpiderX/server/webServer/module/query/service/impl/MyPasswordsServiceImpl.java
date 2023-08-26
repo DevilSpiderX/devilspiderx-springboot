@@ -6,10 +6,10 @@ import devilSpiderX.server.webServer.module.query.record.MyPasswordsResp;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.springframework.stereotype.Service;
-import org.teasoft.bee.osql.Condition;
 import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.Op;
-import org.teasoft.bee.osql.SuidRich;
+import org.teasoft.bee.osql.api.Condition;
+import org.teasoft.bee.osql.api.SuidRich;
 import org.teasoft.honey.osql.core.BeeFactoryHelper;
 import org.teasoft.honey.osql.core.ConditionImpl;
 
@@ -58,7 +58,7 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         if ("".equals(name)) {
             return false;
         }
-        MyPasswords oldMyPwd = suid.selectById(new MyPasswords(), id);
+        MyPasswords oldMyPwd = suid.selectById(MyPasswords.class, id);
 
         MyPasswords myPwd = new MyPasswords();
         myPwd.setName(name);

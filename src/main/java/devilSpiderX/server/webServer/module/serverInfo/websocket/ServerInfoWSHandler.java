@@ -140,6 +140,14 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
 
         @Override
         public void run() {
+            try {
+                _run();
+            } catch (Exception ex) {
+                logger.error(ex.getMessage(), ex);
+            }
+        }
+
+        private void _run() {
             final WebSocketSession session = sessionRef.get();
             if (session == null) {
                 return;
