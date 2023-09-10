@@ -3,6 +3,8 @@ package devilSpiderX.server.webServer.module.user.service.impl;
 import cn.dev33.satoken.secure.SaSecureUtil;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,9 +17,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final SuidRich suid = BeeFactoryHelper.getSuidRich();
 
     @Override
@@ -30,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean register(String uid, String password, String ipAddr) {
-        User user = new User();
+        final var user = new User();
         user.setUid(uid);
         user.setPassword(password);
         user.setAdmin(false);
@@ -38,11 +42,21 @@ public class UserServiceImpl implements UserService {
         return suid.insert(user) > 0;
     }
 
+    private final ReentrantLock isAdminLock = new ReentrantLock();
+
     @Override
     public boolean isAdmin(String uid) {
         if (uid == null) return false;
-        User user = suid.selectOne(new User(uid));
-        return user != null && user.getAdmin();
+        isAdminLock.lock();
+        try {
+            final var user = suid.selectOne(new User(uid));
+            return user != null && user.getAdmin();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
+        } finally {
+            isAdminLock.unlock();
+        }
     }
 
     @Override
@@ -58,7 +72,7 @@ public class UserServiceImpl implements UserService {
         if (uid == null || ipAddr == null) {
             return false;
         }
-        final User user = new User(uid);
+        final var user = new User(uid);
         user.setLastAddress(ipAddr);
         final int n = suid.updateBy(user, IncludeType.INCLUDE_EMPTY, "uid");
         return n > 0;
@@ -69,7 +83,7 @@ public class UserServiceImpl implements UserService {
         if (uid == null || password == null) {
             return false;
         }
-        User user = new User(uid);
+        final var user = new User(uid);
         user.setPassword(password);
         int n = suid.updateBy(user, IncludeType.EXCLUDE_BOTH, "uid");
         return n > 0;
@@ -81,14 +95,14 @@ public class UserServiceImpl implements UserService {
             throw new NullPointerException("uid不能为null");
         }
 
-        User user = get(uid);
-        final String lastPath = user.getAvatar();
+        final var user = get(uid);
+        final var lastPath = user.getAvatar();
         if (lastPath != null) {
             Files.deleteIfExists(Paths.get(lastPath));
         }
 
-        final String contentType = imageFile.getContentType();
-        final MediaType type = contentType == null ? MediaType.ALL : MediaType.parseMediaType(contentType);
+        final var contentType = imageFile.getContentType();
+        final var type = contentType == null ? MediaType.ALL : MediaType.parseMediaType(contentType);
         String suffix;
         switch (type.getSubtype()) {
             case "jpeg" -> suffix = "jpg";
@@ -96,8 +110,8 @@ public class UserServiceImpl implements UserService {
             case "gif" -> suffix = "gif";
             default -> throw new UnsupportedMediaTypeStatusException("不是图片类型的文件");
         }
-        final String fileName = "%s.%s".formatted(SaSecureUtil.md5(uid), suffix);
-        final Path savePath = avatarDirPath.resolve(fileName);
+        final var fileName = "%s.%s".formatted(SaSecureUtil.md5(uid), suffix);
+        final var savePath = avatarDirPath.resolve(fileName);
 
         Files.createDirectories(avatarDirPath);
 
@@ -111,12 +125,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String getAvatarImage(String uid) {
-        final User user = get(uid);
+        final var user = get(uid);
         if (user == null) {
             return null;
         }
 
-        final String avatarPath = user.getAvatar();
+        final var avatarPath = user.getAvatar();
         if (avatarPath == null || avatarPath.isEmpty()) {
             return null;
         }
