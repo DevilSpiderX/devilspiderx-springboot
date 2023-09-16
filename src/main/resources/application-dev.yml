@@ -4,3 +4,7 @@ application:
 
 sa-token:
   is-log: true
+
+logging:
+  level:
+    root: debug
