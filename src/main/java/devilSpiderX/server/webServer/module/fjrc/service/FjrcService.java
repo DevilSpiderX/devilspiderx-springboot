@@ -1,6 +1,9 @@
 package devilSpiderX.server.webServer.module.fjrc.service;
 
+import cn.dev33.satoken.secure.SaSecureUtil;
 import devilSpiderX.server.webServer.module.fjrc.entity.Fjrc;
+import devilSpiderX.server.webServer.module.fjrc.entity.FjrcUser;
+import devilSpiderX.server.webServer.module.fjrc.record.History;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -84,4 +87,40 @@ public class FjrcService {
         online.put(fingerprint, task);
         return online.size();
     }
+
+    public boolean uploadHistory(String key, String value) {
+        if (key == null || value == null) return false;
+        final var uid = SaSecureUtil.sha256(key);
+        final var fjrcUser = new FjrcUser();
+        fjrcUser.setUid(uid);
+
+        final var one = suid.selectOne(fjrcUser);
+        final var nowDate = new Date();
+        if (one != null) {
+            final var lastDate = one.getTime();
+            if (nowDate.getTime() - lastDate.getTime() < 60_000) {
+                return false;
+            }
+        }
+
+        fjrcUser.setValue(value);
+        fjrcUser.setTime(nowDate);
+        final var n = one != null ? suid.updateBy(fjrcUser, "uid") : suid.insert(fjrcUser);
+        return n > 0;
+    }
+
+    public History downloadHistory(String key) {
+        if (key == null) return null;
+        final var uid = SaSecureUtil.sha256(key);
+        final var fjrcUser = new FjrcUser();
+        fjrcUser.setUid(uid);
+        final var result = suid.selectOne(fjrcUser);
+        if (result == null) return null;
+        return new History(
+                key,
+                result.getTime(),
+                result.getValue()
+        );
+    }
+
 }

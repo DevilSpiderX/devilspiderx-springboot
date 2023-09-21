@@ -97,6 +97,40 @@
             </TableInfoDTO>
           </value>
         </entry>
+        <entry key="devilspiderx.fjrc_user">
+          <value>
+            <TableInfoDTO>
+              <option name="fullColumn">
+                <list>
+                  <ColumnInfoDTO>
+                    <option name="custom" value="false" />
+                    <option name="ext" value="{}" />
+                    <option name="name" value="uid" />
+                    <option name="type" value="java.lang.String" />
+                  </ColumnInfoDTO>
+                  <ColumnInfoDTO>
+                    <option name="custom" value="false" />
+                    <option name="ext" value="{}" />
+                    <option name="name" value="time" />
+                    <option name="type" value="java.util.Date" />
+                  </ColumnInfoDTO>
+                  <ColumnInfoDTO>
+                    <option name="custom" value="false" />
+                    <option name="ext" value="{}" />
+                    <option name="name" value="value" />
+                    <option name="type" value="java.lang.String" />
+                  </ColumnInfoDTO>
+                </list>
+              </option>
+              <option name="name" value="FjrcUser" />
+              <option name="preName" value="" />
+              <option name="saveModelName" value="devilspiderx-springboot" />
+              <option name="savePackageName" value="devilSpiderX.server.webServer.module.fjrc" />
+              <option name="savePath" value="./src/main/java/devilSpiderX/server/webServer/module/fjrc" />
+              <option name="templateGroupName" value="Default" />
+            </TableInfoDTO>
+          </value>
+        </entry>
         <entry key="devilspiderx.user">
           <value>
             <TableInfoDTO>
