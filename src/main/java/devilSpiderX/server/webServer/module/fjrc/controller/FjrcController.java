@@ -1,11 +1,15 @@
 package devilSpiderX.server.webServer.module.fjrc.controller;
 
 import cn.dev33.satoken.secure.SaSecureUtil;
+import cn.dev33.satoken.util.SaFoxUtil;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.fjrc.record.HistoryRequest;
 import devilSpiderX.server.webServer.module.fjrc.service.FjrcService;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -20,14 +24,18 @@ public class FjrcController {
     }
 
     @GetMapping("topic")
-    public AjaxResp<?> get(@RequestParam(value = "bank", defaultValue = "A") String bank,
-                           @RequestParam(value = "id", defaultValue = "0") int id) {
-        return AjaxResp.success(fjrcService.getTopic(bank.toUpperCase(Locale.ENGLISH), id));
+    public ResponseEntity<AjaxResp<?>> get(@RequestParam(value = "bank", defaultValue = "A") String bank,
+                                           @RequestParam(value = "id", defaultValue = "0") int id) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofDays(1)))
+                .body(AjaxResp.success(fjrcService.getTopic(bank.toUpperCase(Locale.ENGLISH), id)));
     }
 
     @GetMapping("count")
-    public AjaxResp<?> count(@RequestParam(value = "bank", defaultValue = "A") String bank) {
-        return AjaxResp.success(Map.of("count", fjrcService.getCount(bank.toUpperCase(Locale.ENGLISH))));
+    public ResponseEntity<AjaxResp<?>> count(@RequestParam(value = "bank", defaultValue = "A") String bank) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofDays(1)))
+                .body(AjaxResp.success(Map.of("count", fjrcService.getCount(bank.toUpperCase(Locale.ENGLISH)))));
     }
 
     private final Object genFingerprintLock = new Object();
@@ -36,7 +44,7 @@ public class FjrcController {
     public AjaxResp<?> onlineCount(@RequestParam(value = "fingerprint", required = false) String fingerprint) {
         if (fingerprint == null) {
             synchronized (genFingerprintLock) {
-                final var str = cn.dev33.satoken.util.SaFoxUtil.formatDate(new Date());
+                final var str = SaFoxUtil.formatDate(new Date());
                 fingerprint = SaSecureUtil.sha256(str);
             }
         }
