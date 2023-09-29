@@ -10,7 +10,7 @@ import java.util.Map;
 @CrossOrigin
 public class EmbyController {
 
-    @RequestMapping("/admin/service/registration/validateDevice")
+    @RequestMapping("admin/service/registration/validateDevice")
     @ResponseBody
     private Map<String, Object> validateDevice() {
         return Map.of(
@@ -20,7 +20,7 @@ public class EmbyController {
         );
     }
 
-    @RequestMapping("/admin/service/registration/getStatus")
+    @RequestMapping("admin/service/registration/getStatus")
     @ResponseBody
     private Map<String, Object> getStatus(@RequestParam Map<String, String> reqBody) {
         return Map.of(
@@ -30,7 +30,7 @@ public class EmbyController {
         );
     }
 
-    @RequestMapping("/admin/service/registration/validate")
+    @RequestMapping("admin/service/registration/validate")
     @ResponseBody
     private Map<String, Object> validate() {
         return Map.of(

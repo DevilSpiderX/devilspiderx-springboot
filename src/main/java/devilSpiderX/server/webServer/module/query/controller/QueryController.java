@@ -56,7 +56,7 @@ public class QueryController {
      * 0 成功；
      * </p>
      */
-    @PostMapping("/get")
+    @PostMapping("get")
     @ResponseBody
     private AjaxResp<?> get(@RequestBody GetRequest reqBody) {
         String uid = StpUtil.getLoginIdAsString();
@@ -89,7 +89,7 @@ public class QueryController {
      * 0 添加成功；1 添加失败；
      * </p>
      */
-    @PostMapping("/add")
+    @PostMapping("add")
     @ResponseBody
     private AjaxResp<?> add(@RequestBody AddRequest reqBody) {
         if (reqBody.name() == null) {
@@ -130,7 +130,7 @@ public class QueryController {
      * 0 修改成功；1 修改失败；
      * </p>
      */
-    @PostMapping("/update")
+    @PostMapping("update")
     @ResponseBody
     private AjaxResp<?> update(@RequestBody UpdateRequest reqBody) {
         if (reqBody.id() == null) {
@@ -168,7 +168,7 @@ public class QueryController {
      * 0 删除成功；1 删除失败；
      * </p>
      */
-    @PostMapping("/delete")
+    @PostMapping("delete")
     @ResponseBody
     private AjaxResp<?> delete(@RequestBody DeleteRequest reqBody) {
         if (reqBody.id() == null) {

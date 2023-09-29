@@ -34,7 +34,7 @@ public class V2rayController {
      * 100 没有权限；101 没有管理员权限；
      * </p>
      */
-    @PostMapping("/start")
+    @PostMapping("start")
     @ResponseBody
     private AjaxResp<?> start() {
         if (v2ray.isAlive()) {
@@ -63,7 +63,7 @@ public class V2rayController {
      * 100 没有权限；101 没有管理员权限；
      * </p>
      */
-    @PostMapping("/stop")
+    @PostMapping("stop")
     @ResponseBody
     private AjaxResp<?> stop() {
         if (v2ray.isAlive()) {
@@ -91,7 +91,7 @@ public class V2rayController {
      * 100 没有权限；101 没有管理员权限；
      * </p>
      */
-    @PostMapping("/state")
+    @PostMapping("state")
     @ResponseBody
     private AjaxResp<?> state() {
         return AjaxResp.success(

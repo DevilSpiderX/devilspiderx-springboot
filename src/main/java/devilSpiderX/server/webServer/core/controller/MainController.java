@@ -26,7 +26,7 @@ public class MainController {
      * 0 成功；100 没有权限；101 没有管理员权限；
      * </p>
      */
-    @PostMapping("/os/reboot")
+    @PostMapping("os/reboot")
     @SaCheckPermission("system.reboot")
     private AjaxResp<Void> OSReboot() {
         OSFactory.getOS().reboot(500);
@@ -42,7 +42,7 @@ public class MainController {
      * 0 成功；100 没有权限；101 没有管理员权限；
      * </p>
      */
-    @PostMapping("/os/shutdown")
+    @PostMapping("os/shutdown")
     @SaCheckPermission("system.shutdown")
     private AjaxResp<Void> OSShutdown() {
         OSFactory.getOS().shutdown(500);
@@ -59,7 +59,7 @@ public class MainController {
      * 0 关闭成功； 100 没有权限；
      * </p>
      */
-    @RequestMapping("/service/shutdown")
+    @RequestMapping("service/shutdown")
     @SaCheckPermission("process.shutdown")
     private AjaxResp<Void> serviceShutdown() {
         new Thread(() -> {

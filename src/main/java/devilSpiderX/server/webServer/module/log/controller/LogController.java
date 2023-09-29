@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 public class LogController {
     static final String logDir = "./log";
 
-    @RequestMapping("/list")
+    @RequestMapping("list")
     @ResponseBody
     public AjaxResp<?> list() throws IOException {
         var logArray = new ArrayList<>();
@@ -37,7 +37,7 @@ public class LogController {
         return AjaxResp.success(logArray);
     }
 
-    @GetMapping("/{logName}")
+    @GetMapping("{logName}")
     public ResponseEntity<Resource> logFile(@PathVariable String logName) {
         File logFile = Paths.get(logDir, logName).toFile();
         if (!logFile.exists()) {
