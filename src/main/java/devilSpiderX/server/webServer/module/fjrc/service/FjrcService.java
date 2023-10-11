@@ -18,15 +18,23 @@ public class FjrcService {
     private final Logger logger = LoggerFactory.getLogger(FjrcService.class);
     private final SuidRich suid = BeeFactoryHelper.getSuidRich();
 
-    public static final Map<String, String> ITEM_BANK_NAME = Map.of(
-            "A", "2023年运营岗位资质考试理论题库（财务会计部）",
-            "B", "2023年运营岗位资质考试理论题库（运营管理部）",
-            "C", "2023年运营岗位资质考试理论题库（办公室）",
-            "D", "2023年运营岗位资质考试理论题库（法律合规部）",
-            "E", "2023年运营岗位资质考试理论题库（风险管理部）",
-            "F", "2023年运营岗位资质考试理论题库（金融市场部）",
-            "G", "2023年运营岗位资质考试理论题库（普惠金融部）",
-            "H", "2023年运营岗位资质考试理论题库（审计部）"
+    public static final Map<String, String> ITEM_BANK_NAME = Map.ofEntries(
+            Map.entry("A", "2023年运营岗位资质考试理论题库（财务会计部）"),
+            Map.entry("B", "2023年运营岗位资质考试理论题库（运营管理部）"),
+            Map.entry("C", "2023年运营岗位资质考试理论题库（办公室）"),
+            Map.entry("D", "2023年运营岗位资质考试理论题库（法律合规部）"),
+            Map.entry("E", "2023年运营岗位资质考试理论题库（风险管理部）"),
+            Map.entry("F", "2023年运营岗位资质考试理论题库（金融市场部）"),
+            Map.entry("G", "2023年运营岗位资质考试理论题库（普惠金融部）"),
+            Map.entry("H", "2023年运营岗位资质考试理论题库（审计部）"),
+            Map.entry("I", "财务会计类(客户经理)"),
+            Map.entry("J", "法律合规类(客户经理)"),
+            Map.entry("K", "风险管理类(客户经理)"),
+            Map.entry("L", "纪检类(客户经理)"),
+            Map.entry("M", "金融市场类(客户经理)"),
+            Map.entry("N", "普惠金融类(客户经理)"),
+            Map.entry("O", "审计类(客户经理)"),
+            Map.entry("P", "运营管理类(客户经理)")
     );
 
     public Fjrc getTopic(String bank, int id) {

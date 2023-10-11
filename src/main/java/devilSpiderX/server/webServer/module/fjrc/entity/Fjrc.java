@@ -3,37 +3,37 @@ package devilSpiderX.server.webServer.module.fjrc.entity;
 import java.io.Serial;
 import java.io.Serializable;
 
-
 public class Fjrc implements Serializable {
     @Serial
-    private static final long serialVersionUID = -37694428059705440L;
-    
+    private static final long serialVersionUID = 549232230568895757L;
     private String itemBank;
-    
+
     private String type;
-    
+
     private String title;
-    
+
     private String label;
-    
+
     private String answer;
-    
+
     private String a;
-    
+
     private String b;
-    
+
     private String c;
-    
+
     private String d;
-    
+
     private String e;
-    
+
     private String f;
-    
+
     private String g;
-    
+
     private String topicBasis;
 
+    private String remark;
+    
 
     public String getItemBank() {
         return itemBank;
@@ -137,6 +137,14 @@ public class Fjrc implements Serializable {
 
     public void setTopicBasis(String topicBasis) {
         this.topicBasis = topicBasis;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
 }
