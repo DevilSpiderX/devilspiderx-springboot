@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
-import devilSpiderX.server.webServer.module.serverInfo.statistic.Network;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
@@ -113,15 +112,9 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
 
         final var networks = serverInfoService.getNetworks();
         final var networkDataList = new ArrayList<>(networks.length);
-        final var AllNet = new Network("All");
         for (var network : networks) {
-            AllNet.setBytesSent(AllNet.getBytesSent() + network.getBytesSent());
-            AllNet.setBytesRecv(AllNet.getBytesRecv() + network.getBytesRecv());
-            AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
-            AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
             networkDataList.add(serverInfoService.constructNetworkObject(network));
         }
-        networkDataList.add(serverInfoService.constructNetworkObject(AllNet));
         data.put("networks", networkDataList);
 
         final var currentOS = serverInfoService.getCurrentOS();

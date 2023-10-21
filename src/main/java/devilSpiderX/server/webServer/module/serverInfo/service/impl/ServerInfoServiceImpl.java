@@ -219,7 +219,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 network.setIPv4Addr(nif.getIPv4addr());
                 network.setIPv6Addr(nif.getIPv6addr());
             }
-            if (nIfMap.size() != 0) {
+            if (!nIfMap.isEmpty()) {
                 nIfMap.forEach((k, v) -> networks.add(new Network(
                         v.getName(),
                         v.getDisplayName(),

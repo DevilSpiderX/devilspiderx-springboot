@@ -5,7 +5,10 @@ import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
-import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.CPU;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.CurrentOS;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.Disk;
+import devilSpiderX.server.webServer.module.serverInfo.statistic.Memory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,15 +78,9 @@ public class ServerInfoController {
     private AjaxResp<?> networks() {
         final var networks = serverInfoService.getNetworks();
         final var networkDataList = new ArrayList<>(networks.length);
-        final var AllNet = new Network("All");
         for (var network : networks) {
-            AllNet.setBytesSent(AllNet.getBytesSent() + network.getBytesSent());
-            AllNet.setBytesRecv(AllNet.getBytesRecv() + network.getBytesRecv());
-            AllNet.setUploadSpeed(AllNet.getUploadSpeed() + network.getUploadSpeed());
-            AllNet.setDownloadSpeed(AllNet.getDownloadSpeed() + network.getDownloadSpeed());
             networkDataList.add(serverInfoService.constructNetworkObject(network));
         }
-        networkDataList.add(serverInfoService.constructNetworkObject(AllNet));
         return AjaxResp.success(networkDataList);
     }
 
