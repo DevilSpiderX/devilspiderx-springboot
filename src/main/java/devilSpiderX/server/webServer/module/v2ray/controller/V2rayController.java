@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.module.v2ray.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import devilSpiderX.server.webServer.core.service.factory.OSFactory;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
 import org.slf4j.Logger;
@@ -98,5 +99,23 @@ public class V2rayController {
                 v2ray.isAlive() ? "v2ray正在运行" : "v2ray没有运行",
                 v2ray.isAlive()
         );
+    }
+
+    /**
+     * <b>v2ray服务重启</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 重启指令执行完成；
+     * 100 没有权限；101 没有管理员权限；
+     * </p>
+     */
+    @PostMapping("client/restart")
+    @ResponseBody
+    private AjaxResp<?> clientRestart() {
+        OSFactory.getOS().restartV2rayService();
+        return AjaxResp.success("重启指令执行完成");
     }
 }

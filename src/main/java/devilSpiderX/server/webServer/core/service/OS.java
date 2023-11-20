@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 
 public interface OS {
@@ -14,7 +15,9 @@ public interface OS {
 
     Charset getCharset();
 
-    String system(String... cmd);
+    default String system(String... cmd) {
+        return system(Arrays.asList(cmd));
+    }
 
     default String system(List<String> cmd) {
         Logger logger = LoggerFactory.getLogger(OS.class);
@@ -51,4 +54,6 @@ public interface OS {
     void reboot(long millis);
 
     void shutdown(long millis);
+
+    void restartV2rayService();
 }

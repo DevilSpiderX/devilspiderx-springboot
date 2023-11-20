@@ -24,7 +24,7 @@ public class DSXApplication {
 
     public static void close(int Code) {
         if (SaManager.getSaTokenDao() instanceof SaTokenDaoDefaultImpl saTokenDao) {
-            saTokenDao.endRefreshThread();
+            saTokenDao.destroy();
             saTokenDao.refreshThread.interrupt();
             try {
                 saTokenDao.refreshThread.join();

@@ -27,11 +27,6 @@ public class WindowsOS implements OS {
     }
 
     @Override
-    public String system(String... cmd) {
-        return system(Arrays.asList(cmd));
-    }
-
-    @Override
     public void reboot(long millis) {
         List<String> rebootCMD = Arrays.asList("shutdown /r /t 1 /d p:4:1".split(" "));
         new Thread(() -> {
@@ -59,5 +54,10 @@ public class WindowsOS implements OS {
                 logger.error(e.getMessage(), e);
             }
         }, "shutdown").start();
+    }
+
+    @Override
+    public void restartV2rayService() {
+        logger.info("Windows没适配");
     }
 }

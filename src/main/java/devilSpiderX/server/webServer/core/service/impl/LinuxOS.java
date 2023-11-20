@@ -28,11 +28,6 @@ public class LinuxOS implements OS {
     }
 
     @Override
-    public String system(String... cmd) {
-        return system(Arrays.asList(cmd));
-    }
-
-    @Override
     public void reboot(long millis) {
         List<String> rebootCMD = Arrays.asList("shutdown -r now".split(" "));
         new Thread(() -> {
@@ -60,5 +55,13 @@ public class LinuxOS implements OS {
                 logger.error(e.getMessage(), e);
             }
         }, "shutdown").start();
+    }
+
+    @Override
+    public void restartV2rayService() {
+        new Thread(() -> {
+            var result = system("systemctl", "restart", "v2ray.service");
+            logger.info("V2ray服务重启：{}", result);
+        }, "v2ray service restart").start();
     }
 }
