@@ -1,18 +1,19 @@
 package devilSpiderX.server.webServer.module.emby.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/emby")
 @CrossOrigin
 public class EmbyController {
 
     @RequestMapping("admin/service/registration/validateDevice")
-    @ResponseBody
-    private Map<String, Object> validateDevice() {
+    public Map<String, Object> validateDevice() {
         return Map.of(
                 "cacheExpirationDays", 365,
                 "message", "Device Valid",
@@ -21,8 +22,7 @@ public class EmbyController {
     }
 
     @RequestMapping("admin/service/registration/getStatus")
-    @ResponseBody
-    private Map<String, Object> getStatus(@RequestParam Map<String, String> reqBody) {
+    public Map<String, Object> getStatus(@RequestParam Map<String, String> reqBody) {
         return Map.of(
                 "deviceStatus", "0",
                 "planType", "Lifetime",
@@ -31,8 +31,7 @@ public class EmbyController {
     }
 
     @RequestMapping("admin/service/registration/validate")
-    @ResponseBody
-    private Map<String, Object> validate() {
+    public Map<String, Object> validate() {
         return Map.of(
                 "featId", "MBSupporter",
                 "registered", true,
