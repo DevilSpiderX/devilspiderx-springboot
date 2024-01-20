@@ -39,7 +39,7 @@ public class QueryController {
         public String[] keys() {
             if (key != null) {
                 String keysStr = key.trim();
-                return keysStr.split("\\s|\\.");
+                return keysStr.split("(\\s|\\.)+");
             }
             return new String[0];
         }
