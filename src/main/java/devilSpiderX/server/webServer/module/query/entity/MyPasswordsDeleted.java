@@ -3,16 +3,25 @@ package devilSpiderX.server.webServer.module.query.entity;
 import java.io.Serial;
 import java.io.Serializable;
 
-public class MyPasswords implements Serializable, Comparable<MyPasswords> {
+public class MyPasswordsDeleted implements Serializable {
     @Serial
-    private static final long serialVersionUID = 1594978966205L;
+    private static final long serialVersionUID = -41168418438567306L;
 
     private Integer id;
     private String name;
     private String account;
-    private String password;//只储存加密后的密码，禁止明文保存
+    private String password;
     private String remark;
     private String owner;
+
+    public MyPasswordsDeleted(MyPasswords entity) {
+        id = entity.getId();
+        name = entity.getName();
+        account = entity.getAccount();
+        password = entity.getPassword();
+        remark = entity.getRemark();
+        owner = entity.getOwner();
+    }
 
     public Integer getId() {
         return id;
@@ -61,21 +70,5 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     public void setOwner(String owner) {
         this.owner = owner;
     }
-
-    @Override
-    public String toString() {
-        return "MyPasswords{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", account='" + account + '\'' +
-                ", password='" + password + '\'' +
-                ", remark='" + remark + '\'' +
-                ", owner='" + owner + '\'' +
-                '}';
-    }
-
-    @Override
-    public int compareTo(MyPasswords another) {
-        return id.compareTo(another.id);
-    }
 }
+

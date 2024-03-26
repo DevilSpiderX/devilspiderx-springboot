@@ -38,7 +38,7 @@ public class QueryController {
          */
         public String[] keys() {
             if (key != null) {
-                String keysStr = key.trim();
+                final var keysStr = key.trim();
                 return keysStr.split("(\\s|\\.)+");
             }
             return new String[0];
@@ -59,8 +59,8 @@ public class QueryController {
     @PostMapping("get")
     @ResponseBody
     private AjaxResp<?> get(@RequestBody GetRequest reqBody) {
-        String uid = StpUtil.getLoginIdAsString();
-        String[] keys = reqBody.keys();
+        final var uid = StpUtil.getLoginIdAsString();
+        final var keys = reqBody.keys();
         logger.info("用户{}查询记录：{}", uid, Arrays.toString(keys));
         var myPwdList = myPasswordsService.query(keys, uid);
 
@@ -95,11 +95,11 @@ public class QueryController {
         if (reqBody.name() == null) {
             return AjaxResp.error("name参数不能为空或不存在");
         }
-        String name = reqBody.name();
-        String account = reqBody.account();
-        String password = reqBody.password();
-        String remark = reqBody.remark();
-        String owner = StpUtil.getLoginIdAsString();
+        final var name = reqBody.name();
+        final var account = reqBody.account();
+        final var password = reqBody.password();
+        final var remark = reqBody.remark();
+        final var owner = StpUtil.getLoginIdAsString();
         logger.info("用户{}添加记录：{}", owner, name);
         return myPasswordsService.add(name, account, password, remark, owner) ?
                 AjaxResp.success()
@@ -136,12 +136,12 @@ public class QueryController {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
-        int id = reqBody.id();
-        String uid = StpUtil.getLoginIdAsString();
-        String name = reqBody.name();
-        String account = reqBody.account();
-        String password = reqBody.password();
-        String remark = reqBody.remark();
+        final var id = reqBody.id();
+        final var uid = StpUtil.getLoginIdAsString();
+        final var name = reqBody.name();
+        final var account = reqBody.account();
+        final var password = reqBody.password();
+        final var remark = reqBody.remark();
         logger.info("用户{}修改记录 id：{}", uid, id);
         return myPasswordsService.update(id, name, account, password, remark) ?
                 AjaxResp.success()
@@ -174,8 +174,8 @@ public class QueryController {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
-        int id = reqBody.id();
-        String uid = StpUtil.getLoginIdAsString();
+        final var id = reqBody.id();
+        final var uid = StpUtil.getLoginIdAsString();
         logger.info("用户{}删除记录 id：{}", uid, id);
         return myPasswordsService.delete(id) ?
                 AjaxResp.success()
