@@ -31,7 +31,7 @@ public class DSXApplication {
             } catch (InterruptedException ignore) {
             }
         }
-        int code = SpringApplication.exit(context, () -> Code);
+        final int code = SpringApplication.exit(context, () -> Code);
         System.exit(code);
     }
 }

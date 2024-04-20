@@ -17,9 +17,9 @@ public class SettingsService {
     private final SuidRich suid = BeeFactoryHelper.getSuidRich();
 
     public SettingsService() {
-        List<Settings> insertList = new LinkedList<>();
+        final List<Settings> insertList = new LinkedList<>();
         {
-            Settings settings = new Settings();
+            final Settings settings = new Settings();
             settings.setKey("session_max_age");
             if (!suid.exist(settings)) {
                 settings.setValue("3600");
