@@ -1,7 +1,6 @@
 package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
+import devilSpiderX.server.webServer.core.util.JacksonUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
 import devilSpiderX.server.webServer.module.user.entity.User;
@@ -70,14 +69,28 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         }
     }
 
+    /**
+     * websocket获取的消息类型
+     *
+     * @param cmd 命令{@code [start, stop]}
+     * @param cd  命令为start时，每次数据发送的间隔时长，单位为毫秒
+     */
+    record TextMsgData(String cmd, Long cd) {
+        public long cd(long defaultValue) {
+            return cd != null ? cd : defaultValue;
+        }
+    }
+
     @OnMessage
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
-        final String msg = message.getPayload();
-        final String sessionId = session.getId();
+        final var msg = message.getPayload();
+        final var sessionId = session.getId();
         logger.info("来自客户端{}的消息 - {}", sessionId, msg);
-        final JSONObject data = JSON.parseObject(msg);
-        if ("start".equals(data.getString("cmd"))) {
+
+        final var data = JacksonUtil.parseObject(msg, TextMsgData.class);
+
+        if ("start".equals(data.cmd())) {
             logger.info("客户端{}开始定时任务", sessionId);
             final TimerTask task = new SendTask(session);
             final TimerTask lastTask = sendTaskMap.put(sessionId, task);
@@ -85,8 +98,8 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
                 logger.info("客户端{}中止上个定时任务", sessionId);
                 lastTask.cancel();
             }
-            senderTimer.scheduleAtFixedRate(task, 0, data.getLongValue("cd", 1500));
-        } else if ("stop".equals(data.getString("cmd"))) {
+            senderTimer.scheduleAtFixedRate(task, 0, data.cd(1000));
+        } else if ("stop".equals(data.cmd())) {
             logger.info("客户端{}停止定时任务", sessionId);
             final TimerTask task = sendTaskMap.remove(sessionId);
             if (task != null) {
@@ -95,8 +108,8 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         }
     }
 
-    public JSONObject getServerInfo() {
-        final var data = new JSONObject();
+    public Map<String, Object> getServerInfo() {
+        final var data = new HashMap<String, Object>();
 
         final var cpu = serverInfoService.getCPU();
         data.put("cpu", serverInfoService.constructCpuObject(cpu));
@@ -141,20 +154,19 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         }
 
         private void _run() {
-            final WebSocketSession session = sessionRef.get();
-            if (session == null) {
+            final var session = sessionRef.get();
+            if (session == null || !session.isOpen()) {
                 return;
             }
-            final String sessionId = session.getId();
-            final Attribute attr = attributeMap.get(sessionId);
-            final JSONObject data = getServerInfo();
+            final var sessionId = session.getId();
+            final var attr = attributeMap.get(sessionId);
+            final var data = getServerInfo();
             data.put("index", index++);
 
             try {
-                session.sendMessage(new TextMessage(data.toString()));
+                session.sendMessage(new TextMessage(JacksonUtil.toJSONString(data)));
             } catch (IOException e) {
-                logger.error("发送信息报错{}", e.getClass().getName());
-                logger.error(e.getMessage(), e);
+                logger.error("发送信息报错%s".formatted(e.getClass().getName()), e);
             }
 
             if (!tokenService.check(attr.uid(), attr.token())) {

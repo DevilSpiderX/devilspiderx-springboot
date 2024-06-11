@@ -1,10 +1,9 @@
 package devilSpiderX.server.webServer.core.util;
 
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import devilSpiderX.server.webServer.core.langExtend.Bytes;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -13,13 +12,14 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter<JSONObject> {
+public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter<Map<String, Object>> {
 
     public FormToJSONHttpMessageConverter() {
         super(MediaType.APPLICATION_FORM_URLENCODED);
@@ -27,45 +27,50 @@ public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter
 
     @Override
     protected boolean supports(Class<?> clazz) {
-        return clazz.equals(JSONObject.class);
+        return clazz.equals(Map.class);
     }
 
     @Override
-    protected @NotNull JSONObject readInternal(@NotNull Class<? extends JSONObject> clazz, HttpInputMessage inputMessage)
+    protected @NotNull Map<String, Object> readInternal(@NotNull Class<? extends Map<String, Object>> clazz, HttpInputMessage inputMessage)
             throws IOException, HttpMessageNotReadableException {
-        InputStream in = inputMessage.getBody();
-        Bytes bytes = new Bytes();
-        byte[] buffer = new byte[1024 * 64];
+        final var in = inputMessage.getBody();
+        final var bytes = new Bytes();
+        final var buffer = new byte[1024 * 64];
         while (true) {
-            int readCount = in.read(buffer);
+            final var readCount = in.read(buffer);
             if (readCount == -1) {
                 break;
             }
             bytes.append(buffer, 0, readCount);
         }
-        String formStr = bytes.getString(StandardCharsets.UTF_8);
+        final var formStr = bytes.getString(StandardCharsets.UTF_8);
 
-        JSONObject result = new JSONObject();
-        String[] kAvList = formStr.split("&");
-        for (String kAv : kAvList) {
-            String[] kv = kAv.split("=");
+        final var result = JacksonUtil.MAPPER.createObjectNode();
+        for (final var kAv : formStr.split("&")) {
+            final var kv = kAv.split("=");
             if (kv.length != 2) continue;
-            String key = urlDecode(kv[0]);
-            String value = urlDecode(kv[1]);
-            if (result.containsKey(key)) {
-                if (result.get(key) instanceof JSONArray) {
-                    result.getJSONArray(key).add(value);
+            final var key = urlDecode(kv[0]);
+            final var value = urlDecode(kv[1]);
+
+            if (result.get(key) != null) {
+                if (result.get(key) instanceof final ArrayNode array) {
+                    array.add(value);
                 } else {
-                    JSONArray array = new JSONArray();
+                    final var array = JacksonUtil.MAPPER.createArrayNode();
                     array.add(result.get(key));
                     array.add(value);
-                    result.put(key, array);
+                    result.set(key, array);
                 }
             } else {
                 result.put(key, value);
             }
         }
-        return result;
+        return JacksonUtil.MAPPER.convertValue(
+                result,
+                TypeFactory
+                        .defaultInstance()
+                        .constructMapType(HashMap.class, String.class, Object.class)
+        );
     }
 
     private String urlDecode(String str) {
@@ -73,18 +78,34 @@ public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter
     }
 
     @Override
-    protected void writeInternal(JSONObject object, @NotNull HttpOutputMessage outputMessage)
+    protected void writeInternal(Map<String, Object> object, @NotNull HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
-        StringBuilder stringBuilder = new StringBuilder();
-        object.forEach((key, value) -> stringBuilder.append(urlEncode(key)).append('=')
-                .append(urlEncode(value.toString())).append('&'));
-        byte[] value = stringBuilder.substring(0, stringBuilder.length() - 1).getBytes(StandardCharsets.UTF_8);
+        final var stringBuilder = new StringBuilder();
 
-        HttpHeaders headers = outputMessage.getHeaders();
+        object.forEach((key, value) -> {
+            if (value == null) return;
+            if (value instanceof final Collection<?> array) {
+                for (final var obj : array) {
+                    if (obj == null) continue;
+                    stringBuilder.append(urlEncode(key))
+                            .append('=')
+                            .append(urlEncode(obj.toString()))
+                            .append('&');
+                }
+            } else {
+                stringBuilder.append(urlEncode(key))
+                        .append('=')
+                        .append(urlEncode(value.toString()))
+                        .append('&');
+            }
+        });
+        final var value = stringBuilder.substring(0, stringBuilder.length() - 1).getBytes(StandardCharsets.UTF_8);
+
+        final var headers = outputMessage.getHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setContentLength(value.length);
 
-        OutputStream out = outputMessage.getBody();
+        final var out = outputMessage.getBody();
         out.write(value);
         out.flush();
     }

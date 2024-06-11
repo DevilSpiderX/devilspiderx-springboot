@@ -1,11 +1,8 @@
 package devilSpiderX.server.webServer.core.configuration;
 
-import com.alibaba.fastjson2.JSONReader;
-import com.alibaba.fastjson2.JSONWriter;
-import com.alibaba.fastjson2.support.config.FastJsonConfig;
-import com.alibaba.fastjson2.support.spring6.http.converter.FastJsonHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.BytesHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.FormToJSONHttpMessageConverter;
+import devilSpiderX.server.webServer.core.util.JacksonUtil;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.ErrorPageRegistrar;
 import org.springframework.boot.web.server.ErrorPageRegistry;
@@ -13,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.charset.StandardCharsets;
@@ -24,19 +22,16 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.add(0, fastJsonHttpMessageConverter());
+        converters.addFirst(getMappingJackson2HttpMessageConverter());
         converters.add(new BytesHttpMessageConverter());
         converters.add(new FormToJSONHttpMessageConverter());
     }
 
-    private FastJsonHttpMessageConverter fastJsonHttpMessageConverter() {
-        FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
-        FastJsonConfig config = new FastJsonConfig();
-        config.setWriterFeatures(JSONWriter.Feature.WriteBigDecimalAsPlain);
-        config.setReaderFeatures(JSONReader.Feature.UseBigDecimalForDoubles, JSONReader.Feature.IgnoreSetNullValue);
-        converter.setFastJsonConfig(config);
+    private MappingJackson2HttpMessageConverter getMappingJackson2HttpMessageConverter() {
+        final var converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(JacksonUtil.MAPPER);
         converter.setDefaultCharset(StandardCharsets.UTF_8);
-        List<MediaType> mediaTypeList = new ArrayList<>();
+        final List<MediaType> mediaTypeList = new ArrayList<>();
         mediaTypeList.add(MediaType.APPLICATION_JSON);
         converter.setSupportedMediaTypes(mediaTypeList);
         return converter;
@@ -44,7 +39,7 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
 
     @Override
     public void registerErrorPages(ErrorPageRegistry registry) {
-        ErrorPage[] pages = {
+        final ErrorPage[] pages = {
                 new ErrorPage(HttpStatus.BAD_REQUEST, "/error/400"),
                 new ErrorPage(HttpStatus.NOT_FOUND, "/error/404"),
                 new ErrorPage(HttpStatus.METHOD_NOT_ALLOWED, "/error/405"),

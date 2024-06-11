@@ -1,7 +1,5 @@
 package devilSpiderX.server.webServer.core.util;
 
-import com.alibaba.fastjson2.JSON;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
@@ -75,7 +73,7 @@ public class AjaxResp<T> implements Serializable {
 
     @Override
     public String toString() {
-        return JSON.toJSONString(this);
+        return JacksonUtil.toJSONString(this);
     }
 
     // 返回成功
