@@ -17,12 +17,7 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
         return new ModelAndView("forward:/", HttpStatus.OK);
     }
 
-    @GetMapping("{status:\\d+}")
-    public String error_get(@PathVariable String status) {
-        return status + ".html";
-    }
-
-    @PostMapping("{status:\\d+}")
+    @RequestMapping("{status:\\d+}")
     @ResponseBody
     public AjaxResp<?> error_post(@PathVariable int status) {
         return AjaxResp.of(status, HttpStatus.valueOf(status).getReasonPhrase())

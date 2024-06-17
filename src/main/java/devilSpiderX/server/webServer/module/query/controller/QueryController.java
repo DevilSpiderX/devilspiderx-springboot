@@ -62,9 +62,62 @@ public class QueryController {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
         logger.info("用户{}查询记录：{}", uid, Arrays.toString(keys));
-        var myPwdList = myPasswordsService.query(keys, uid);
+        final var myPwdList = myPasswordsService.query(keys, uid);
 
         return AjaxResp.success(myPwdList);
+    }
+
+    /**
+     * 分页查询密码记录请求参数
+     *
+     * @param key    查询值
+     * @param length 每页的长度
+     * @param page   查询第n页
+     */
+    record GetPagingRequest(String key, Integer length, Integer page) {
+        public GetPagingRequest(String key, Integer length, Integer page) {
+            this.key = key;
+            this.length = length == null ? 20 : length;
+            this.page = page == null ? 0 : page;
+        }
+
+        /**
+         * 分割查询值,使用空格和<code>.</code>来分割
+         *
+         * @return 分割后的查询值
+         */
+        public String[] keys() {
+            if (key != null) {
+                final var keysStr = key.trim();
+                return keysStr.split("(\\s|\\.)+");
+            }
+            return new String[0];
+        }
+    }
+
+    /**
+     * <b>分页查询密码记录</b>
+     * <p>
+     * <b>应包含参数：</b>
+     * {@link GetPagingRequest}
+     * </p>
+     * <p>
+     * <b>返回代码：</b>
+     * 0 成功；
+     * </p>
+     */
+    @PostMapping("get_paging")
+    @ResponseBody
+    private AjaxResp<?> getPaging(@RequestBody GetPagingRequest reqBody) {
+        final var uid = StpUtil.getLoginIdAsString();
+        final var keys = reqBody.keys();
+        final var length = reqBody.length();
+        final var page = reqBody.page();
+        logger.info("用户{}分页查询记录：{}，每页长度：{}，第{}页", uid, Arrays.toString(keys), length, page);
+
+        final var result = myPasswordsService.queryPaging(keys, length, page, uid);
+        return AjaxResp.success(result.list())
+                .setDataCount(result.dataCount());
     }
 
     /**

@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.module.query.service;
 
+import devilSpiderX.server.webServer.module.query.record.MyPasswordPagingResp;
 import devilSpiderX.server.webServer.module.query.record.MyPasswordsResp;
 
 import java.util.List;
@@ -16,4 +17,10 @@ public interface MyPasswordsService {
     List<MyPasswordsResp> query(String[] names, String owner);
 
     List<MyPasswordsResp> query(List<String> names, String owner);
+
+    MyPasswordPagingResp queryPaging(String name, int length, int page, String owner);
+
+    MyPasswordPagingResp queryPaging(String[] names, int length, int page, String owner);
+
+    MyPasswordPagingResp queryPaging(List<String> names, int length, int page, String owner);
 }

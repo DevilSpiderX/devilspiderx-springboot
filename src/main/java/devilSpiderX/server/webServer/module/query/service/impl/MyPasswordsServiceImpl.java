@@ -3,6 +3,7 @@ package devilSpiderX.server.webServer.module.query.service.impl;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.module.query.entity.MyPasswords;
 import devilSpiderX.server.webServer.module.query.entity.MyPasswordsDeleted;
+import devilSpiderX.server.webServer.module.query.record.MyPasswordPagingResp;
 import devilSpiderX.server.webServer.module.query.record.MyPasswordsResp;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import devilSpiderX.server.webServer.module.user.service.UserService;
@@ -116,7 +117,9 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
             passwords = suid.select(emptyMP);
         } else {
             final Set<String> nameSet = new HashSet<>(names);
-            final List<String> nameList = nameSet.stream().filter(name -> !Objects.equals(name, "")).toList();
+            final List<String> nameList = nameSet.stream()
+                    .filter(name -> !Objects.equals(name, ""))
+                    .toList();
 
             final var con = new ConditionImpl();
             con.lParentheses();
@@ -125,13 +128,15 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
                 if (i != 0) con.or();
                 con.op("name", Op.like, '%' + name + '%');
             }
-            con.rParentheses().and().op("owner", Op.equal, owner);
+            con.rParentheses()
+                    .and()
+                    .op("owner", Op.equal, owner);
             passwords = suid.select(emptyMP, con);
         }
         passwords.sort(Comparator.naturalOrder());
 
         final List<MyPasswordsResp> result = new ArrayList<>();
-        for (var password : passwords) {
+        for (final var password : passwords) {
             result.add(new MyPasswordsResp(
                     password.getId(),
                     password.getName(),
@@ -141,5 +146,70 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
             ));
         }
         return result;
+    }
+
+    @Override
+    public MyPasswordPagingResp queryPaging(String name, int length, int page, String owner) {
+        if (name == null) return _queryPaging(null, length, page, owner);
+        return _queryPaging(List.of(name), length, page, owner);
+    }
+
+    @Override
+    public MyPasswordPagingResp queryPaging(String[] names, int length, int page, String owner) {
+        if (names == null) return _queryPaging(null, length, page, owner);
+        return _queryPaging(List.of(names), length, page, owner);
+    }
+
+    @Override
+    public MyPasswordPagingResp queryPaging(List<String> names, int length, int page, String owner) {
+        return _queryPaging(names, length, page, owner);
+    }
+
+    private MyPasswordPagingResp _queryPaging(List<String> names, int length, int page, String owner) {
+        List<MyPasswords> passwords;
+        long dataCount;
+        final var emptyMP = new MyPasswords();
+        if (isEmptyNames(names)) {
+            emptyMP.setOwner(owner);
+            dataCount = suid.count(emptyMP);
+            passwords = suid.select(emptyMP, page * length, length);
+        } else {
+            final Set<String> nameSet = new HashSet<>(names);
+            final List<String> nameList = nameSet.stream()
+                    .filter(name -> !Objects.equals(name, ""))
+                    .toList();
+
+            final var con = new ConditionImpl();
+            con.lParentheses();
+            for (int i = 0; i < nameList.size(); i++) {
+                final var name = nameList.get(i);
+                if (i != 0) con.or();
+                con.op("name", Op.like, '%' + name + '%');
+            }
+            con.rParentheses()
+                    .and()
+                    .op("owner", Op.equal, owner);
+            dataCount = suid.count(emptyMP, con);
+
+            con.start(page * length)
+                    .size(length);
+            passwords = suid.select(emptyMP, con);
+        }
+        passwords.sort(Comparator.naturalOrder());
+
+        final List<MyPasswordsResp> result = new ArrayList<>();
+        for (final var password : passwords) {
+            result.add(new MyPasswordsResp(
+                    password.getId(),
+                    password.getName(),
+                    password.getAccount(),
+                    MyCipher.decrypt(password.getPassword()),
+                    password.getRemark()
+            ));
+        }
+        return new MyPasswordPagingResp(
+                result,
+                dataCount
+        );
     }
 }
