@@ -61,9 +61,11 @@ public class QueryController {
     private AjaxResp<?> get(@RequestBody GetRequest reqBody) {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
-        logger.info("用户{}查询记录：{}", uid, Arrays.toString(keys));
+        final var startTime = System.currentTimeMillis();
         final var myPwdList = myPasswordsService.query(keys, uid);
 
+        final var processingTime = System.currentTimeMillis() - startTime;
+        logger.info("用户{}查询记录：{}，用时{}毫秒", uid, Arrays.toString(keys), processingTime);
         return AjaxResp.success(myPwdList);
     }
 
@@ -113,9 +115,11 @@ public class QueryController {
         final var keys = reqBody.keys();
         final var length = reqBody.length();
         final var page = reqBody.page();
-        logger.info("用户{}分页查询记录：{}，每页长度：{}，第{}页", uid, Arrays.toString(keys), length, page);
-
+        final var startTime = System.currentTimeMillis();
         final var result = myPasswordsService.queryPaging(keys, length, page, uid);
+
+        final var processingTime = System.currentTimeMillis() - startTime;
+        logger.info("用户{}分页查询记录：{}，每页长度：{}，第{}页，用时{}毫秒", uid, Arrays.toString(keys), length, page, processingTime);
         return AjaxResp.success(result.list())
                 .setDataCount(result.dataCount());
     }
@@ -153,11 +157,13 @@ public class QueryController {
         final var password = reqBody.password();
         final var remark = reqBody.remark();
         final var owner = StpUtil.getLoginIdAsString();
-        logger.info("用户{}添加记录：{}", owner, name);
-        return myPasswordsService.add(name, account, password, remark, owner) ?
-                AjaxResp.success()
-                :
-                AjaxResp.failure();
+        final var startTime = System.currentTimeMillis();
+        final var flag = myPasswordsService.add(name, account, password, remark, owner);
+
+        final var processingTime = System.currentTimeMillis() - startTime;
+        logger.info("用户{}添加记录：{}，用时{}毫秒", owner, name, processingTime);
+        return flag ? AjaxResp.success()
+                : AjaxResp.failure();
     }
 
     /**
@@ -195,11 +201,13 @@ public class QueryController {
         final var account = reqBody.account();
         final var password = reqBody.password();
         final var remark = reqBody.remark();
-        logger.info("用户{}修改记录 id：{}", uid, id);
-        return myPasswordsService.update(id, name, account, password, remark) ?
-                AjaxResp.success()
-                :
-                AjaxResp.failure();
+        final var startTime = System.currentTimeMillis();
+        final var flag = myPasswordsService.update(id, name, account, password, remark);
+
+        final var processingTime = System.currentTimeMillis() - startTime;
+        logger.info("用户{}修改记录 id：{}，用时{}毫秒", uid, id, processingTime);
+        return flag ? AjaxResp.success()
+                : AjaxResp.failure();
     }
 
     /**
@@ -229,10 +237,12 @@ public class QueryController {
         }
         final var id = reqBody.id();
         final var uid = StpUtil.getLoginIdAsString();
-        logger.info("用户{}删除记录 id：{}", uid, id);
-        return myPasswordsService.delete(id) ?
-                AjaxResp.success()
-                :
-                AjaxResp.failure();
+        final var startTime = System.currentTimeMillis();
+        final var flag = myPasswordsService.delete(id);
+
+        final var processingTime = System.currentTimeMillis() - startTime;
+        logger.info("用户{}删除记录 id：{}，用时{}毫秒", uid, id, processingTime);
+        return flag ? AjaxResp.success()
+                : AjaxResp.failure();
     }
 }
