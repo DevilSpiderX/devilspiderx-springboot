@@ -6,11 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import oshi.SystemInfo;
-import oshi.hardware.CentralProcessor;
-import oshi.hardware.GlobalMemory;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.NetworkIF;
-import oshi.software.os.FileSystem;
 import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
@@ -18,6 +15,7 @@ import oshi.util.Util;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Service
 public class ServerInfoServiceImpl implements ServerInfoService {
@@ -28,6 +26,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     private final OperatingSystem os;
     private long[] oldTicks;
     private boolean isTemperatureDetectable = true;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     /**
      * CPU相关信息
      */
@@ -50,34 +49,38 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     private final CurrentOS currentOS = new CurrentOS();
 
     public ServerInfoServiceImpl() {
-        SystemInfo info = new SystemInfo();
-        hw = info.getHardware();
-        os = info.getOperatingSystem();
-        oldTicks = hw.getProcessor().getSystemCpuLoadTicks();
-        double temperature = hw.getSensors().getCpuTemperature();
-        if (temperature == 0 || Double.isNaN(temperature)) {
-            isTemperatureDetectable = false;
-        }
-
-        for (int i = 0; i < os.getFileSystem().getFileStores().size(); i++) {
-            disks.add(new Disk());
-        }
-
-        for (NetworkIF nIf : hw.getNetworkIFs()) {
-            if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
-                networks.add(new Network(
-                        nIf.getName(),
-                        nIf.getDisplayName(),
-                        nIf.getMacaddr(),
-                        nIf.getTimeStamp(),
-                        nIf.getBytesSent(),
-                        nIf.getBytesRecv(),
-                        nIf.getIPv4addr(),
-                        nIf.getIPv6addr()
-                ));
+        lock.writeLock().lock();
+        try {
+            final var info = new SystemInfo();
+            hw = info.getHardware();
+            os = info.getOperatingSystem();
+            oldTicks = hw.getProcessor().getSystemCpuLoadTicks();
+            final var temperature = hw.getSensors().getCpuTemperature();
+            if (temperature == 0 || Double.isNaN(temperature)) {
+                isTemperatureDetectable = false;
             }
-        }
 
+            for (int i = 0; i < os.getFileSystem().getFileStores().size(); i++) {
+                disks.add(new Disk());
+            }
+
+            for (NetworkIF nIf : hw.getNetworkIFs()) {
+                if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
+                    networks.add(new Network(
+                            nIf.getName(),
+                            nIf.getDisplayName(),
+                            nIf.getMacaddr(),
+                            nIf.getTimeStamp(),
+                            nIf.getBytesSent(),
+                            nIf.getBytesRecv(),
+                            nIf.getIPv4addr(),
+                            nIf.getIPv6addr()
+                    ));
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
         updateThread.start();
     }
 
@@ -90,40 +93,55 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     @Override
     public CPU getCPU() {
         this.update();
-        synchronized (cpu) {
+        lock.readLock().lock();
+        try {
             return cpu;
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
     @Override
     public Memory getMemory() {
         this.update();
-        synchronized (memory) {
+        lock.readLock().lock();
+        try {
             return memory;
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
     @Override
     public Disk[] getDisks() {
         this.update();
-        synchronized (disks) {
+        lock.readLock().lock();
+        try {
             return disks.toArray(new Disk[0]);
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
     @Override
     public Network[] getNetworks() {
         this.update();
-        synchronized (networks) {
+        lock.readLock().lock();
+        try {
             return networks.toArray(new Network[0]);
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
     @Override
     public CurrentOS getCurrentOS() {
         this.update();
-        synchronized (currentOS) {
+        lock.readLock().lock();
+        try {
             return currentOS;
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
@@ -131,9 +149,10 @@ public class ServerInfoServiceImpl implements ServerInfoService {
      * 设置CPU信息
      */
     private void setCPUInfo() {
-        CentralProcessor processor = hw.getProcessor();
-        CentralProcessor.ProcessorIdentifier processorIdentifier = processor.getProcessorIdentifier();
-        synchronized (cpu) {
+        final var processor = hw.getProcessor();
+        final var processorIdentifier = processor.getProcessorIdentifier();
+        lock.writeLock().lock();
+        try {
             cpu.setName(processorIdentifier.getName())
                     .setPhysicalNum(processor.getPhysicalProcessorCount())
                     .setLogicalNum(processor.getLogicalProcessorCount())
@@ -142,6 +161,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
             if (isTemperatureDetectable) {
                 cpu.setTemperature(hw.getSensors().getCpuTemperature());
             }
+        } finally {
+            lock.writeLock().unlock();
         }
         oldTicks = processor.getSystemCpuLoadTicks();
     }
@@ -150,12 +171,15 @@ public class ServerInfoServiceImpl implements ServerInfoService {
      * 设置内存信息
      */
     private void setMemoryInfo() {
-        GlobalMemory gMemory = hw.getMemory();
-        long total = gMemory.getTotal();
-        synchronized (memory) {
+        final var gMemory = hw.getMemory();
+        final var total = gMemory.getTotal();
+        lock.writeLock().lock();
+        try {
             memory.setTotal(total)
                     .setUsed(total - gMemory.getAvailable())
                     .setFree(gMemory.getAvailable());
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -163,10 +187,11 @@ public class ServerInfoServiceImpl implements ServerInfoService {
      * 设置磁盘信息
      */
     private void setDisksInfo() {
-        FileSystem fileSystem = os.getFileSystem();
-        List<OSFileStore> fsList = fileSystem.getFileStores();
-        synchronized (disks) {
-            int n = disks.size() - fsList.size();
+        final var fileSystem = os.getFileSystem();
+        final List<OSFileStore> fsList = fileSystem.getFileStores();
+        lock.writeLock().lock();
+        try {
+            final int n = disks.size() - fsList.size();
             if (n > 0) {
                 disks.subList(0, n).clear();
             } else if (n < 0) {
@@ -175,11 +200,12 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 }
             }
             for (int i = 0; i < fsList.size(); i++) {
-                OSFileStore fs = fsList.get(i);
-                long free = fs.getUsableSpace();
-                long total = fs.getTotalSpace();
-                long used = total - free;
-                disks.get(i).setLabel(fs.getLabel())
+                final var fs = fsList.get(i);
+                final var free = fs.getUsableSpace();
+                final var total = fs.getTotalSpace();
+                final var used = total - free;
+                disks.get(i)
+                        .setLabel(fs.getLabel())
                         .setMount(fs.getMount())
                         .setFSType(fs.getType())
                         .setName(fs.getName())
@@ -188,6 +214,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                         .setUsed(used);
             }
             disks.sort(Comparator.naturalOrder());
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -195,20 +223,21 @@ public class ServerInfoServiceImpl implements ServerInfoService {
      * 设置网络信息
      */
     public void setNetworkInfo() {
-        HashMap<String, NetworkIF> nIfMap = new HashMap<>();
-        for (NetworkIF nIf : hw.getNetworkIFs()) {
+        final Map<String, NetworkIF> nIfMap = new HashMap<>();
+        for (final var nIf : hw.getNetworkIFs()) {
             if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
                 nIfMap.put(nIf.getName(), nIf);
             }
         }
-        synchronized (networks) {
-            for (Network network : networks) {
-                NetworkIF nif = nIfMap.remove(network.getName());
+        lock.writeLock().lock();
+        try {
+            for (final var network : networks) {
+                final var nif = nIfMap.remove(network.getName());
                 if (nif == null) {
                     networks.remove(network);
                     continue;
                 }
-                long vTime = nif.getTimeStamp() - network.getTimeStamp();
+                final var vTime = nif.getTimeStamp() - network.getTimeStamp();
 
                 network.setUploadSpeed((nif.getBytesSent() - network.getBytesSent()) * 1000 / vTime);
                 network.setDownloadSpeed((nif.getBytesRecv() - network.getBytesRecv()) * 1000 / vTime);
@@ -231,14 +260,19 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                         v.getIPv6addr()
                 )));
             }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     public void setCurrentOSInfo() {
-        synchronized (currentOS) {
+        lock.writeLock().lock();
+        try {
             currentOS.setName(os.getFamily());
             currentOS.setBitness(os.getBitness());
             currentOS.setProcessCount(os.getProcessCount());
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
