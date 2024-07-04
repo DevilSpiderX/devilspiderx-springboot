@@ -19,14 +19,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Service
 public class ServerInfoServiceImpl implements ServerInfoService {
-    private static final int coolDownTime = 1000;
+    private static final int COOL_DOWN_TIME = 1000;
     private final UpdateThread updateThread = new UpdateThread();
-    private final AtomicBoolean allowUpdate = new AtomicBoolean();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final HardwareAbstractionLayer hw;
     private final OperatingSystem os;
     private long[] oldTicks;
     private boolean isTemperatureDetectable = true;
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     /**
      * CPU相关信息
      */
@@ -85,9 +84,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     public void update() {
-        if (allowUpdate.compareAndSet(true, false)) {
-            updateThread.activate();
-        }
+        updateThread.activate();
     }
 
     @Override
@@ -231,10 +228,11 @@ public class ServerInfoServiceImpl implements ServerInfoService {
         }
         lock.writeLock().lock();
         try {
+            final List<Network> removedList = new ArrayList<>();
             for (final var network : networks) {
                 final var nif = nIfMap.remove(network.getName());
                 if (nif == null) {
-                    networks.remove(network);
+                    removedList.add(network);
                     continue;
                 }
                 final var vTime = nif.getTimeStamp() - network.getTimeStamp();
@@ -248,6 +246,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 network.setIPv4Addr(nif.getIPv4addr());
                 network.setIPv6Addr(nif.getIPv6addr());
             }
+            networks.removeAll(removedList);
+
             if (!nIfMap.isEmpty()) {
                 nIfMap.forEach((k, v) -> networks.add(new Network(
                         v.getName(),
@@ -336,6 +336,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
 
     private class UpdateThread extends Thread {
         private final Logger logger = LoggerFactory.getLogger(UpdateThread.class);
+        private final AtomicBoolean allowUpdate = new AtomicBoolean();
 
         public UpdateThread() {
             super("ServerInfo_update_thread");
@@ -351,7 +352,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                     setDisksInfo();
                     setNetworkInfo();
                     setCurrentOSInfo();
-                    Util.sleep(coolDownTime);
+                    Util.sleep(COOL_DOWN_TIME);
                     allowUpdate.set(true);
                     synchronized (this) {
                         try {
@@ -366,8 +367,13 @@ public class ServerInfoServiceImpl implements ServerInfoService {
             }
         }
 
-        public synchronized void activate() {
-            this.notify();
+        public void activate() {
+            if (!allowUpdate.compareAndSet(true, false)) {
+                return;
+            }
+            synchronized (this) {
+                this.notify();
+            }
         }
     }
 }
