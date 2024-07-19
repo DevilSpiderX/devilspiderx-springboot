@@ -11,3 +11,8 @@ devilspiderx:
     config-path: C:/Downloads/v2ray - Server/v2ray-windows-64/config.json
   pid-file-name: devilspiderx.pid
   avatar-dir-path: target/avatarImages
+
+mqtt:
+  bemfa:
+    topic: topic
+    client-id: clientId
