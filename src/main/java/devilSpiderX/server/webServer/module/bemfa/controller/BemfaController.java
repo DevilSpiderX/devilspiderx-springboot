@@ -4,29 +4,34 @@ import devilSpiderX.server.webServer.module.bemfa.service.BemfaMqttService;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Controller;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 @Controller
-public class BemfaController {
+public class BemfaController implements ApplicationRunner {
     public static final long PERIOD = 30_000;
 
     private final Logger logger = LoggerFactory.getLogger(BemfaController.class);
     private final BemfaMqttService mqttService;
     private final ServerInfoService serverInfoService;
-    private final Timer senderTimer;
+    private final Timer senderTimer = new Timer("send-bemfa-mqtt-thread", true);
 
     public BemfaController(BemfaMqttService mqttService, ServerInfoService serverInfoService) {
         this.mqttService = mqttService;
         this.serverInfoService = serverInfoService;
-        this.senderTimer = new Timer("send-bemfa-mqtt-thread", true);
-        senderTimer.scheduleAtFixedRate(new Task(), 0, PERIOD);
     }
 
     public void cancel() {
         senderTimer.cancel();
+    }
+
+    @Override
+    public void run(ApplicationArguments args) {
+        senderTimer.scheduleAtFixedRate(new Task(), 0, PERIOD);
     }
 
     private double lastTemperature = -1;
