@@ -2,16 +2,20 @@ package devilSpiderX.server.webServer.module.bemfa.controller;
 
 import devilSpiderX.server.webServer.module.bemfa.service.BemfaMqttService;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 @Controller
+@ConditionalOnBean(name = "outbound")
 public class BemfaController implements ApplicationRunner {
     public static final long PERIOD = 30_000;
 
@@ -41,7 +45,17 @@ public class BemfaController implements ApplicationRunner {
         final var temperature = cpu.getTemperature();
         if (temperature == lastTemperature) return;
 
-        mqttService.setData(temperature);
+        try {
+            mqttService.setData(temperature);
+        } catch (MqttSecurityException e) {
+            logger.error("MQTT连接没权限，已关闭任务");
+            cancel();
+            return;
+        } catch (IOException e) {
+            logger.error("MQTT连接出现IO错误，已关闭任务");
+            cancel();
+            return;
+        }
         lastTemperature = temperature;
         logger.debug("温度设置为：{}℃", temperature);
     }

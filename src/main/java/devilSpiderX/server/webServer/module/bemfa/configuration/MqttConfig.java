@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.module.bemfa.configuration;
 
 import devilSpiderX.server.webServer.module.bemfa.property.MqttProperties;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -21,7 +22,6 @@ public class MqttConfig {
         this.prop = prop;
     }
 
-    @Bean
     public MqttPahoClientFactory mqttClientFactory() {
         final DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         final MqttConnectOptions options = new MqttConnectOptions();
@@ -36,6 +36,7 @@ public class MqttConfig {
     }
 
     @Bean
+    @ConditionalOnProperty({"mqtt.bemfa.topic", "mqtt.bemfa.client-id"})
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MessageHandler outbound() {
         // 发送消息和消费消息Channel可以使用相同MqttPahoClientFactory
