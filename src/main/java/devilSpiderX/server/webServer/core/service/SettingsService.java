@@ -3,6 +3,7 @@ package devilSpiderX.server.webServer.core.service;
 import devilSpiderX.server.webServer.core.entity.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 import org.teasoft.bee.osql.IncludeType;
 import org.teasoft.bee.osql.api.SuidRich;
@@ -12,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Service("settingsService")
+@DependsOn("manageConfig")
 public class SettingsService {
     private final Logger logger = LoggerFactory.getLogger(SettingsService.class);
     private final SuidRich suid = BeeFactoryHelper.getSuidRich();

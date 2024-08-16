@@ -8,3 +8,11 @@ sa-token:
 logging:
   level:
     root: debug
+
+bee:
+  osql:
+    logger-type: slf4j
+    show-s-q-l: true
+    show-sql:
+      show-type: true
+      show-executable-sql: true
