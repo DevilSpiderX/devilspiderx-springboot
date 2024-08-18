@@ -1,64 +1,66 @@
 package devilSpiderX.server.webServer.core.service;
 
+import devilSpiderX.server.webServer.core.dao.SettingsDao;
 import devilSpiderX.server.webServer.core.entity.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
-import org.teasoft.bee.osql.IncludeType;
-import org.teasoft.bee.osql.api.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactoryHelper;
+import org.springframework.util.CollectionUtils;
 
 import java.util.LinkedList;
 import java.util.List;
 
 @Service("settingsService")
-@DependsOn("manageConfig")
 public class SettingsService {
-    private final Logger logger = LoggerFactory.getLogger(SettingsService.class);
-    private final SuidRich suid = BeeFactoryHelper.getSuidRich();
+    public static final int DEFAULT_SESSION_MAX_AGE = 3600;
 
-    public SettingsService() {
+    private final Logger logger = LoggerFactory.getLogger(SettingsService.class);
+    private final SettingsDao settingsDao;
+
+    public SettingsService(SettingsDao settingsDao) {
+        this.settingsDao = settingsDao;
         final List<Settings> insertList = new LinkedList<>();
         {
-            final Settings settings = new Settings();
-            settings.setKey("session_max_age");
-            if (!suid.exist(settings)) {
-                settings.setValue("3600");
+            if (!exist("session_max_age")) {
+                final var settings = new Settings();
+                settings.setKey("session_max_age");
+                settings.setValue(String.valueOf(DEFAULT_SESSION_MAX_AGE));
                 insertList.add(settings);
             }
         }
-        int n = suid.insert(insertList);
-        logger.info("初始化设置个数：{}", Math.max(n, 0));
+
+        if (!CollectionUtils.isEmpty(insertList)) {
+            final int n = settingsDao.insertAll(insertList);
+            logger.info("初始化设置个数：{}", n);
+        }
     }
 
     public int getSessionMaxAge() {
-        Settings sessionMaxAge = suid.selectOne(new Settings("session_max_age"));
+        final var settingsOpt = settingsDao.findByKey("session_max_age");
+        if (settingsOpt.isEmpty()) return DEFAULT_SESSION_MAX_AGE;
+
+        final var sessionMaxAge = settingsOpt.get();
         try {
             return Integer.parseInt(sessionMaxAge.getValue());
         } catch (NumberFormatException e) {
             logger.error("系统设置(session_max_age)的值不是数字");
-            return 3600;
+            setSessionMaxAge(DEFAULT_SESSION_MAX_AGE);
+            return DEFAULT_SESSION_MAX_AGE;
         }
     }
 
     public void setSessionMaxAge(int sessionMaxAge) {
-        Settings settings = new Settings();
-        settings.setKey("session_max_age");
-        settings.setValue(String.valueOf(sessionMaxAge));
-        int n = suid.updateBy(settings, IncludeType.EXCLUDE_BOTH, "key");
+        int n = settingsDao.updateByKey("session_max_age", String.valueOf(sessionMaxAge));
         if (n > 0) {
             logger.info("session_max_age设置为{}", sessionMaxAge);
         }
     }
 
     public List<Settings> getAll() {
-        return suid.select(new Settings());
+        return settingsDao.findAll();
     }
 
     public boolean exist(String key) {
-        Settings settings = new Settings();
-        settings.setKey(key);
-        return suid.exist(settings);
+        return settingsDao.exists(key);
     }
 }

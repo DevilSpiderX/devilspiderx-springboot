@@ -29,3 +29,6 @@ sa-token:
   token-name: DSXSessionId
   is-concurrent: true
   is-share: false
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
