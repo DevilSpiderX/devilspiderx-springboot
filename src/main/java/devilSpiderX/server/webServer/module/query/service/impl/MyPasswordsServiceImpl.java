@@ -1,10 +1,10 @@
 package devilSpiderX.server.webServer.module.query.service.impl;
 
 import devilSpiderX.server.webServer.core.util.MyCipher;
+import devilSpiderX.server.webServer.core.vo.CommonPage;
 import devilSpiderX.server.webServer.module.query.entity.MyPasswords;
 import devilSpiderX.server.webServer.module.query.entity.MyPasswordsDeleted;
-import devilSpiderX.server.webServer.module.query.record.MyPasswordPagingResp;
-import devilSpiderX.server.webServer.module.query.record.MyPasswordsResp;
+import devilSpiderX.server.webServer.module.query.vo.MyPasswordsVo;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.slf4j.Logger;
@@ -89,19 +89,19 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     }
 
     @Override
-    public List<MyPasswordsResp> query(String name, String owner) {
+    public List<MyPasswordsVo> query(String name, String owner) {
         if (name == null) return _query(null, owner);
         return _query(List.of(name), owner);
     }
 
     @Override
-    public List<MyPasswordsResp> query(String[] names, String owner) {
+    public List<MyPasswordsVo> query(String[] names, String owner) {
         if (names == null) return _query(null, owner);
         return _query(List.of(names), owner);
     }
 
     @Override
-    public List<MyPasswordsResp> query(List<String> names, String owner) {
+    public List<MyPasswordsVo> query(List<String> names, String owner) {
         return _query(names, owner);
     }
 
@@ -109,7 +109,7 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         return names == null || names.isEmpty() || (names.size() == 1 && names.getFirst().isEmpty());
     }
 
-    private List<MyPasswordsResp> _query(List<String> names, String owner) {
+    private List<MyPasswordsVo> _query(List<String> names, String owner) {
         List<MyPasswords> passwords;
         final var emptyMP = new MyPasswords();
         if (isEmptyNames(names)) {
@@ -135,9 +135,9 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         }
         passwords.sort(Comparator.naturalOrder());
 
-        final List<MyPasswordsResp> result = new ArrayList<>();
+        final List<MyPasswordsVo> result = new ArrayList<>();
         for (final var password : passwords) {
-            result.add(new MyPasswordsResp(
+            result.add(new MyPasswordsVo(
                     password.getId(),
                     password.getName(),
                     password.getAccount(),
@@ -149,29 +149,29 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
     }
 
     @Override
-    public MyPasswordPagingResp queryPaging(String name, int length, int page, String owner) {
+    public CommonPage<MyPasswordsVo> queryPaging(String name, int length, int page, String owner) {
         if (name == null) return _queryPaging(null, length, page, owner);
         return _queryPaging(List.of(name), length, page, owner);
     }
 
     @Override
-    public MyPasswordPagingResp queryPaging(String[] names, int length, int page, String owner) {
+    public CommonPage<MyPasswordsVo> queryPaging(String[] names, int length, int page, String owner) {
         if (names == null) return _queryPaging(null, length, page, owner);
         return _queryPaging(List.of(names), length, page, owner);
     }
 
     @Override
-    public MyPasswordPagingResp queryPaging(List<String> names, int length, int page, String owner) {
+    public CommonPage<MyPasswordsVo> queryPaging(List<String> names, int length, int page, String owner) {
         return _queryPaging(names, length, page, owner);
     }
 
-    private MyPasswordPagingResp _queryPaging(List<String> names, int length, int page, String owner) {
+    private CommonPage<MyPasswordsVo> _queryPaging(List<String> names, int length, int page, String owner) {
         List<MyPasswords> passwords;
-        long dataCount;
+        long total;
         final var emptyMP = new MyPasswords();
         if (isEmptyNames(names)) {
             emptyMP.setOwner(owner);
-            dataCount = suid.count(emptyMP);
+            total = suid.count(emptyMP);
             passwords = suid.select(emptyMP, page * length, length);
         } else {
             final Set<String> nameSet = new HashSet<>(names);
@@ -189,7 +189,7 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
             con.rParentheses()
                     .and()
                     .op("owner", Op.equal, owner);
-            dataCount = suid.count(emptyMP, con);
+            total = suid.count(emptyMP, con);
 
             con.start(page * length)
                     .size(length);
@@ -197,9 +197,9 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         }
         passwords.sort(Comparator.naturalOrder());
 
-        final List<MyPasswordsResp> result = new ArrayList<>();
+        final List<MyPasswordsVo> result = new ArrayList<>();
         for (final var password : passwords) {
-            result.add(new MyPasswordsResp(
+            result.add(new MyPasswordsVo(
                     password.getId(),
                     password.getName(),
                     password.getAccount(),
@@ -207,9 +207,11 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
                     password.getRemark()
             ));
         }
-        return new MyPasswordPagingResp(
+        return new CommonPage<>(
                 result,
-                dataCount
+                total,
+                page,
+                length
         );
     }
 }

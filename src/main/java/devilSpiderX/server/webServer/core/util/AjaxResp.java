@@ -24,25 +24,17 @@ public class AjaxResp<T> implements Serializable {
     private final Integer code;
     private final String msg;
     private T data;
-    private Long dataCount;
 
     public AjaxResp(int code, String msg) {
         this.code = code;
         this.msg = msg;
+        this.data = null;
     }
 
     public AjaxResp(int code, String msg, T data) {
         this.code = code;
         this.msg = msg;
         this.data = data;
-        this.dataCount = null;
-    }
-
-    public AjaxResp(int code, String msg, T data, Long dataCount) {
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
-        this.dataCount = dataCount;
     }
 
     public int getCode() {
@@ -59,15 +51,6 @@ public class AjaxResp<T> implements Serializable {
 
     public AjaxResp<T> setData(T data) {
         this.data = data;
-        return this;
-    }
-
-    public Long getDataCount() {
-        return dataCount;
-    }
-
-    public AjaxResp<T> setDataCount(Long dataCount) {
-        this.dataCount = dataCount;
         return this;
     }
 

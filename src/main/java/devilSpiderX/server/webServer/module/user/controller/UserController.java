@@ -8,6 +8,9 @@ import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
+import devilSpiderX.server.webServer.module.user.vo.LoginDataVo;
+import devilSpiderX.server.webServer.module.user.vo.LoginVo;
+import devilSpiderX.server.webServer.module.user.vo.RegisterVo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +77,7 @@ public class UserController {
         final User user = userService.get(uid);
 
         if (user == null) {
-            return AjaxResp.of(2, "用户不存在");
+            return AjaxResp.success(new LoginVo(2, "用户不存在", null));
         } else if (Objects.equals(user.getPassword().toLowerCase(), password.toLowerCase())) {
             StpUtil.login(uid, settingsService.getSessionMaxAge());
             final SaSession session = StpUtil.getSession();
@@ -83,15 +86,12 @@ public class UserController {
             var adminFlag = StpUtil.hasRole("admin");
             logger.info("{}{}登录成功", adminFlag ? "管理员" : "用户", uid);
             userService.updateLastAddr(uid, req.getRemoteAddr());
-            return AjaxResp.success(Map.of(
-                    "uid", uid,
-                    "admin", adminFlag,
-                    "roles", StpUtil.getRoleList(),
-                    "lastLoginAddr", user.getLastAddress()
-            ));
+            return AjaxResp.success(new LoginVo(0, "", new LoginDataVo(
+                    uid, adminFlag, StpUtil.getRoleList(), user.getLastAddress()
+            )));
         } else {
             logger.info("{}输入密码错误，登录失败", uid);
-            return AjaxResp.failure("密码错误");
+            return AjaxResp.success(new LoginVo(1, "密码错误", null));
         }
     }
 
@@ -148,11 +148,11 @@ public class UserController {
         final String passwordSHA256 = MyCipher.bytes2Hex(MyCipher.SHA256(password));
 
         if (userService.exist(uid)) {
-            return AjaxResp.of(2, "该uid已存在");
+            return AjaxResp.success(new RegisterVo(2, "该uid已存在"));
         } else if (userService.register(uid, passwordSHA256, req.getRemoteAddr())) {
-            return AjaxResp.success();
+            return AjaxResp.success(new RegisterVo(0, ""));
         } else {
-            return AjaxResp.failure();
+            return AjaxResp.success(new RegisterVo(1, "注册失败"));
         }
     }
 
@@ -182,6 +182,7 @@ public class UserController {
             resultMap.put("login", true);
             resultMap.put("uid", StpUtil.getLoginId());
             resultMap.put("admin", StpUtil.hasRole("admin"));
+            resultMap.put("permissions", StpUtil.getPermissionList());
         }
         return AjaxResp.success(resultMap);
     }

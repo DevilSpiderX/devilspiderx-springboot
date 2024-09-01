@@ -1,5 +1,5 @@
 server:
-  port: 10048
+  port: 80
   http2:
     enabled: true
 
@@ -29,6 +29,3 @@ sa-token:
   token-name: DSXSessionId
   is-concurrent: true
   is-share: false
-
-mybatis:
-  mapper-locations: classpath:mapper/**/*.xml

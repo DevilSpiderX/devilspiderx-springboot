@@ -56,9 +56,9 @@ public class FjrcController {
 
 
     @PostMapping("uploadHistory")
-    public AjaxResp<?> uploadHistory(@RequestBody HistoryRequest reqBody) {
+    public AjaxResp<Boolean> uploadHistory(@RequestBody HistoryRequest reqBody) {
         final var success = fjrcService.uploadHistory(reqBody.key(), reqBody.value());
-        return success ? AjaxResp.success() : AjaxResp.failure();
+        return AjaxResp.success(success);
     }
 
     @GetMapping("downloadHistory")

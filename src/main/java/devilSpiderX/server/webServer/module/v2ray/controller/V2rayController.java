@@ -40,15 +40,15 @@ public class V2rayController {
     private AjaxResp<?> start() {
         if (v2ray.isAlive()) {
             logger.info("v2ray正在运行");
-            return AjaxResp.of(2, "v2ray正在运行");
+            return AjaxResp.success("v2ray正在运行", 2);
         } else {
             try {
                 long pid = v2ray.start();
                 logger.info("v2ray启动成功 PID={}", pid);
-                return AjaxResp.success("v2ray启动成功");
+                return AjaxResp.success("v2ray启动成功", 0);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
-                return AjaxResp.failure("v2ray启动失败");
+                return AjaxResp.success("v2ray启动失败", 1);
             }
         }
     }
@@ -70,14 +70,14 @@ public class V2rayController {
         if (v2ray.isAlive()) {
             if (v2ray.stop()) {
                 logger.info("v2ray关闭成功");
-                return AjaxResp.success("v2ray关闭成功");
+                return AjaxResp.success("v2ray关闭成功", 0);
             } else {
                 logger.info("v2ray关闭失败");
-                return AjaxResp.failure("v2ray关闭失败");
+                return AjaxResp.success("v2ray关闭失败", 1);
             }
         } else {
             logger.info("v2ray没有运行");
-            return AjaxResp.of(2, "v2ray没有运行");
+            return AjaxResp.success("v2ray没有运行", 2);
         }
     }
 

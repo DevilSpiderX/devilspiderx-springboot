@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.module.query.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import org.slf4j.Logger;
@@ -120,8 +121,7 @@ public class QueryController {
 
         final var processingTime = System.currentTimeMillis() - startTime;
         logger.info("用户{}分页查询记录：{}，每页长度：{}，第{}页，用时{}毫秒", uid, Arrays.toString(keys), length, page, processingTime);
-        return AjaxResp.success(result.list())
-                .setDataCount(result.dataCount());
+        return AjaxResp.success(result);
     }
 
     /**
@@ -148,7 +148,7 @@ public class QueryController {
      */
     @PostMapping("add")
     @ResponseBody
-    private AjaxResp<?> add(@RequestBody AddRequest reqBody) {
+    private AjaxResp<Boolean> add(@RequestBody AddRequest reqBody) {
         if (reqBody.name() == null) {
             return AjaxResp.error("name参数不能为空或不存在");
         }
@@ -162,8 +162,7 @@ public class QueryController {
 
         final var processingTime = System.currentTimeMillis() - startTime;
         logger.info("用户{}添加记录：{}，用时{}毫秒", owner, name, processingTime);
-        return flag ? AjaxResp.success()
-                : AjaxResp.failure();
+        return AjaxResp.success(flag);
     }
 
     /**
@@ -191,7 +190,7 @@ public class QueryController {
      */
     @PostMapping("update")
     @ResponseBody
-    private AjaxResp<?> update(@RequestBody UpdateRequest reqBody) {
+    private AjaxResp<Boolean> update(@RequestBody UpdateRequest reqBody) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
@@ -206,8 +205,7 @@ public class QueryController {
 
         final var processingTime = System.currentTimeMillis() - startTime;
         logger.info("用户{}修改记录 id：{}，用时{}毫秒", uid, id, processingTime);
-        return flag ? AjaxResp.success()
-                : AjaxResp.failure();
+        return AjaxResp.success(flag);
     }
 
     /**
@@ -231,7 +229,7 @@ public class QueryController {
      */
     @PostMapping("delete")
     @ResponseBody
-    private AjaxResp<?> delete(@RequestBody DeleteRequest reqBody) {
+    private AjaxResp<Boolean> delete(@RequestBody DeleteRequest reqBody) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
@@ -242,7 +240,6 @@ public class QueryController {
 
         final var processingTime = System.currentTimeMillis() - startTime;
         logger.info("用户{}删除记录 id：{}，用时{}毫秒", uid, id, processingTime);
-        return flag ? AjaxResp.success()
-                : AjaxResp.failure();
+        return AjaxResp.success(flag);
     }
 }

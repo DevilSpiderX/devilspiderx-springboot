@@ -1,6 +1,6 @@
-package devilSpiderX.server.webServer.module.query.record;
+package devilSpiderX.server.webServer.module.query.vo;
 
-public record MyPasswordsResp(
+public record MyPasswordsVo(
         int id,
         String name,
         String account,

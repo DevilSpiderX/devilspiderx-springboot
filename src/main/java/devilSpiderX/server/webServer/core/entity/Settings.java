@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.core.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import org.teasoft.bee.osql.annotation.Column;
 
 import java.io.Serial;
@@ -11,6 +12,7 @@ public class Settings implements Serializable {
 
     private Integer id;
     @Column("`key`")
+    @TableField("`key`")
     private String key;
     private String value;
 
@@ -48,10 +50,10 @@ public class Settings implements Serializable {
     @Override
     public String toString() {
         return "Settings{" +
-               "id=" + id +
-               ", key='" + key + '\'' +
-               ", value='" + value + '\'' +
-               '}';
+                "id=" + id +
+                ", key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                '}';
     }
 }
 
