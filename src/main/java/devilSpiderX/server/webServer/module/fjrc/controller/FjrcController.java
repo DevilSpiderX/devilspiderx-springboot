@@ -28,7 +28,7 @@ public class FjrcController {
                                            @RequestParam(value = "id", defaultValue = "0") int id) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(1)))
-                .body(AjaxResp.success(fjrcService.getTopic(bank.toUpperCase(Locale.ENGLISH), id)));
+                .body(AjaxResp.success(fjrcService.getTopic(bank.toUpperCase(Locale.ENGLISH), id + 1)));
     }
 
     @GetMapping("count")

@@ -1,14 +1,16 @@
 package devilSpiderX.server.webServer.module.fjrc.service;
 
 import cn.dev33.satoken.secure.SaSecureUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import devilSpiderX.server.webServer.module.fjrc.dao.FjrcMapper;
+import devilSpiderX.server.webServer.module.fjrc.dao.FjrcUserMapper;
 import devilSpiderX.server.webServer.module.fjrc.entity.Fjrc;
 import devilSpiderX.server.webServer.module.fjrc.entity.FjrcUser;
-import devilSpiderX.server.webServer.module.fjrc.record.History;
+import devilSpiderX.server.webServer.module.fjrc.vo.HistoryVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.teasoft.bee.osql.api.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +18,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class FjrcService {
     private final Logger logger = LoggerFactory.getLogger(FjrcService.class);
-    private final SuidRich suid = BeeFactoryHelper.getSuidRich();
+
+    private final FjrcMapper fjrcMapper;
+    private final FjrcUserMapper fjrcUserMapper;
+
+    public FjrcService(FjrcMapper fjrcMapper, FjrcUserMapper fjrcUserMapper) {
+        this.fjrcMapper = fjrcMapper;
+        this.fjrcUserMapper = fjrcUserMapper;
+    }
 
     public static final Map<String, String> ITEM_BANK_NAME = Map.ofEntries(
             Map.entry("A", "2023年运营岗位资质考试理论题库（财务会计部）"),
@@ -38,29 +47,29 @@ public class FjrcService {
     );
 
     public Fjrc getTopic(String bank, int id) {
-        final Fjrc fjrc = new Fjrc();
+        final var wrapper = new LambdaQueryWrapper<Fjrc>();
         if (ITEM_BANK_NAME.containsKey(bank)) {
-            fjrc.setItemBank(ITEM_BANK_NAME.get(bank));
+            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get(bank));
         } else {
-            fjrc.setItemBank(ITEM_BANK_NAME.get("A"));
+            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get("A"));
         }
 
-        final List<Fjrc> list = suid.select(fjrc, id, 1);
+        final List<Fjrc> list = fjrcMapper.selectList(new Page<>(id, 1), wrapper);
         if (!list.isEmpty()) {
-            return list.get(0);
+            return list.getFirst();
         }
         return null;
     }
 
-    public int getCount(String bank) {
-        final Fjrc fjrc = new Fjrc();
+    public long getCount(String bank) {
+        final var wrapper = new LambdaQueryWrapper<Fjrc>();
         if (ITEM_BANK_NAME.containsKey(bank)) {
-            fjrc.setItemBank(ITEM_BANK_NAME.get(bank));
+            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get(bank));
         } else {
-            fjrc.setItemBank(ITEM_BANK_NAME.get("A"));
+            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get("A"));
         }
 
-        return suid.count(fjrc);
+        return fjrcMapper.selectCount(wrapper);
     }
 
     private final Timer onlineTimer = new Timer("Online Timer", true);
@@ -102,7 +111,10 @@ public class FjrcService {
         final var fjrcUser = new FjrcUser();
         fjrcUser.setUid(uid);
 
-        final var one = suid.selectOne(fjrcUser);
+        final var wrapper = new LambdaQueryWrapper<FjrcUser>();
+        wrapper.eq(FjrcUser::getUid, uid);
+
+        final var one = fjrcUserMapper.selectOne(wrapper);
         final var nowDate = new Date();
         if (one != null) {
             final var lastDate = one.getTime();
@@ -113,18 +125,20 @@ public class FjrcService {
 
         fjrcUser.setValue(value);
         fjrcUser.setTime(nowDate);
-        final var n = one != null ? suid.updateBy(fjrcUser, "uid") : suid.insert(fjrcUser);
+
+        final var n = (one != null) ? fjrcUserMapper.update(fjrcUser, wrapper) : fjrcUserMapper.insert(fjrcUser);
         return n > 0;
     }
 
-    public History downloadHistory(String key) {
+    public HistoryVo downloadHistory(String key) {
         if (key == null) return null;
         final var uid = SaSecureUtil.sha256(key);
-        final var fjrcUser = new FjrcUser();
-        fjrcUser.setUid(uid);
-        final var result = suid.selectOne(fjrcUser);
+
+        final var result = fjrcUserMapper.selectOne(
+                new LambdaQueryWrapper<FjrcUser>().eq(FjrcUser::getUid, uid)
+        );
         if (result == null) return null;
-        return new History(
+        return new HistoryVo(
                 key,
                 result.getTime(),
                 result.getValue()

@@ -1,6 +1,9 @@
 package devilSpiderX.server.webServer.module.user.service.impl;
 
 import cn.dev33.satoken.secure.SaSecureUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import devilSpiderX.server.webServer.module.user.dao.UserMapper;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.slf4j.Logger;
@@ -9,9 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
-import org.teasoft.bee.osql.IncludeType;
-import org.teasoft.bee.osql.api.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactoryHelper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,14 +22,20 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service
 public class UserServiceImpl implements UserService {
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-    private final SuidRich suid = BeeFactoryHelper.getSuidRich();
+    private final UserMapper userMapper;
+
+    public UserServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
 
     @Override
     public User get(String uid) {
         if (uid == null) {
             return null;
         }
-        return suid.selectOne(new User(uid));
+        final var wrapper = new LambdaQueryWrapper<User>();
+        wrapper.eq(User::getUid, uid);
+        return userMapper.selectOne(wrapper);
     }
 
     @Override
@@ -39,7 +45,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(password);
         user.setAdmin(false);
         user.setLastAddress(ipAddr);
-        return suid.insert(user) > 0;
+        return userMapper.insert(user) > 0;
     }
 
     private final ReentrantLock isAdminLock = new ReentrantLock();
@@ -47,15 +53,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isAdmin(String uid) {
         if (uid == null) return false;
-        isAdminLock.lock();
+//        isAdminLock.lock();
         try {
-            final var user = suid.selectOne(new User(uid));
+            final var user = get(uid);
             return user != null && user.getAdmin();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return false;
         } finally {
-            isAdminLock.unlock();
+//            isAdminLock.unlock();
         }
     }
 
@@ -64,7 +70,9 @@ public class UserServiceImpl implements UserService {
         if (uid == null) {
             return false;
         }
-        return suid.exist(new User(uid));
+        final var wrapper = new LambdaQueryWrapper<User>();
+        wrapper.eq(User::getUid, uid);
+        return userMapper.exists(wrapper);
     }
 
     @Override
@@ -72,9 +80,11 @@ public class UserServiceImpl implements UserService {
         if (uid == null || ipAddr == null) {
             return false;
         }
-        final var user = new User(uid);
-        user.setLastAddress(ipAddr);
-        final int n = suid.updateBy(user, IncludeType.INCLUDE_EMPTY, "uid");
+        final var wrapper = new LambdaUpdateWrapper<User>();
+        wrapper.set(User::getLastAddress, ipAddr);
+        wrapper.eq(User::getUid, uid);
+
+        final int n = userMapper.update(wrapper);
         return n > 0;
     }
 
@@ -83,9 +93,11 @@ public class UserServiceImpl implements UserService {
         if (uid == null || password == null) {
             return false;
         }
-        final var user = new User(uid);
-        user.setPassword(password);
-        int n = suid.updateBy(user, IncludeType.EXCLUDE_BOTH, "uid");
+        final var wrapper = new LambdaUpdateWrapper<User>();
+        wrapper.set(User::getPassword, password);
+        wrapper.eq(User::getUid, uid);
+
+        final int n = userMapper.update(wrapper);
         return n > 0;
     }
 
@@ -118,7 +130,11 @@ public class UserServiceImpl implements UserService {
         imageFile.transferTo(savePath);
 
         user.setAvatar(fileName);
-        suid.update(user, "avatar");
+
+        final var wrapper = new LambdaUpdateWrapper<User>();
+        wrapper.set(User::getAvatar, user.getAvatar());
+        wrapper.eq(User::getUid, user.getUid());
+        userMapper.update(wrapper);
 
         return fileName;
     }
