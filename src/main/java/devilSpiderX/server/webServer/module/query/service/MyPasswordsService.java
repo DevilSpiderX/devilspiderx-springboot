@@ -8,9 +8,9 @@ import java.util.List;
 public interface MyPasswordsService {
     boolean add(String name, String account, String password, String remark, String owner);
 
-    boolean delete(int id);
+    boolean delete(int id, String owner);
 
-    boolean update(int id, String name, String account, String password, String remark);
+    boolean update(int id, String name, String account, String password, String remark, String owner);
 
     List<MyPasswordsVo> query(String name, String owner);
 

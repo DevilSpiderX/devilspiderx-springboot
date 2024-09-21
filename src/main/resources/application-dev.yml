@@ -9,13 +9,6 @@ logging:
   level:
     root: debug
 
-bee:
-  osql:
-    logger-type: slf4j
-    show-sql:
-      show-type: true
-      show-executable-sql: true
-
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

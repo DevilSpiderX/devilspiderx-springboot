@@ -1,5 +1,8 @@
 package devilSpiderX.server.webServer.module.user.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -7,6 +10,7 @@ public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 551625785764168103L;
 
+    @TableId(type = IdType.INPUT)
     private String uid;
     private String password;
     private Boolean admin;
@@ -63,12 +67,12 @@ public class User implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-               "uid='" + uid + '\'' +
-               ", password='" + password + '\'' +
-               ", admin=" + admin +
-               ", lastAddress='" + lastAddress + '\'' +
-               ", avatarPath='" + avatar + '\'' +
-               '}';
+                "uid='" + uid + '\'' +
+                ", password='" + password + '\'' +
+                ", admin=" + admin +
+                ", lastAddress='" + lastAddress + '\'' +
+                ", avatarPath='" + avatar + '\'' +
+                '}';
     }
 }
 

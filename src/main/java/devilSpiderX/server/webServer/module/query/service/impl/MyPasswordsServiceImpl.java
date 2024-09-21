@@ -1,31 +1,38 @@
 package devilSpiderX.server.webServer.module.query.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import devilSpiderX.server.webServer.core.exception.BaseException;
+import devilSpiderX.server.webServer.core.util.AjaxCode;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.core.vo.CommonPage;
+import devilSpiderX.server.webServer.module.query.dao.MyPasswordsDeletedMapper;
+import devilSpiderX.server.webServer.module.query.dao.MyPasswordsMapper;
 import devilSpiderX.server.webServer.module.query.entity.MyPasswords;
 import devilSpiderX.server.webServer.module.query.entity.MyPasswordsDeleted;
-import devilSpiderX.server.webServer.module.query.vo.MyPasswordsVo;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
+import devilSpiderX.server.webServer.module.query.vo.MyPasswordsVo;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.teasoft.bee.osql.IncludeType;
-import org.teasoft.bee.osql.Op;
-import org.teasoft.bee.osql.api.SuidRich;
-import org.teasoft.honey.osql.core.BeeFactoryHelper;
-import org.teasoft.honey.osql.core.ConditionImpl;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.*;
 
 @Service
 public class MyPasswordsServiceImpl implements MyPasswordsService {
     private static final Logger logger = LoggerFactory.getLogger(MyPasswordsServiceImpl.class);
-    private final SuidRich suid = BeeFactoryHelper.getSuidRich();
     private final UserService userService;
+    private final MyPasswordsMapper myPasswordsMapper;
+    private final MyPasswordsDeletedMapper myPasswordsDeletedMapper;
 
-    public MyPasswordsServiceImpl(UserService userService) {
+    public MyPasswordsServiceImpl(UserService userService, MyPasswordsMapper myPasswordsMapper, MyPasswordsDeletedMapper myPasswordsDeletedMapper) {
         this.userService = userService;
+        this.myPasswordsMapper = myPasswordsMapper;
+        this.myPasswordsDeletedMapper = myPasswordsDeletedMapper;
     }
 
     @Override
@@ -39,53 +46,64 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         MyPasswords myPwd = new MyPasswords();
         myPwd.setName(name);
         myPwd.setOwner(owner);
-        if (suid.count(myPwd) > 0) {
-            logger.error("my_password表中已存在name为{}的行", name);
+        if (myPasswordsMapper.existsByNameAndOwner(myPwd)) {
+            logger.error("在用户{}中名为({})的记录已存在", owner, name);
             return false;
         }
         myPwd.setAccount(account);
         myPwd.setPassword(MyCipher.encrypt(password));
         myPwd.setRemark(remark);
-        return suid.insert(myPwd, IncludeType.INCLUDE_EMPTY) == 1;
+        return myPasswordsMapper.insert(myPwd) == 1;
     }
 
     @Override
-    public boolean delete(int id) {
+    @Transactional
+    public boolean delete(int id, String owner) {
         final MyPasswordsDeleted deletedEntity = new MyPasswordsDeleted(
-                suid.selectById(MyPasswords.class, id)
+                myPasswordsMapper.selectById(id)
         );
+        if (!Objects.equals(deletedEntity.getOwner(), owner)) {
+            throw new BaseException(AjaxCode.ENTITY_OWNER_NOT_MATCH, "实体所有者和用户不相符");
+        }
 
         int flag = 0;
-        flag += suid.insert(deletedEntity);
+        flag += myPasswordsDeletedMapper.insert(deletedEntity);
         if (flag != 1) {
             logger.error("my_password_deleted表插入失败,id:{}", id);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return false;
         }
 
-        flag += suid.deleteById(MyPasswords.class, id);
-        if (flag != 2) logger.error("my_password表删除失败,id:{}", id);
+        flag += myPasswordsMapper.deleteById(id);
+        if (flag != 2) {
+            logger.error("my_password表删除失败,id:{}", id);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
         return flag == 2;
     }
 
     @Override
-    public boolean update(int id, String name, String account, String password, String remark) {
+    public boolean update(int id, String name, String account, String password, String remark, String owner) {
         if (name == null || name.isEmpty()) {
             return false;
         }
-        final var oldMyPwd = suid.selectById(MyPasswords.class, id);
+        final var oldMyPwd = myPasswordsMapper.selectById(id);
+        if (!Objects.equals(oldMyPwd.getOwner(), owner)) {
+            throw new BaseException(AjaxCode.ENTITY_OWNER_NOT_MATCH, "实体所有者和用户不相符");
+        }
 
         final MyPasswords myPwd = new MyPasswords();
         myPwd.setName(name);
-        myPwd.setOwner(oldMyPwd.getOwner());
-        if (!oldMyPwd.getName().equals(name) && suid.count(myPwd) > 0) {
-            logger.error("my_password表中已存在name为{}的行", name);
+        myPwd.setOwner(owner);
+        if (!oldMyPwd.getName().equals(name) && myPasswordsMapper.existsByNameAndOwner(myPwd)) {
+            logger.error("在用户{}中名为({})的记录已存在，无法重命名为{1}", owner, name);
             return false;
         }
         myPwd.setId(id);
         myPwd.setAccount(account);
         myPwd.setPassword(MyCipher.encrypt(password));
         myPwd.setRemark(remark);
-        return suid.updateById(myPwd, new ConditionImpl().setIncludeType(IncludeType.INCLUDE_EMPTY)) == 1;
+        return myPasswordsMapper.updateById(myPwd) == 1;
     }
 
     @Override
@@ -105,34 +123,8 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         return _query(names, owner);
     }
 
-    private boolean isEmptyNames(List<String> names) {
-        return names == null || names.isEmpty() || (names.size() == 1 && names.getFirst().isEmpty());
-    }
-
     private List<MyPasswordsVo> _query(List<String> names, String owner) {
-        List<MyPasswords> passwords;
-        final var emptyMP = new MyPasswords();
-        if (isEmptyNames(names)) {
-            emptyMP.setOwner(owner);
-            passwords = suid.select(emptyMP);
-        } else {
-            final Set<String> nameSet = new HashSet<>(names);
-            final List<String> nameList = nameSet.stream()
-                    .filter(name -> !Objects.equals(name, ""))
-                    .toList();
-
-            final var con = new ConditionImpl();
-            con.lParentheses();
-            for (int i = 0; i < nameList.size(); i++) {
-                final String name = nameList.get(i);
-                if (i != 0) con.or();
-                con.op("name", Op.like, '%' + name + '%');
-            }
-            con.rParentheses()
-                    .and()
-                    .op("owner", Op.equal, owner);
-            passwords = suid.select(emptyMP, con);
-        }
+        final List<MyPasswords> passwords = myPasswordsMapper.selectList(getQueryWrapper(names, owner));
         passwords.sort(Comparator.naturalOrder());
 
         final List<MyPasswordsVo> result = new ArrayList<>();
@@ -165,36 +157,17 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
         return _queryPaging(names, length, page, owner);
     }
 
+    /**
+     * @param page 从0开始
+     */
     private CommonPage<MyPasswordsVo> _queryPaging(List<String> names, int length, int page, String owner) {
-        List<MyPasswords> passwords;
-        long total;
-        final var emptyMP = new MyPasswords();
-        if (isEmptyNames(names)) {
-            emptyMP.setOwner(owner);
-            total = suid.count(emptyMP);
-            passwords = suid.select(emptyMP, page * length, length);
-        } else {
-            final Set<String> nameSet = new HashSet<>(names);
-            final List<String> nameList = nameSet.stream()
-                    .filter(name -> !Objects.equals(name, ""))
-                    .toList();
+        final var passwordPage = myPasswordsMapper.selectPage(
+                Page.of(page + 1, length),
+                getQueryWrapper(names, owner)
+        );
+        final var total = passwordPage.getTotal();
+        final List<MyPasswords> passwords = passwordPage.getRecords();
 
-            final var con = new ConditionImpl();
-            con.lParentheses();
-            for (int i = 0; i < nameList.size(); i++) {
-                final var name = nameList.get(i);
-                if (i != 0) con.or();
-                con.op("name", Op.like, '%' + name + '%');
-            }
-            con.rParentheses()
-                    .and()
-                    .op("owner", Op.equal, owner);
-            total = suid.count(emptyMP, con);
-
-            con.start(page * length)
-                    .size(length);
-            passwords = suid.select(emptyMP, con);
-        }
         passwords.sort(Comparator.naturalOrder());
 
         final List<MyPasswordsVo> result = new ArrayList<>();
@@ -213,5 +186,28 @@ public class MyPasswordsServiceImpl implements MyPasswordsService {
                 page,
                 length
         );
+    }
+
+    private boolean isEmptyNames(List<String> names) {
+        return names == null || names.isEmpty() || (names.size() == 1 && names.getFirst().isEmpty());
+    }
+
+    private LambdaQueryWrapper<MyPasswords> getQueryWrapper(List<String> names, String owner) {
+        final var wrapper = Wrappers.lambdaQuery(MyPasswords.class);
+        if (isEmptyNames(names)) {
+            wrapper.eq(MyPasswords::getOwner, owner);
+        } else {
+            final Set<String> nameSet = new HashSet<>(names);
+            final List<String> nameList = nameSet.stream()
+                    .filter(name -> !Objects.equals(name, ""))
+                    .toList();
+
+            wrapper.eq(MyPasswords::getOwner, owner).and(i -> {
+                for (String name : nameList) {
+                    i.or().like(MyPasswords::getName, name);
+                }
+            });
+        }
+        return wrapper;
     }
 }

@@ -1,5 +1,10 @@
 package devilSpiderX.server.webServer.module.query.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -7,11 +12,14 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     @Serial
     private static final long serialVersionUID = 1594978966205L;
 
+    @TableId(type = IdType.AUTO)
     private Integer id;
+    @TableField(insertStrategy = FieldStrategy.NOT_EMPTY, updateStrategy = FieldStrategy.NOT_EMPTY)
     private String name;
     private String account;
     private String password;//只储存加密后的密码，禁止明文保存
     private String remark;
+    @TableField(updateStrategy = FieldStrategy.NEVER)
     private String owner;
 
     public Integer getId() {

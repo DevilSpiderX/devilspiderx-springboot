@@ -2,8 +2,8 @@ package devilSpiderX.server.webServer.module.query.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.module.query.dto.*;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,30 +27,10 @@ public class QueryController {
     }
 
     /**
-     * 查询密码记录请求参数
-     *
-     * @param key 查询值
-     */
-    record GetRequest(String key) {
-        /**
-         * 分割查询值,使用空格和<code>.</code>来分割
-         *
-         * @return 分割后的查询值
-         */
-        public String[] keys() {
-            if (key != null) {
-                final var keysStr = key.trim();
-                return keysStr.split("(\\s|\\.)+");
-            }
-            return new String[0];
-        }
-    }
-
-    /**
      * <b>查询密码记录</b>
      * <p>
      * <b>应包含参数：</b>
-     * {@link GetRequest}
+     * {@link GetRequestDto}
      * </p>
      * <p>
      * <b>返回代码：</b>
@@ -59,7 +39,7 @@ public class QueryController {
      */
     @PostMapping("get")
     @ResponseBody
-    private AjaxResp<?> get(@RequestBody GetRequest reqBody) {
+    private AjaxResp<?> get(@RequestBody GetRequestDto reqBody) {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
         final var startTime = System.currentTimeMillis();
@@ -70,39 +50,12 @@ public class QueryController {
         return AjaxResp.success(myPwdList);
     }
 
-    /**
-     * 分页查询密码记录请求参数
-     *
-     * @param key    查询值
-     * @param length 每页的长度
-     * @param page   查询第n页
-     */
-    record GetPagingRequest(String key, Integer length, Integer page) {
-        public GetPagingRequest(String key, Integer length, Integer page) {
-            this.key = key;
-            this.length = length == null ? 20 : length;
-            this.page = page == null ? 0 : page;
-        }
-
-        /**
-         * 分割查询值,使用空格和<code>.</code>来分割
-         *
-         * @return 分割后的查询值
-         */
-        public String[] keys() {
-            if (key != null) {
-                final var keysStr = key.trim();
-                return keysStr.split("(\\s|\\.)+");
-            }
-            return new String[0];
-        }
-    }
 
     /**
      * <b>分页查询密码记录</b>
      * <p>
      * <b>应包含参数：</b>
-     * {@link GetPagingRequest}
+     * {@link GetPagingRequestDto}
      * </p>
      * <p>
      * <b>返回代码：</b>
@@ -111,7 +64,7 @@ public class QueryController {
      */
     @PostMapping("get_paging")
     @ResponseBody
-    private AjaxResp<?> getPaging(@RequestBody GetPagingRequest reqBody) {
+    private AjaxResp<?> getPaging(@RequestBody GetPagingRequestDto reqBody) {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
         final var length = reqBody.length();
@@ -125,21 +78,10 @@ public class QueryController {
     }
 
     /**
-     * 添加密码记录请求参数
-     *
-     * @param name     名称
-     * @param account  账号
-     * @param password 密码
-     * @param remark   备注
-     */
-    record AddRequest(String name, String account, String password, String remark) {
-    }
-
-    /**
      * <b>添加密码记录</b>
      * <p>
      * <b>应包含参数：</b>
-     * {@link AddRequest}
+     * {@link AddRequestDto}
      * </p>
      * <p>
      * <b>返回代码：</b>
@@ -148,7 +90,7 @@ public class QueryController {
      */
     @PostMapping("add")
     @ResponseBody
-    private AjaxResp<Boolean> add(@RequestBody AddRequest reqBody) {
+    private AjaxResp<Boolean> add(@RequestBody AddRequestDto reqBody) {
         if (reqBody.name() == null) {
             return AjaxResp.error("name参数不能为空或不存在");
         }
@@ -165,23 +107,12 @@ public class QueryController {
         return AjaxResp.success(flag);
     }
 
-    /**
-     * 修改密码记录请求参数
-     *
-     * @param id       记录id
-     * @param name     名称(可选)
-     * @param account  账号(可选)
-     * @param password 密码(可选)
-     * @param remark   备注(可选)
-     */
-    record UpdateRequest(Integer id, String name, String account, String password, String remark) {
-    }
 
     /**
      * <b>修改密码记录</b>
      * <p>
      * <b>应包含参数：</b>
-     * {@link UpdateRequest}
+     * {@link UpdateRequestDto}
      * </p>
      * <p>
      * <b>返回代码：</b>
@@ -190,7 +121,7 @@ public class QueryController {
      */
     @PostMapping("update")
     @ResponseBody
-    private AjaxResp<Boolean> update(@RequestBody UpdateRequest reqBody) {
+    private AjaxResp<Boolean> update(@RequestBody UpdateRequestDto reqBody) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
@@ -201,26 +132,19 @@ public class QueryController {
         final var password = reqBody.password();
         final var remark = reqBody.remark();
         final var startTime = System.currentTimeMillis();
-        final var flag = myPasswordsService.update(id, name, account, password, remark);
+        final var flag = myPasswordsService.update(id, name, account, password, remark, uid);
 
         final var processingTime = System.currentTimeMillis() - startTime;
         logger.info("用户{}修改记录 id：{}，用时{}毫秒", uid, id, processingTime);
         return AjaxResp.success(flag);
     }
 
-    /**
-     * 删除密码记录请求参数
-     *
-     * @param id 记录id
-     */
-    record DeleteRequest(Integer id) {
-    }
 
     /**
      * <b>删除密码记录</b>
      * <p>
      * <b>应包含参数：</b>
-     * {@link DeleteRequest}
+     * {@link DeleteRequestDto}
      * </p>
      * <p>
      * <b>返回代码：</b>
@@ -229,14 +153,14 @@ public class QueryController {
      */
     @PostMapping("delete")
     @ResponseBody
-    private AjaxResp<Boolean> delete(@RequestBody DeleteRequest reqBody) {
+    private AjaxResp<Boolean> delete(@RequestBody DeleteRequestDto reqBody) {
         if (reqBody.id() == null) {
             return AjaxResp.error("id参数不能为空或不存在");
         }
         final var id = reqBody.id();
         final var uid = StpUtil.getLoginIdAsString();
         final var startTime = System.currentTimeMillis();
-        final var flag = myPasswordsService.delete(id);
+        final var flag = myPasswordsService.delete(id, uid);
 
         final var processingTime = System.currentTimeMillis() - startTime;
         logger.info("用户{}删除记录 id：{}，用时{}毫秒", uid, id, processingTime);
