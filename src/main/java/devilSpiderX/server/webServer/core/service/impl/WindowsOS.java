@@ -56,8 +56,4 @@ public class WindowsOS implements OS {
         }, "shutdown").start();
     }
 
-    @Override
-    public void restartV2rayService() {
-        logger.info("Windows没适配");
-    }
 }

@@ -101,21 +101,4 @@ public class V2rayController {
         );
     }
 
-    /**
-     * <b>v2ray服务重启</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 重启指令执行完成；
-     * 100 没有权限；101 没有管理员权限；
-     * </p>
-     */
-    @PostMapping("client/restart")
-    @ResponseBody
-    private AjaxResp<?> clientRestart() {
-        OSFactory.getOS().restartV2rayService();
-        return AjaxResp.success("重启指令执行完成");
-    }
 }

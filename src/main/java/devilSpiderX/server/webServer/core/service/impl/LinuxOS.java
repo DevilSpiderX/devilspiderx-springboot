@@ -57,11 +57,4 @@ public class LinuxOS implements OS {
         }, "shutdown").start();
     }
 
-    @Override
-    public void restartV2rayService() {
-        new Thread(() -> {
-            var result = system("systemctl", "restart", "v2ray.service");
-            logger.info("V2ray服务重启：{}", result);
-        }, "v2ray service restart").start();
-    }
 }

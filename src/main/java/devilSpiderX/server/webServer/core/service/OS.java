@@ -55,5 +55,4 @@ public interface OS {
 
     void shutdown(long millis);
 
-    void restartV2rayService();
 }
