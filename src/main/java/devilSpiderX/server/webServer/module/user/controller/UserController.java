@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.service.SettingsService;
+import devilSpiderX.server.webServer.core.util.AjaxCode;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.module.user.entity.User;
@@ -234,7 +235,7 @@ public class UserController {
     public AjaxResp<?> getAvatar() {
         final String avatarName = userService.getAvatarImage(StpUtil.getLoginIdAsString());
         if (avatarName == null) {
-            return AjaxResp.failure("Not Found");
+            return AjaxResp.of(AjaxResp.success(), "");
         }
         return AjaxResp.of(AjaxResp.success(), "/user/avatar/%s".formatted(avatarName));
     }
