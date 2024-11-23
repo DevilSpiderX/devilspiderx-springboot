@@ -12,9 +12,6 @@ spring:
     location: classpath:banner.txt
   main:
     banner-mode: LOG
-  config:
-    import:
-      - file:user-config.yml
   servlet:
     multipart:
       max-file-size: 10MB

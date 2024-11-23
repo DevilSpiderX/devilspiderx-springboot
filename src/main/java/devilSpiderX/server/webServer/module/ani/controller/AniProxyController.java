@@ -1,10 +1,9 @@
 package devilSpiderX.server.webServer.module.ani.controller;
 
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import cn.dev33.satoken.stp.StpUtil;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriUtils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -36,7 +35,7 @@ public class AniProxyController {
             final var urlCon = proxy ? url.openConnection(PROXY) : url.openConnection();
             if (urlCon instanceof HttpURLConnection con) {
                 con.setRequestMethod("GET");
-                con.setDoOutput(true);
+                con.setDoOutput(false);
                 con.setDoInput(true);
                 con.setUseCaches(false);
                 var respCode = con.getResponseCode();
@@ -51,12 +50,65 @@ public class AniProxyController {
                 }
             } else {
                 return ResponseEntity.internalServerError()
-                        .contentType(MediaType.TEXT_PLAIN)
+                        .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
                         .body("连接错误".getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
             return ResponseEntity.internalServerError()
-                    .contentType(MediaType.TEXT_PLAIN)
+                    .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
+                    .body(e.getMessage().getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    @GetMapping("file/{name}")
+    public ResponseEntity<byte[]> getTorrentFile(
+            @PathVariable final String name,
+            @RequestParam("fileUrl") final String fileUrl
+    ) {
+        if (!StpUtil.isLogin()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
+                    .body("用户未登录".getBytes(StandardCharsets.UTF_8));
+        }
+        if (!StpUtil.hasPermission("ani.download")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
+                    .body("用户没有下载的权限".getBytes(StandardCharsets.UTF_8));
+        }
+
+        try {
+            final var url = URI.create(fileUrl).toURL();
+            final var urlCon = url.openConnection(PROXY);
+            if (urlCon instanceof HttpURLConnection con) {
+                con.setRequestMethod("GET");
+                con.setDoOutput(false);
+                con.setDoInput(true);
+                con.setUseCaches(true);
+                var respCode = con.getResponseCode();
+                if (respCode != HttpURLConnection.HTTP_OK) {
+                    return ResponseEntity.notFound().build();
+                }
+                final var contentType = con.getHeaderField("Content-Type");
+                final var headers = new HttpHeaders();
+                headers.setContentType(MediaType.parseMediaType(contentType));
+                headers.setContentDisposition(
+                        ContentDisposition.attachment()
+                                .filename(UriUtils.encode(name + ".torrent", StandardCharsets.UTF_8))
+                                .build()
+                );
+                try (BufferedInputStream in = new BufferedInputStream(con.getInputStream())) {
+                    return ResponseEntity.ok()
+                            .headers(headers)
+                            .body(in.readAllBytes());
+                }
+            } else {
+                return ResponseEntity.internalServerError()
+                        .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
+                        .body("连接错误".getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                    .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
                     .body(e.getMessage().getBytes(StandardCharsets.UTF_8));
         }
     }

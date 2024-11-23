@@ -52,8 +52,7 @@ public class BemfaController implements ApplicationRunner {
             cancel();
             return;
         } catch (IOException e) {
-            logger.error("MQTT连接出现IO错误，已关闭任务");
-            cancel();
+            logger.error("MQTT连接出现IO错误", e);
             return;
         }
         lastTemperature = temperature;

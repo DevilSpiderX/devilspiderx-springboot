@@ -3,8 +3,11 @@ package devilSpiderX.server.webServer.module.user.service.impl;
 import cn.dev33.satoken.secure.SaSecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import devilSpiderX.server.webServer.module.user.dao.UserMapper;
+import devilSpiderX.server.webServer.module.user.dao.UserPermissionMapper;
 import devilSpiderX.server.webServer.module.user.entity.User;
+import devilSpiderX.server.webServer.module.user.entity.UserPermission;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +20,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserMapper userMapper;
+    private final UserPermissionMapper userPermissionMapper;
 
-    public UserServiceImpl(UserMapper userMapper) {
+    public UserServiceImpl(UserMapper userMapper, final UserPermissionMapper userPermissionMapper) {
         this.userMapper = userMapper;
+        this.userPermissionMapper = userPermissionMapper;
     }
 
     @Override
@@ -152,5 +159,19 @@ public class UserServiceImpl implements UserService {
         }
 
         return avatarPath;
+    }
+
+    @Override
+    public List<String> getUserPermissions(final String uid) {
+        final var result = new ArrayList<String>();
+
+        final var wrapper = Wrappers.lambdaQuery(UserPermission.class);
+        wrapper.eq(UserPermission::getUid, uid);
+        final var permissionList = userPermissionMapper.selectList(wrapper);
+        for (final UserPermission permission : permissionList) {
+            result.add(permission.getPermission());
+        }
+
+        return result;
     }
 }

@@ -5,6 +5,7 @@ import devilSpiderX.server.webServer.module.user.service.UserService;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -17,15 +18,10 @@ public class DSXStpInterface implements StpInterface {
 
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        List<String> list = new ArrayList<>();
-        if (loginId instanceof String _loginId) {
-            if (userService.isAdmin(_loginId)) {
-                list.add("system.shutdown");
-                list.add("system.reboot");
-                list.add("process.shutdown");
-            }
+        if (loginId instanceof String uid) {
+            return userService.getUserPermissions(uid);
         }
-        return list;
+        return Collections.emptyList();
     }
 
     @Override
