@@ -2,12 +2,14 @@ package devilSpiderX.server.webServer.module.bemfa.controller;
 
 import devilSpiderX.server.webServer.module.bemfa.service.BemfaMqttService;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
@@ -15,7 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 @Controller
-@ConditionalOnBean(name = "outbound")
+@ConditionalOnBean(name = "mqttConnectOptions")
 public class BemfaController implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(BemfaController.class);
     public static final long PERIOD = 30_000;
@@ -63,6 +65,8 @@ public class BemfaController implements ApplicationRunner {
             logger.error("MQTT连接没权限，已关闭任务");
             cancel();
             return;
+        } catch (MqttException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
             logger.error("MQTT连接出现IO错误", e);
             return;

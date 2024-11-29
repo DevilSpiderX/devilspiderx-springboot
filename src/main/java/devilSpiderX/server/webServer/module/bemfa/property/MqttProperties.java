@@ -6,8 +6,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "mqtt.bemfa")
 public class MqttProperties {
+    private String url="tcp://bemfa.com:9501";
     private String topic;
     private String clientId;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(final String url) {
+        this.url = url;
+    }
 
     public String getTopic() {
         return topic;
