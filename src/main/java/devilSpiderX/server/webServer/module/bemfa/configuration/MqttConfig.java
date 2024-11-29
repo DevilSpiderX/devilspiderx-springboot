@@ -10,7 +10,6 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
-import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
@@ -44,13 +43,10 @@ public class MqttConfig {
                 prop.getClientId(),
                 mqttClientFactory()
         );
-        messageHandler.setAsync(true); // 如果设置成true，即异步，发送消息时将不会阻塞。
+        messageHandler.setAsync(false); // 如果设置成true，即异步，发送消息时将不会阻塞。
         messageHandler.setDefaultTopic("%s/set".formatted(prop.getTopic()));
-        messageHandler.setDefaultQos(1); // 设置默认QoS
+        messageHandler.setDefaultQos(0); // 设置默认QoS
 
-        // Paho消息转换器
-        final var defaultPahoMessageConverter = new DefaultPahoMessageConverter();
-        messageHandler.setConverter(defaultPahoMessageConverter);
         return messageHandler;
     }
 

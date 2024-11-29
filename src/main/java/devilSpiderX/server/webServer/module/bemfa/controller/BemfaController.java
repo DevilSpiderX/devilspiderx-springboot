@@ -17,9 +17,9 @@ import java.util.TimerTask;
 @Controller
 @ConditionalOnBean(name = "outbound")
 public class BemfaController implements ApplicationRunner {
+    private static final Logger logger = LoggerFactory.getLogger(BemfaController.class);
     public static final long PERIOD = 30_000;
 
-    private final Logger logger = LoggerFactory.getLogger(BemfaController.class);
     private final BemfaMqttService mqttService;
     private final ServerInfoService serverInfoService;
     private final Timer senderTimer = new Timer("send-bemfa-mqtt-thread", true);
@@ -29,13 +29,25 @@ public class BemfaController implements ApplicationRunner {
         this.serverInfoService = serverInfoService;
     }
 
+    private Task currentTask = null;
+
+    public void start() {
+        if (currentTask != null) {
+            currentTask.cancel();
+        }
+        currentTask = new Task();
+        senderTimer.scheduleAtFixedRate(currentTask, 0, PERIOD);
+    }
+
     public void cancel() {
         senderTimer.cancel();
+        currentTask = null;
     }
 
     @Override
     public void run(ApplicationArguments args) {
-        senderTimer.scheduleAtFixedRate(new Task(), 0, PERIOD);
+        start();
+        logger.info("bemfa mqtt定时任务开始");
     }
 
     private double lastTemperature = -1;
@@ -60,6 +72,7 @@ public class BemfaController implements ApplicationRunner {
     }
 
     private class Task extends TimerTask {
+        final Object lock = new Object();
 
         @Override
         public void run() {
@@ -71,7 +84,9 @@ public class BemfaController implements ApplicationRunner {
         }
 
         private void _run() {
-            task();
+            synchronized (lock) {
+                task();
+            }
         }
     }
 }
