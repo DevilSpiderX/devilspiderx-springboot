@@ -9,12 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @Controller
 @ConditionalOnBean(name = "mqttConnectOptions")
@@ -24,26 +21,27 @@ public class BemfaController implements ApplicationRunner {
 
     private final BemfaMqttService mqttService;
     private final ServerInfoService serverInfoService;
-    private final Timer senderTimer = new Timer("send-bemfa-mqtt-thread", true);
+    private Thread taskThread;
 
     public BemfaController(BemfaMqttService mqttService, ServerInfoService serverInfoService) {
         this.mqttService = mqttService;
         this.serverInfoService = serverInfoService;
     }
 
-    private Task currentTask = null;
-
     public void start() {
-        if (currentTask != null) {
-            currentTask.cancel();
+        if (taskThread != null && taskThread.isAlive()) {
+            taskThread.interrupt();
         }
-        currentTask = new Task();
-        senderTimer.scheduleAtFixedRate(currentTask, 0, PERIOD);
+
+        taskThread = new TaskThread();
+        taskThread.start();
     }
 
     public void cancel() {
-        senderTimer.cancel();
-        currentTask = null;
+        if (taskThread != null && taskThread.isAlive()) {
+            taskThread.interrupt();
+            taskThread = null;
+        }
     }
 
     @Override
@@ -66,24 +64,46 @@ public class BemfaController implements ApplicationRunner {
             cancel();
             return;
         } catch (MqttException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            logger.error("MQTT连接出现IO错误", e);
-            return;
+            logger.error(
+                    "发送mqtt数据出现错误，将重连服务：%s".formatted(e.getMessage()),
+                    e
+            );
+            try {
+                mqttService.reconnect();
+            } catch (MqttException ex) {
+                logger.error(
+                        "重连mqtt服务出现问题：%s".formatted(ex.getMessage()),
+                        ex
+                );
+            }
         }
         lastTemperature = temperature;
         logger.debug("温度设置为：{}℃", temperature);
     }
 
-    private class Task extends TimerTask {
+    private class TaskThread extends Thread {
         final Object lock = new Object();
 
+        public TaskThread() {
+            super("send-bemfa-mqtt-thread");
+            setDaemon(true);
+        }
+
+        @SuppressWarnings("BusyWait")
         @Override
         public void run() {
-            try {
-                _run();
-            } catch (Exception ex) {
-                logger.error(ex.getMessage(), ex);
+            while (!this.isInterrupted()) {
+                try {
+                    _run();
+                } catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
+                }
+
+                try {
+                    Thread.sleep(PERIOD);
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
         }
 
@@ -93,4 +113,5 @@ public class BemfaController implements ApplicationRunner {
             }
         }
     }
+
 }
