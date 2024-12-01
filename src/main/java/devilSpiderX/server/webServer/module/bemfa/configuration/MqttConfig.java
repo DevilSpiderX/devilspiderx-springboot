@@ -20,7 +20,8 @@ public class MqttConfig {
         final MqttConnectOptions options = new MqttConnectOptions();
         options.setServerURIs(new String[]{prop.getUrl()});
         options.setKeepAliveInterval(60);
-        options.setAutomaticReconnect(true);
+        options.setAutomaticReconnect(false);
+        options.setCleanSession(true);
         return options;
     }
 
