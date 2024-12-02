@@ -62,17 +62,10 @@ public class BemfaMqttService {
         }
     }
 
-    private int reconnectCount = 0;
-
     public void reconnect() throws MqttException {
         lock.lock();
         try {
-            reconnectCount++;
-            if (reconnectCount >= mqttProp.getMaxReconnectCount()) {
-                logger.info("重连次数超过限制，弃用client，初始化新的client");
-                reconnectCount = 0;
-                initMqttClient();
-            } else if (mqttClient != null) {
+            if (mqttClient != null) {
                 logger.info("断开旧连接");
                 try {
                     mqttClient.disconnect();
@@ -93,6 +86,11 @@ public class BemfaMqttService {
         } finally {
             lock.unlock();
         }
+    }
+
+    public void close() throws MqttException {
+        mqttClient.close();
+        mqttClient = null;
     }
 
     public void setData(double temperature) throws MqttException {
