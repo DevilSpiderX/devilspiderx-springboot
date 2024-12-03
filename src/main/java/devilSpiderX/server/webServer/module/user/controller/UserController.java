@@ -4,14 +4,17 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.service.SettingsService;
-import devilSpiderX.server.webServer.core.util.AjaxCode;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.core.util.MyCipher;
+import devilSpiderX.server.webServer.module.user.dto.LoginRequest;
+import devilSpiderX.server.webServer.module.user.dto.RegisterRequest;
+import devilSpiderX.server.webServer.module.user.dto.UpdatePasswordRequest;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
 import devilSpiderX.server.webServer.module.user.vo.LoginDataVo;
 import devilSpiderX.server.webServer.module.user.vo.LoginVo;
 import devilSpiderX.server.webServer.module.user.vo.RegisterVo;
+import devilSpiderX.server.webServer.module.user.vo.StatusVo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +27,6 @@ import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,7 +34,8 @@ import java.util.Objects;
 @RequestMapping("/api/user")
 @EnableScheduling
 public class UserController {
-    private final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
     private final UserService userService;
     private final SettingsService settingsService;
 
@@ -40,21 +43,6 @@ public class UserController {
                           SettingsService settingsService) {
         this.userService = userService;
         this.settingsService = settingsService;
-    }
-
-    /**
-     * 登录请求参数
-     *
-     * @param uid 用户id
-     * @param pwd 密码
-     */
-    record LoginRequest(String uid, String pwd) {
-        /**
-         * @return 密码
-         */
-        public String password() {
-            return pwd;
-        }
     }
 
     /**
@@ -113,21 +101,6 @@ public class UserController {
     }
 
     /**
-     * 注册请求参数
-     *
-     * @param uid 用户id
-     * @param pwd 密码
-     */
-    record RegisterRequest(String uid, String pwd) {
-        /**
-         * @return 密码
-         */
-        public String password() {
-            return pwd;
-        }
-    }
-
-    /**
      * <b>注册</b>
      * <p>
      * <b>应包含参数：</b>
@@ -159,36 +132,17 @@ public class UserController {
 
     /**
      * <b>状态</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0: <code>
-     * {
-     * uid:string,
-     * login:boolean,
-     * admin:boolean
-     * }
-     * </code>；
-     * </p>
      */
     @RequestMapping("status")
-    public AjaxResp<?> status() {
-        final Map<String, Object> resultMap = new HashMap<>(Map.of(
-                "login", false,
-                "admin", false
-        ));
+    public AjaxResp<StatusVo> status() {
+        final var result = new StatusVo();
         if (StpUtil.isLogin()) {
-            resultMap.put("login", true);
-            resultMap.put("uid", StpUtil.getLoginId());
-            resultMap.put("admin", StpUtil.hasRole("admin"));
-            resultMap.put("permissions", StpUtil.getPermissionList());
+            result.setLogin(true);
+            result.setUid(StpUtil.getLoginIdAsString());
+            result.setAdmin(StpUtil.hasRole("admin"));
+            result.setPermissions(StpUtil.getPermissionList());
         }
-        return AjaxResp.success(resultMap);
-    }
-
-    record UpdatePasswordRequest(String oldPassword, String newPassword) {
+        return AjaxResp.success(result);
     }
 
     @PostMapping("updatePassword")
