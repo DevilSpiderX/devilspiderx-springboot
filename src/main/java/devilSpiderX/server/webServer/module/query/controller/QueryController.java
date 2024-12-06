@@ -3,8 +3,10 @@ package devilSpiderX.server.webServer.module.query.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.core.vo.CommonPage;
 import devilSpiderX.server.webServer.module.query.dto.*;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
+import devilSpiderX.server.webServer.module.query.vo.MyPasswordsVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Controller
 @RequestMapping("/api/query")
@@ -39,7 +42,7 @@ public class QueryController {
      */
     @PostMapping("get")
     @ResponseBody
-    private AjaxResp<?> get(@RequestBody GetRequestDto reqBody) {
+    private AjaxResp<List<MyPasswordsVo>> get(@RequestBody GetRequestDto reqBody) {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
         final var startTime = System.currentTimeMillis();
@@ -64,7 +67,7 @@ public class QueryController {
      */
     @PostMapping("get_paging")
     @ResponseBody
-    private AjaxResp<?> getPaging(@RequestBody GetPagingRequestDto reqBody) {
+    private AjaxResp<CommonPage<MyPasswordsVo>> getPaging(@RequestBody GetPagingRequestDto reqBody) {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
         final var length = reqBody.length();

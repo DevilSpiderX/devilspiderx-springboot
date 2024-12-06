@@ -4,17 +4,15 @@ import devilSpiderX.server.webServer.DSXApplication;
 import devilSpiderX.server.webServer.core.service.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-@Service("WindowsOS")
 public class WindowsOS implements OS {
+    private static final Logger logger = LoggerFactory.getLogger(WindowsOS.class);
     public static final String OS_NAME = "Windows";
     private static final Charset CHARSET = Charset.forName("GBK");
-    private final Logger logger = LoggerFactory.getLogger(WindowsOS.class);
 
     @Override
     public String getOSName() {

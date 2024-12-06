@@ -1,7 +1,6 @@
 package devilSpiderX.server.webServer.module.v2ray.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
-import devilSpiderX.server.webServer.core.service.factory.OSFactory;
 import devilSpiderX.server.webServer.core.util.AjaxResp;
 import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ public class V2rayController {
      */
     @PostMapping("start")
     @ResponseBody
-    private AjaxResp<?> start() {
+    private AjaxResp<Integer> start() {
         if (v2ray.isAlive()) {
             logger.info("v2ray正在运行");
             return AjaxResp.success("v2ray正在运行", 2);
@@ -66,7 +65,7 @@ public class V2rayController {
      */
     @PostMapping("stop")
     @ResponseBody
-    private AjaxResp<?> stop() {
+    private AjaxResp<Integer> stop() {
         if (v2ray.isAlive()) {
             if (v2ray.stop()) {
                 logger.info("v2ray关闭成功");
@@ -94,7 +93,7 @@ public class V2rayController {
      */
     @PostMapping("state")
     @ResponseBody
-    private AjaxResp<?> state() {
+    private AjaxResp<Boolean> state() {
         return AjaxResp.success(
                 v2ray.isAlive() ? "v2ray正在运行" : "v2ray没有运行",
                 v2ray.isAlive()

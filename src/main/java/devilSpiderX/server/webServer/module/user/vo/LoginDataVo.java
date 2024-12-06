@@ -11,6 +11,8 @@ public record LoginDataVo(
         @NotNull
         List<String> roles,
         @NotNull
+        List<String> permissions,
+        @NotNull
         String lastLoginAddr
 ) {
 }

@@ -4,16 +4,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Map;
 
 public class AjaxResp<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = 7635332772845242522L;
-
-    private static final AjaxResp<Void> SUCCESS_RESP = new AjaxResp<>(AjaxCode.SUCCESS, "OK");
-    private static final AjaxResp<Void> FAILURE_RESP = new AjaxResp<>(AjaxCode.FAILURE, "Failure");
-    private static final AjaxResp<Void> ERROR_RESP = new AjaxResp<>(AjaxCode.ERROR, "Error");
-    private static final AjaxResp<Void> WARNING_RESP = new AjaxResp<>(AjaxCode.WARNING, "Warning");
 
     private final int code;
     @NotNull
@@ -55,11 +49,11 @@ public class AjaxResp<T> implements Serializable {
     }
 
     // 返回成功
-    public static AjaxResp<Void> success() {
-        return SUCCESS_RESP;
+    public static <T> AjaxResp<T> success() {
+        return new AjaxResp<>(AjaxCode.SUCCESS, "OK");
     }
 
-    public static AjaxResp<Void> success(String msg) {
+    public static <T> AjaxResp<T> success(String msg) {
         return new AjaxResp<>(AjaxCode.SUCCESS, msg);
     }
 
@@ -71,19 +65,19 @@ public class AjaxResp<T> implements Serializable {
         return new AjaxResp<>(AjaxCode.SUCCESS, msg, data);
     }
 
-    //返回失败
-    public static AjaxResp<Void> failure() {
-        return FAILURE_RESP;
+    // 返回失败
+    public static <T> AjaxResp<T> failure() {
+        return new AjaxResp<>(AjaxCode.FAILURE, "Failure");
     }
 
 
-    public static AjaxResp<Void> failure(String msg) {
+    public static <T> AjaxResp<T> failure(String msg) {
         return new AjaxResp<>(AjaxCode.FAILURE, msg);
     }
 
     // 返回错误
-    public static AjaxResp<Void> error() {
-        return ERROR_RESP;
+    public static <T> AjaxResp<T> error() {
+        return new AjaxResp<>(AjaxCode.ERROR, "Error");
     }
 
 
@@ -92,8 +86,8 @@ public class AjaxResp<T> implements Serializable {
     }
 
     // 返回警告
-    public static AjaxResp<Void> warning() {
-        return WARNING_RESP;
+    public static <T> AjaxResp<T> warning() {
+        return new AjaxResp<>(AjaxCode.WARNING, "Warning");
     }
 
     public static <T> AjaxResp<T> warning(String msg) {
@@ -101,25 +95,25 @@ public class AjaxResp<T> implements Serializable {
     }
 
     // 返回未登录
-    public static AjaxResp<Void> notLogin() {
+    public static <T> AjaxResp<T> notLogin() {
         return new AjaxResp<>(AjaxCode.NOT_LOGIN, "未登录，请登录后再次访问");
     }
 
-    public static AjaxResp<Void> notLogin(String msg) {
+    public static <T> AjaxResp<T> notLogin(String msg) {
         return new AjaxResp<>(AjaxCode.NOT_LOGIN, msg);
     }
 
     // 返回无角色权限
-    public static AjaxResp<?> notRole(String role) {
-        return new AjaxResp<>(AjaxCode.NOT_ROLE, "没有%s角色权限".formatted(role), Map.of("role", role));
+    public static AjaxResp<String> notRole(String role) {
+        return new AjaxResp<>(AjaxCode.NOT_ROLE, "没有%s角色权限".formatted(role), role);
     }
 
     // 返回无权限
-    public static AjaxResp<?> notPermission(String permission) {
+    public static AjaxResp<String> notPermission(String permission) {
         return new AjaxResp<>(
                 AjaxCode.NOT_PERMISSION,
                 "没有%s权限".formatted(permission),
-                Map.of("permission", permission)
+                permission
         );
     }
 

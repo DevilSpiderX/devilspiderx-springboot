@@ -11,10 +11,7 @@ import devilSpiderX.server.webServer.module.user.dto.RegisterRequest;
 import devilSpiderX.server.webServer.module.user.dto.UpdatePasswordRequest;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.service.UserService;
-import devilSpiderX.server.webServer.module.user.vo.LoginDataVo;
-import devilSpiderX.server.webServer.module.user.vo.LoginVo;
-import devilSpiderX.server.webServer.module.user.vo.RegisterVo;
-import devilSpiderX.server.webServer.module.user.vo.StatusVo;
+import devilSpiderX.server.webServer.module.user.vo.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +24,6 @@ import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -57,7 +53,7 @@ public class UserController {
      * </p>
      */
     @PostMapping("login")
-    public AjaxResp<?> login(@RequestBody LoginRequest reqBody, HttpServletRequest req) {
+    public AjaxResp<LoginVo> login(@RequestBody LoginRequest reqBody, HttpServletRequest req) {
         if (reqBody.uid() == null || reqBody.pwd() == null) {
             return AjaxResp.error();
         }
@@ -76,7 +72,11 @@ public class UserController {
             logger.info("{}{}登录成功", adminFlag ? "管理员" : "用户", uid);
             userService.updateLastAddr(uid, req.getRemoteAddr());
             return AjaxResp.success(new LoginVo(0, "", new LoginDataVo(
-                    uid, adminFlag, StpUtil.getRoleList(), user.getLastAddress()
+                    uid,
+                    adminFlag,
+                    StpUtil.getRoleList(),
+                    StpUtil.getPermissionList(),
+                    user.getLastAddress()
             )));
         } else {
             logger.info("{}输入密码错误，登录失败", uid);
@@ -95,7 +95,7 @@ public class UserController {
      * </p>
      */
     @PostMapping("logout")
-    public AjaxResp<?> logout() {
+    public AjaxResp<Void> logout() {
         StpUtil.logout();
         return AjaxResp.success();
     }
@@ -112,7 +112,7 @@ public class UserController {
      * </p>
      */
     @PostMapping("register")
-    public AjaxResp<?> register(@RequestBody RegisterRequest reqBody, HttpServletRequest req)
+    public AjaxResp<RegisterVo> register(@RequestBody RegisterRequest reqBody, HttpServletRequest req)
             throws NoSuchAlgorithmException {
         final String uid = reqBody.uid();
         final String password = reqBody.password();
@@ -147,7 +147,7 @@ public class UserController {
 
     @PostMapping("updatePassword")
     @SaCheckLogin
-    public AjaxResp<?> updatePassword(@RequestBody UpdatePasswordRequest reqBody) {
+    public AjaxResp<Void> updatePassword(@RequestBody UpdatePasswordRequest reqBody) {
         final String oldPassword = reqBody.oldPassword();
         final String newPassword = reqBody.newPassword();
 
@@ -166,16 +166,16 @@ public class UserController {
         }
     }
 
+    public static final String userAvatarPrefix = "/user/avatar/";
+
     @PostMapping("uploadAvatar")
     @SaCheckLogin
-    public AjaxResp<?> uploadAvatar(@RequestParam("image") MultipartFile imageFile,
-                                    @Value("#{DSXProperties.avatarDirPath}") String avatarDirPath) {
+    public AjaxResp<UploadAvatarVo> uploadAvatar(@RequestParam("image") MultipartFile imageFile,
+                                                 @Value("#{DSXProperties.avatarDirPath}") String avatarDirPath) {
         final String uid = StpUtil.getLoginIdAsString();
         try {
             final String avatarName = userService.uploadAvatarImage(uid, imageFile, Paths.get(avatarDirPath));
-            return AjaxResp.success(Map.of(
-                    "avatar", "/user/avatar/%s".formatted(avatarName)
-            ));
+            return AjaxResp.success(new UploadAvatarVo(userAvatarPrefix + avatarName));
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             return AjaxResp.error(e.getMessage());
@@ -186,11 +186,11 @@ public class UserController {
 
     @GetMapping("avatar")
     @SaCheckLogin
-    public AjaxResp<?> getAvatar() {
+    public AjaxResp<String> getAvatar() {
         final String avatarName = userService.getAvatarImage(StpUtil.getLoginIdAsString());
         if (avatarName == null) {
             return AjaxResp.of(AjaxResp.success(), "");
         }
-        return AjaxResp.of(AjaxResp.success(), "/user/avatar/%s".formatted(avatarName));
+        return AjaxResp.of(AjaxResp.success(), userAvatarPrefix + avatarName);
     }
 }

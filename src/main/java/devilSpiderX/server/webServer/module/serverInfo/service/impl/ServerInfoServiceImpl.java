@@ -2,6 +2,7 @@ package devilSpiderX.server.webServer.module.serverInfo.service.impl;
 
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
+import devilSpiderX.server.webServer.module.serverInfo.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,6 @@ import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -277,60 +277,60 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public Map<String, Serializable> constructCpuObject(CPU cpu) {
-        return Map.of(
-                "name", cpu.getName(),
-                "physicalNum", cpu.getPhysicalNum(),
-                "logicalNum", cpu.getLogicalNum(),
-                "usedRate", cpu.getUsedRate(),
-                "is64bit", cpu.isA64bit(),
-                "cpuTemperature", cpu.getTemperature()
+    public CPUVo constructCpuObject(CPU cpu) {
+        return new CPUVo(
+                cpu.getName(),
+                cpu.getPhysicalNum(),
+                cpu.getLogicalNum(),
+                cpu.getUsedRate(),
+                cpu.isA64bit(),
+                cpu.getTemperature()
         );
     }
 
     @Override
-    public Map<String, Serializable> constructMemoryObject(Memory memory) {
-        return Map.of(
-                "total", memory.getTotal(),
-                "used", memory.getUsed(),
-                "free", memory.getFree()
+    public MemoryVo constructMemoryObject(Memory memory) {
+        return new MemoryVo(
+                memory.getTotal(),
+                memory.getUsed(),
+                memory.getFree()
         );
     }
 
     @Override
-    public Map<String, Serializable> constructDiskObject(Disk disk) {
-        return Map.of(
-                "label", disk.getLabel(),
-                "mount", disk.getMount(),
-                "fSType", disk.getFSType(),
-                "name", disk.getName(),
-                "total", disk.getTotal(),
-                "free", disk.getFree(),
-                "used", disk.getUsed()
+    public DiskVo constructDiskObject(Disk disk) {
+        return new DiskVo(
+                disk.getLabel(),
+                disk.getMount(),
+                disk.getFSType(),
+                disk.getName(),
+                disk.getTotal(),
+                disk.getFree(),
+                disk.getUsed()
         );
     }
 
     @Override
-    public Map<String, Serializable> constructNetworkObject(Network network) {
-        final Map<String, Serializable> result = new HashMap<>();
-        result.put("name", network.getName());
-        result.put("displayName", network.getDisplayName());
-        result.put("macAddr", network.getMacAddr());
-        result.put("bytesSent", network.getBytesSent());
-        result.put("bytesRecv", network.getBytesRecv());
-        result.put("uploadSpeed", network.getUploadSpeed());
-        result.put("downloadSpeed", network.getDownloadSpeed());
-        result.put("IPv4addr", network.getIPv4Addr());
-        result.put("IPv6addr", network.getIPv6Addr());
-        return result;
+    public NetworkVo constructNetworkObject(Network network) {
+        return new NetworkVo(
+                network.getName(),
+                network.getDisplayName(),
+                network.getMacAddr(),
+                network.getBytesSent(),
+                network.getBytesRecv(),
+                network.getUploadSpeed(),
+                network.getDownloadSpeed(),
+                network.getIPv4Addr(),
+                network.getIPv6Addr()
+        );
     }
 
     @Override
-    public Map<String, Serializable> constructCurrentOSObject(CurrentOS currentOS) {
-        return Map.of(
-                "name", currentOS.getName(),
-                "bitness", currentOS.getBitness(),
-                "processCount", currentOS.getProcessCount()
+    public CurrentOSVo constructCurrentOSObject(CurrentOS currentOS) {
+        return new CurrentOSVo(
+                currentOS.getName(),
+                currentOS.getBitness(),
+                currentOS.getProcessCount()
         );
     }
 

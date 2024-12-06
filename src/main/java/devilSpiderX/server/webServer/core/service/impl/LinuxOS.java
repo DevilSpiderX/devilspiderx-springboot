@@ -4,18 +4,16 @@ import devilSpiderX.server.webServer.DSXApplication;
 import devilSpiderX.server.webServer.core.service.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-@Service("LinuxOS")
 public class LinuxOS implements OS {
+    private static final Logger logger = LoggerFactory.getLogger(LinuxOS.class);
     public static final String OS_NAME = "Linux";
     private static final Charset CHARSET = StandardCharsets.UTF_8;
-    private final Logger logger = LoggerFactory.getLogger(LinuxOS.class);
 
     @Override
     public String getOSName() {
