@@ -1,5 +1,7 @@
 package devilSpiderX.server.webServer.module.query.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -7,6 +9,7 @@ public class MyPasswordsDeleted implements Serializable {
     @Serial
     private static final long serialVersionUID = -41168418438567306L;
 
+    @TableId
     private Integer id;
     private String name;
     private String account;

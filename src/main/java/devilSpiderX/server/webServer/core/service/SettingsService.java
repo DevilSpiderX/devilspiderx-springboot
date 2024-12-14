@@ -13,13 +13,17 @@ import java.util.List;
 
 @Service("settingsService")
 public class SettingsService {
+    private static final Logger logger = LoggerFactory.getLogger(SettingsService.class);
     public static final int DEFAULT_SESSION_MAX_AGE = 3600;
 
-    private final Logger logger = LoggerFactory.getLogger(SettingsService.class);
     private final SettingsMapper settingsMapper;
 
     public SettingsService(SettingsMapper settingsMapper) {
         this.settingsMapper = settingsMapper;
+        initSettings();
+    }
+
+    private void initSettings() {
         final List<Settings> insertList = new LinkedList<>();
         {
             if (!exist("session_max_age")) {
@@ -31,7 +35,13 @@ public class SettingsService {
         }
 
         if (!CollectionUtils.isEmpty(insertList)) {
-            final int n = settingsMapper.insertAll(insertList);
+            final var result = settingsMapper.insert(insertList);
+            final var n = result.stream().reduce(0, (acc, item) -> {
+                for (final var count : item.getUpdateCounts()) {
+                    acc += count;
+                }
+                return acc;
+            }, Integer::sum);
             logger.info("初始化设置个数：{}", n);
         }
     }
@@ -51,14 +61,18 @@ public class SettingsService {
     }
 
     public void setSessionMaxAge(int sessionMaxAge) {
-        int n = settingsMapper.updateByKey("session_max_age", String.valueOf(sessionMaxAge));
+        final var wrapper = Wrappers.lambdaUpdate(Settings.class);
+        wrapper.set(Settings::getValue, String.valueOf(sessionMaxAge))
+                .eq(Settings::getKey, "session_max_age");
+
+        int n = settingsMapper.update(wrapper);
         if (n > 0) {
             logger.info("session_max_age设置为{}", sessionMaxAge);
         }
     }
 
     public List<Settings> getAll() {
-        return settingsMapper.findAll();
+        return settingsMapper.selectList(Wrappers.lambdaQuery(Settings.class));
     }
 
     public boolean exist(String key) {

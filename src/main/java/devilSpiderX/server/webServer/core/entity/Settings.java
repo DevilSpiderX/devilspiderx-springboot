@@ -1,6 +1,8 @@
 package devilSpiderX.server.webServer.core.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -9,6 +11,7 @@ public class Settings implements Serializable {
     @Serial
     private static final long serialVersionUID = 965457075416128487L;
 
+    @TableId(type = IdType.AUTO)
     private Integer id;
     @TableField("`key`")
     private String key;

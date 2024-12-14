@@ -1,11 +1,18 @@
 package devilSpiderX.server.webServer.module.fjrc.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serial;
 import java.io.Serializable;
 
 public class Fjrc implements Serializable {
     @Serial
     private static final long serialVersionUID = 549232230568895757L;
+
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+
     private String itemBank;
 
     private String type;
@@ -33,7 +40,14 @@ public class Fjrc implements Serializable {
     private String topicBasis;
 
     private String remark;
-    
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(final Integer id) {
+        this.id = id;
+    }
 
     public String getItemBank() {
         return itemBank;
