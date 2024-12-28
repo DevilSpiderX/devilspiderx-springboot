@@ -29,7 +29,7 @@ public class AjaxResp<T> implements Serializable {
         this.data = null;
     }
 
-    public AjaxResp(int code, @Nonnull String msg, T data) {
+    public AjaxResp(int code, @Nonnull String msg, @Nullable T data) {
         this.code = code;
         this.msg = msg;
         this.data = data;

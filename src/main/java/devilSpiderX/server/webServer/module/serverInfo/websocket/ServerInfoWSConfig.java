@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
 import cn.dev33.satoken.stp.StpUtil;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -29,7 +30,7 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
     }
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+    public void registerWebSocketHandlers(@Nonnull WebSocketHandlerRegistry registry) {
         registry.addHandler(serverInfoWSHandler, "/websocket/getServerInfo")
                 .addInterceptors(new ServerInfoWSInterceptor());
     }
@@ -37,10 +38,10 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
     private static class ServerInfoWSInterceptor implements HandshakeInterceptor {
         @Override
         public boolean beforeHandshake(
-                ServerHttpRequest request,
-                ServerHttpResponse response,
-                WebSocketHandler wsHandler,
-                Map<String, Object> attributes
+                @Nonnull ServerHttpRequest request,
+                @Nonnull ServerHttpResponse response,
+                @Nonnull WebSocketHandler wsHandler,
+                @Nonnull Map<String, Object> attributes
         ) {
             if (request instanceof ServletServerHttpRequest _request) {
                 final HttpServletRequest httpReq = _request.getServletRequest();
@@ -63,9 +64,9 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
 
         @Override
         public void afterHandshake(
-                ServerHttpRequest request,
-                ServerHttpResponse response,
-                WebSocketHandler wsHandler,
+                @Nonnull ServerHttpRequest request,
+                @Nonnull ServerHttpResponse response,
+                @Nonnull WebSocketHandler wsHandler,
                 @Nullable Exception exception) {
         }
     }

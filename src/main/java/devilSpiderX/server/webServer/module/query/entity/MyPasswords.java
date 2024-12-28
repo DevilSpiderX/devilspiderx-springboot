@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import jakarta.annotation.Nonnull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -83,7 +84,7 @@ public class MyPasswords implements Serializable, Comparable<MyPasswords> {
     }
 
     @Override
-    public int compareTo(MyPasswords another) {
+    public int compareTo(@Nonnull MyPasswords another) {
         return id.compareTo(another.id);
     }
 }

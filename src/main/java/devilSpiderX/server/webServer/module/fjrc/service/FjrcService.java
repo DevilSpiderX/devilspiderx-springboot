@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FjrcService {
-    private final Logger logger = LoggerFactory.getLogger(FjrcService.class);
+    private static final Logger logger = LoggerFactory.getLogger(FjrcService.class);
 
     private final FjrcMapper fjrcMapper;
     private final FjrcUserMapper fjrcUserMapper;

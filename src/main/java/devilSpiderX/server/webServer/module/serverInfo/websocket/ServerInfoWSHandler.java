@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.JacksonUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.user.entity.User;
+import jakarta.annotation.Nonnull;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
@@ -40,7 +41,7 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
 
     @OnOpen
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(@Nonnull WebSocketSession session) {
         final String sessionId = session.getId();
         final Map<String, Object> map = session.getAttributes();
         final User user = (User) map.get("user");
@@ -51,7 +52,10 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
 
     @OnClose
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+    public void afterConnectionClosed(
+            @Nonnull WebSocketSession session,
+            @Nonnull CloseStatus status
+    ) {
         final String sessionId = session.getId();
         final Attribute attr = attributeMap.remove(sessionId);
         logger.info("用户{}退出，当前在线数量为：{} - {}{}",
@@ -80,7 +84,10 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
 
     @OnMessage
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+    protected void handleTextMessage(
+            @Nonnull WebSocketSession session,
+            @Nonnull TextMessage message
+    ) {
         final var msg = message.getPayload();
         final var sessionId = session.getId();
         final Attribute attr = attributeMap.get(sessionId);

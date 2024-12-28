@@ -1,5 +1,7 @@
 package devilSpiderX.server.webServer.core.langExtend;
 
+import jakarta.annotation.Nonnull;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -484,16 +486,9 @@ public class Bytes implements java.io.Serializable, Comparable<Bytes>, ByteSeque
         if (this == anObject) {
             return true;
         }
-        if (anObject instanceof Bytes) {
-            Bytes anotherString = (Bytes) anObject;
+        if (anObject instanceof final Bytes anotherString) {
             int n = count;
             if (n == anotherString.count) {
-//                int i = 0;
-//                while (n-- != 0) {
-//                    if (value[i] != anotherString.value[i])
-//                        return false;
-//                    i++;
-//                }
                 for (int i = 0; i < n; i++) {
                     if (value[i] != anotherString.value[i]) {
                         return false;
@@ -518,7 +513,7 @@ public class Bytes implements java.io.Serializable, Comparable<Bytes>, ByteSeque
      * @return 如果参数字节串等于此字节串，则值为0;如果这个字节串的字典比参数字节串小，则值小于0;如果此字节串的字典大小超过参数字节串，则值大于0
      */
     @Override
-    public int compareTo(Bytes anotherBytes) {
+    public int compareTo(@Nonnull Bytes anotherBytes) {
         int len1 = count;
         int len2 = anotherBytes.count;
         int min = Math.min(len1, len2);

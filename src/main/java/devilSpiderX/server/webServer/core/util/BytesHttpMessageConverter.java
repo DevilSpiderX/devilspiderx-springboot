@@ -43,7 +43,7 @@ public class BytesHttpMessageConverter extends AbstractHttpMessageConverter<Byte
     }
 
     @Override
-    protected void writeInternal(Bytes bytes, @Nonnull HttpOutputMessage outputMessage)
+    protected void writeInternal(@Nonnull Bytes bytes, @Nonnull HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         HttpHeaders headers = outputMessage.getHeaders();

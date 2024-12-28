@@ -3,9 +3,6 @@ package devilSpiderX.server.webServer.module.serverInfo.service;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
 import devilSpiderX.server.webServer.module.serverInfo.vo.*;
 
-import java.io.Serializable;
-import java.util.Map;
-
 public interface ServerInfoService {
     CPU getCPU();
 

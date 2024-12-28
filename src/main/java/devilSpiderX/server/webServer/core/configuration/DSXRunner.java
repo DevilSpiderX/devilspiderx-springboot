@@ -16,7 +16,8 @@ import java.nio.file.Paths;
 
 @Component
 public class DSXRunner implements ApplicationRunner {
-    private final Logger logger = LoggerFactory.getLogger(DSXRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(DSXRunner.class);
+
     private final String pidFileName;
 
     public DSXRunner(DSXProperties dsxProperties) {

@@ -22,7 +22,7 @@ public class GlobalFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
-                                    FilterChain filterChain)
+                                    @Nonnull FilterChain filterChain)
             throws ServletException, IOException {
         addApplicationInfo(response);
         filterChain.doFilter(request, response);

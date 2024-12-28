@@ -26,13 +26,15 @@ public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter
     }
 
     @Override
-    protected boolean supports(Class<?> clazz) {
-        return clazz.equals(Map.class);
+    protected boolean supports(@Nonnull Class<?> clazz) {
+        return Map.class == clazz;
     }
 
     @Override
-    protected @Nonnull Map<String, Object> readInternal(@Nonnull Class<? extends Map<String, Object>> clazz, HttpInputMessage inputMessage)
-            throws IOException, HttpMessageNotReadableException {
+    protected @Nonnull Map<String, Object> readInternal(
+            @Nonnull Class<? extends Map<String, Object>> clazz,
+            @Nonnull HttpInputMessage inputMessage
+    ) throws IOException, HttpMessageNotReadableException {
         final var in = inputMessage.getBody();
         final var bytes = new Bytes();
         final var buffer = new byte[1024 * 64];
@@ -78,8 +80,10 @@ public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter
     }
 
     @Override
-    protected void writeInternal(Map<String, Object> object, @Nonnull HttpOutputMessage outputMessage)
-            throws IOException, HttpMessageNotWritableException {
+    protected void writeInternal(
+            @Nonnull Map<String, Object> object,
+            @Nonnull HttpOutputMessage outputMessage
+    ) throws IOException, HttpMessageNotWritableException {
         final var stringBuilder = new StringBuilder();
 
         object.forEach((key, value) -> {
