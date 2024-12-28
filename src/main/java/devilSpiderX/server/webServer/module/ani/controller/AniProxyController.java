@@ -1,6 +1,10 @@
 package devilSpiderX.server.webServer.module.ani.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
@@ -13,6 +17,7 @@ import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+@Tag(name = "Ani代理接口")
 @RestController
 @RequestMapping("/api/ani")
 public class AniProxyController {
@@ -28,8 +33,11 @@ public class AniProxyController {
      * @param proxy 是否使用代理
      * @return 番剧更新列表
      */
-    @RequestMapping("torrent")
-    public ResponseEntity<byte[]> getTorrentXML(@RequestParam(name = "proxy", defaultValue = "false") boolean proxy) {
+    @Operation(summary = "获取Ani番剧更新列表")
+    @GetMapping("torrent")
+    public ResponseEntity<byte[]> getTorrentXML(
+            @Parameter(description = "是否走代理请求") @RequestParam(name = "proxy", defaultValue = "false") boolean proxy
+    ) {
         try {
             final var url = URI.create(dataURL).toURL();
             final var urlCon = proxy ? url.openConnection(PROXY) : url.openConnection();
@@ -60,10 +68,18 @@ public class AniProxyController {
         }
     }
 
+    @Operation(
+            summary = "下载AniTorrent文件",
+            description = "用户要拥有[ani.download]权限才能执行",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     @GetMapping("file/{name}")
     public ResponseEntity<byte[]> getTorrentFile(
-            @PathVariable final String name,
-            @RequestParam("fileUrl") final String fileUrl
+            @Parameter(description = "Torrent文件名") @PathVariable final String name,
+            @Parameter(description = "Torrent文件的下载地址") @RequestParam("fileUrl") final String fileUrl
     ) {
         if (!StpUtil.isLogin()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

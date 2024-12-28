@@ -4,14 +4,17 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import devilSpiderX.server.webServer.DSXApplication;
 import devilSpiderX.server.webServer.core.service.OS;
-import devilSpiderX.server.webServer.core.service.factory.OSFactory;
-import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.core.vo.AjaxResp;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "系统主接口")
 @RestController
 @RequestMapping("/api/admin")
 @SaCheckRole("admin")
@@ -24,15 +27,7 @@ public class MainController {
         this.os = os;
     }
 
-    /**
-     * <b>重启服务器</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <b>返回代码：</b>
-     * 0 成功；100 没有权限；101 没有管理员权限；
-     * </p>
-     */
+    @Operation(summary = "重启服务器")
     @PostMapping("os/reboot")
     @SaCheckPermission("system.reboot")
     private AjaxResp<Object> OSReboot() {
@@ -40,15 +35,7 @@ public class MainController {
         return AjaxResp.success("成功,服务器正在重启");
     }
 
-    /**
-     * <b>关闭服务器</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <b>返回代码：</b>
-     * 0 成功；100 没有权限；101 没有管理员权限；
-     * </p>
-     */
+    @Operation(summary = "关闭服务器")
     @PostMapping("os/shutdown")
     @SaCheckPermission("system.shutdown")
     private AjaxResp<Object> OSShutdown() {
@@ -56,17 +43,11 @@ public class MainController {
         return AjaxResp.success("成功,服务器正在关机");
     }
 
-    /**
-     * <b>关闭服务器程序</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 关闭成功； 100 没有权限；
-     * </p>
-     */
-    @RequestMapping("service/shutdown")
+    @Operation(summary = "关闭服务")
+    @RequestMapping(
+            value = "service/shutdown",
+            method = {RequestMethod.GET, RequestMethod.POST}
+    )
     @SaCheckPermission("process.shutdown")
     private AjaxResp<Object> serviceShutdown() {
         new Thread(() -> {

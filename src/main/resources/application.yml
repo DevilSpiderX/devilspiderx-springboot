@@ -26,3 +26,17 @@ sa-token:
   token-name: DSXSessionId
   is-concurrent: true
   is-share: false
+  is-read-cookie: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+    enabled: false
+  group-configs:
+    - group: 'default'
+      display-name: '默认'
+      paths-to-match: '/**'
+      packages-to-scan: devilSpiderX.server.webServer

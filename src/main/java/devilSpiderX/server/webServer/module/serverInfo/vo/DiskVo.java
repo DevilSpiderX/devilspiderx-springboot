@@ -1,18 +1,27 @@
 package devilSpiderX.server.webServer.module.serverInfo.vo;
 
-import org.jetbrains.annotations.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nonnull;
 
+@Schema(description = "硬盘分区信息Vo")
 public record DiskVo(
-        @NotNull
+        @Schema(description = "分区标签")
+        @Nonnull
         String label,
-        @NotNull
+        @Schema(description = "分区绑定的路径")
+        @Nonnull
         String mount,
-        @NotNull
+        @Schema(description = "文件系统类型")
+        @Nonnull
         String fSType,
-        @NotNull
+        @Schema(description = "分区名")
+        @Nonnull
         String name,
+        @Schema(description = "总大小")
         long total,
+        @Schema(description = "可用大小")
         long free,
+        @Schema(description = "已用大小")
         long used
 ) {
 }

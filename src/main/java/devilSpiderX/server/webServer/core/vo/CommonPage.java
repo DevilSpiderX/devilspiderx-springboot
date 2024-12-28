@@ -1,16 +1,24 @@
 package devilSpiderX.server.webServer.core.vo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
+@Schema(description = "通用分页类型")
 public class CommonPage<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = -5421754385962369237L;
-    private List<T> list;//数据
-    private long total;//数据总条数
-    private long page;//当前页
-    private long pageSize;//每页的条数
+
+    @Schema(description = "数据")
+    private List<T> list;
+    @Schema(description = "数据总条数")
+    private long total;
+    @Schema(description = "当前页")
+    private long page;
+    @Schema(description = "每页的条数")
+    private long pageSize;
 
     public CommonPage() {
     }

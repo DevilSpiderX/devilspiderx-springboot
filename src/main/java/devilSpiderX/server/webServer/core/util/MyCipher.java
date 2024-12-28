@@ -35,13 +35,21 @@ public class MyCipher {
         return result.toString();
     }
 
-    public static byte[] MD5(String value) throws NoSuchAlgorithmException {
-        MessageDigest MD5Digest = MessageDigest.getInstance("MD5");
-        return MD5Digest.digest(value.getBytes(StandardCharsets.UTF_8));
+    public static byte[] MD5(String value) {
+        try {
+            MessageDigest MD5Digest = MessageDigest.getInstance("MD5");
+            return MD5Digest.digest(value.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static byte[] SHA256(String value) throws NoSuchAlgorithmException {
-        MessageDigest SHA256Digest = MessageDigest.getInstance("SHA-256");
-        return SHA256Digest.digest(value.getBytes(StandardCharsets.UTF_8));
+    public static byte[] SHA256(String value) {
+        try {
+            MessageDigest SHA256Digest = MessageDigest.getInstance("SHA-256");
+            return SHA256Digest.digest(value.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

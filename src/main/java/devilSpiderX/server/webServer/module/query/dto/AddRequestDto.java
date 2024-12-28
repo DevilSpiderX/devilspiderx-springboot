@@ -1,12 +1,17 @@
 package devilSpiderX.server.webServer.module.query.dto;
 
-/**
- * 添加密码记录请求参数
- *
- * @param name     名称
- * @param account  账号
- * @param password 密码
- * @param remark   备注
- */
-public record AddRequestDto(String name, String account, String password, String remark) {
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nonnull;
+
+@Schema(description = "添加密码记录请求参数")
+public record AddRequestDto(
+        @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Nonnull
+        String name,
+        @Schema(description = "账号")
+        String account,
+        @Schema(description = "密码")
+        String password,
+        @Schema(description = "备注")
+        String remark) {
 }

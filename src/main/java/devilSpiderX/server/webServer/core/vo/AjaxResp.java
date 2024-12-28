@@ -1,26 +1,35 @@
-package devilSpiderX.server.webServer.core.util;
+package devilSpiderX.server.webServer.core.vo;
 
-import org.jetbrains.annotations.NotNull;
+import devilSpiderX.server.webServer.core.util.AjaxCode;
+import devilSpiderX.server.webServer.core.util.JacksonUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import java.io.Serial;
 import java.io.Serializable;
 
+@Schema(description = "通用返回类型")
 public class AjaxResp<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = 7635332772845242522L;
 
+    @Schema(description = "代码")
     private final int code;
-    @NotNull
+    @Schema(description = "错误消息")
+    @Nonnull
     private final String msg;
+    @Schema(description = "数据", nullable = true)
+    @Nullable
     private T data;
 
-    public AjaxResp(int code, @NotNull String msg) {
+    public AjaxResp(int code, @Nonnull String msg) {
         this.code = code;
         this.msg = msg;
         this.data = null;
     }
 
-    public AjaxResp(int code, @NotNull String msg, T data) {
+    public AjaxResp(int code, @Nonnull String msg, T data) {
         this.code = code;
         this.msg = msg;
         this.data = data;
@@ -30,10 +39,11 @@ public class AjaxResp<T> implements Serializable {
         return code;
     }
 
-    public @NotNull String getMsg() {
+    public @Nonnull String getMsg() {
         return msg;
     }
 
+    @Nullable
     public T getData() {
         return data;
     }

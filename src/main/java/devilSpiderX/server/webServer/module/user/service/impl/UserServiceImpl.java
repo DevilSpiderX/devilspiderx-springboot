@@ -4,11 +4,13 @@ import cn.dev33.satoken.secure.SaSecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import devilSpiderX.server.webServer.core.property.DSXProperties;
 import devilSpiderX.server.webServer.module.user.dao.UserMapper;
 import devilSpiderX.server.webServer.module.user.dao.UserPermissionMapper;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import devilSpiderX.server.webServer.module.user.entity.UserPermission;
 import devilSpiderX.server.webServer.module.user.service.UserService;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -22,17 +24,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     private final UserMapper userMapper;
     private final UserPermissionMapper userPermissionMapper;
+    private final Path avatarDirPath;
 
-    public UserServiceImpl(UserMapper userMapper, final UserPermissionMapper userPermissionMapper) {
+    public UserServiceImpl(
+            final UserMapper userMapper,
+            final UserPermissionMapper userPermissionMapper,
+            final DSXProperties dsxProperties
+    ) {
         this.userMapper = userMapper;
         this.userPermissionMapper = userPermissionMapper;
+        this.avatarDirPath = Paths.get(dsxProperties.getAvatarDirPath());
     }
 
     @Override
@@ -55,20 +64,15 @@ public class UserServiceImpl implements UserService {
         return userMapper.insert(user) > 0;
     }
 
-    private final ReentrantLock isAdminLock = new ReentrantLock();
-
     @Override
     public boolean isAdmin(String uid) {
         if (uid == null) return false;
-//        isAdminLock.lock();
         try {
             final var user = get(uid);
             return user != null && user.getAdmin();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return false;
-        } finally {
-//            isAdminLock.unlock();
         }
     }
 
@@ -109,10 +113,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String uploadAvatarImage(String uid, MultipartFile imageFile, Path avatarDirPath) throws IOException {
-        if (uid == null) {
-            throw new NullPointerException("uid不能为null");
-        }
+    public String uploadAvatarImage(@NotNull String uid, MultipartFile imageFile) throws IOException {
+        Objects.requireNonNull(uid, "uid不能为null");
 
         final var user = get(uid);
         final var lastPath = user.getAvatar();

@@ -1,4 +1,7 @@
 package devilSpiderX.server.webServer.module.fjrc.vo;
 
-public record OnlineCountVo(long count,String fingerprint) {
+import io.swagger.v3.oas.annotations.Hidden;
+
+@Hidden
+public record OnlineCountVo(long count, String fingerprint) {
 }

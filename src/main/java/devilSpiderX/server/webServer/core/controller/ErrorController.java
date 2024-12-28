@@ -1,7 +1,8 @@
 package devilSpiderX.server.webServer.core.controller;
 
-import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.core.vo.AjaxResp;
 import devilSpiderX.server.webServer.core.vo.ErrorPostVo;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+@Hidden
 @Controller
 @RequestMapping("/error")
 public class ErrorController implements org.springframework.boot.web.servlet.error.ErrorController {

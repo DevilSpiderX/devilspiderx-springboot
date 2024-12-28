@@ -1,15 +1,29 @@
 package devilSpiderX.server.webServer.module.user.dto;
 
-/**
- * 注册请求参数
- *
- * @param uid 用户id
- * @param pwd 密码
- */
-public record RegisterRequest(String uid, String pwd) {
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nonnull;
+
+import java.util.Objects;
+
+
+@Schema(description = "注册请求参数")
+public record RegisterRequest(
+        @Schema(description = "用户id", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Nonnull
+        String uid,
+        @Schema(description = "密码", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Nonnull
+        String pwd
+) {
+    public RegisterRequest {
+        Objects.requireNonNull(uid, "必须存在用户id");
+        Objects.requireNonNull(pwd, "必须存在密码");
+    }
+
     /**
      * @return 密码
      */
+    @Nonnull
     public String password() {
         return pwd;
     }

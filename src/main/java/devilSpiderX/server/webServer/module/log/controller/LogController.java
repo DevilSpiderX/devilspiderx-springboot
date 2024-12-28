@@ -1,9 +1,13 @@
 package devilSpiderX.server.webServer.module.log.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import devilSpiderX.server.webServer.core.annotation.GetPostMapping;
 import devilSpiderX.server.webServer.core.exception.BaseException;
 import devilSpiderX.server.webServer.core.util.AjaxCode;
-import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.core.vo.AjaxResp;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -24,13 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Tag(name = "日志接口")
 @Controller
 @RequestMapping("/api/admin/log")
 @SaCheckRole("admin")
 public class LogController {
     private static final String logDir = "./log";
 
-    @RequestMapping("list")
+    @Operation(summary = "获取日志列表")
+    @GetPostMapping("list")
     @ResponseBody
     public AjaxResp<List<String>> list() {
         var logArray = new ArrayList<String>();
@@ -42,8 +48,9 @@ public class LogController {
         return AjaxResp.success(logArray);
     }
 
+    @Operation(summary = "获取日志内容")
     @GetMapping("{logName}")
-    public ResponseEntity<Resource> logFile(@PathVariable String logName) {
+    public ResponseEntity<Resource> logFile(@Parameter(description = "日志文件名") @PathVariable String logName) {
         File logFile = Paths.get(logDir, logName).toFile();
         if (!logFile.exists()) {
             return ResponseEntity.notFound().build();

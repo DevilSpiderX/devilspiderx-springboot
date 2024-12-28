@@ -1,6 +1,11 @@
 package devilSpiderX.server.webServer.module.user.vo;
 
-import org.jetbrains.annotations.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nonnull;
 
-public record UploadAvatarVo(@NotNull String avatar) {
+@Schema(description = "上传用户头像返回Vo")
+public record UploadAvatarVo(
+        @Schema(description = "用户头像地址")
+        @Nonnull String avatar
+) {
 }

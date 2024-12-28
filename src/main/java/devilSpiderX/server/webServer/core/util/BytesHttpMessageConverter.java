@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.core.util;
 
 import devilSpiderX.server.webServer.core.langExtend.Bytes;
-import org.jetbrains.annotations.NotNull;
+import jakarta.annotation.Nonnull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -21,12 +21,12 @@ public class BytesHttpMessageConverter extends AbstractHttpMessageConverter<Byte
     }
 
     @Override
-    protected boolean supports(@NotNull Class<?> clazz) {
+    protected boolean supports(@Nonnull Class<?> clazz) {
         return clazz.equals(Bytes.class);
     }
 
     @Override
-    protected @NotNull Bytes readInternal(@NotNull Class<? extends Bytes> clazz, @NotNull HttpInputMessage inputMessage)
+    protected @Nonnull Bytes readInternal(@Nonnull Class<? extends Bytes> clazz, @Nonnull HttpInputMessage inputMessage)
             throws IOException, HttpMessageNotReadableException {
         logger.info(clazz);
         InputStream in = inputMessage.getBody();
@@ -43,7 +43,7 @@ public class BytesHttpMessageConverter extends AbstractHttpMessageConverter<Byte
     }
 
     @Override
-    protected void writeInternal(Bytes bytes, @NotNull HttpOutputMessage outputMessage)
+    protected void writeInternal(Bytes bytes, @Nonnull HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         HttpHeaders headers = outputMessage.getHeaders();

@@ -1,10 +1,10 @@
 package devilSpiderX.server.webServer.module.user.service;
 
 import devilSpiderX.server.webServer.module.user.entity.User;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 public interface UserService {
@@ -20,7 +20,7 @@ public interface UserService {
 
     boolean updatePassword(String uid, String password);
 
-    String uploadAvatarImage(String uid, MultipartFile imageFile, Path avatarDirPath) throws IOException;
+    String uploadAvatarImage(@NotNull String uid, MultipartFile imageFile) throws IOException;
 
     String getAvatarImage(String uid);
 

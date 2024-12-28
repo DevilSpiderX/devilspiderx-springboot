@@ -25,6 +25,7 @@ import java.util.*;
 @Service
 public class MyPasswordsServiceImpl implements MyPasswordsService {
     private static final Logger logger = LoggerFactory.getLogger(MyPasswordsServiceImpl.class);
+
     private final UserService userService;
     private final MyPasswordsMapper myPasswordsMapper;
     private final MyPasswordsDeletedMapper myPasswordsDeletedMapper;

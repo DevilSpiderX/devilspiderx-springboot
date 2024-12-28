@@ -3,7 +3,7 @@ package devilSpiderX.server.webServer.core.util;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import devilSpiderX.server.webServer.core.langExtend.Bytes;
-import org.jetbrains.annotations.NotNull;
+import jakarta.annotation.Nonnull;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -31,7 +31,7 @@ public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter
     }
 
     @Override
-    protected @NotNull Map<String, Object> readInternal(@NotNull Class<? extends Map<String, Object>> clazz, HttpInputMessage inputMessage)
+    protected @Nonnull Map<String, Object> readInternal(@Nonnull Class<? extends Map<String, Object>> clazz, HttpInputMessage inputMessage)
             throws IOException, HttpMessageNotReadableException {
         final var in = inputMessage.getBody();
         final var bytes = new Bytes();
@@ -78,7 +78,7 @@ public class FormToJSONHttpMessageConverter extends AbstractHttpMessageConverter
     }
 
     @Override
-    protected void writeInternal(Map<String, Object> object, @NotNull HttpOutputMessage outputMessage)
+    protected void writeInternal(Map<String, Object> object, @Nonnull HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         final var stringBuilder = new StringBuilder();
 

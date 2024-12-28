@@ -1,8 +1,8 @@
 package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
+import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.JacksonUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
-import devilSpiderX.server.webServer.module.serverInfo.service.TokenService;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
@@ -23,20 +23,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class ServerInfoWSHandler extends TextWebSocketHandler {
-    private final Logger logger = LoggerFactory.getLogger(ServerInfoWSHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerInfoWSHandler.class);
+
     private final AtomicInteger onlineCount = new AtomicInteger();
     private final ServerInfoService serverInfoService;
-    private final TokenService tokenService;
     private final Map<String, Attribute> attributeMap = new HashMap<>();
     private final Timer senderTimer = new Timer("send-server-info-thread", true);
     private final Map<String, TimerTask> sendTaskMap = new HashMap<>();
 
-    public ServerInfoWSHandler(ServerInfoService serverInfoService, TokenService tokenService) {
+    public ServerInfoWSHandler(ServerInfoService serverInfoService) {
         this.serverInfoService = serverInfoService;
-        this.tokenService = tokenService;
     }
 
-    record Attribute(String uid, User user, String token) {
+    record Attribute(User user, String token) {
     }
 
     @OnOpen
@@ -44,12 +43,10 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         final String sessionId = session.getId();
         final Map<String, Object> map = session.getAttributes();
-        final String uid = (String) map.get("uid");
         final User user = (User) map.get("user");
         final String token = (String) map.get("token");
-        attributeMap.put(sessionId, new Attribute(uid, user, token));
-        logger.info("用户{}接入，客户端id为{}", uid, sessionId);
-        logger.info("当前在线数量为：{}", onlineCount.incrementAndGet());
+        attributeMap.put(sessionId, new Attribute(user, token));
+        logger.info("用户{}接入，当前在线数量为：{}", user.getUid(), onlineCount.incrementAndGet());
     }
 
     @OnClose
@@ -57,12 +54,12 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         final String sessionId = session.getId();
         final Attribute attr = attributeMap.remove(sessionId);
-        tokenService.destroy(attr.uid(), attr.token());
-        logger.info("客户端{}退出 - {}{}", sessionId,
+        logger.info("用户{}退出，当前在线数量为：{} - {}{}",
+                attr.user().getUid(),
+                onlineCount.decrementAndGet(),
                 CloseReason.CloseCodes.getCloseCode(status.getCode()),
                 status.getReason() == null ? "" : " - %s".formatted(status.getReason())
         );
-        logger.info("当前在线数量为：{}", onlineCount.decrementAndGet());
         final TimerTask task = sendTaskMap.remove(sessionId);
         if (task != null) {
             task.cancel();
@@ -86,21 +83,23 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         final var msg = message.getPayload();
         final var sessionId = session.getId();
-        logger.info("来自客户端{}的消息 - {}", sessionId, msg);
+        final Attribute attr = attributeMap.get(sessionId);
+        final var uid = attr.user().getUid();
+        logger.info("来自用户{}的消息 - {}", uid, msg);
 
         final var data = JacksonUtil.parseObject(msg, TextMsgData.class);
 
         if ("start".equals(data.cmd())) {
-            logger.info("客户端{}开始定时任务", sessionId);
+            logger.info("用户{}开始定时任务", uid);
             final TimerTask task = new SendTask(session);
             final TimerTask lastTask = sendTaskMap.put(sessionId, task);
             if (lastTask != null) {
-                logger.info("客户端{}中止上个定时任务", sessionId);
+                logger.info("用户{}中止上个定时任务", uid);
                 lastTask.cancel();
             }
             senderTimer.scheduleAtFixedRate(task, 0, data.cd(1000));
         } else if ("stop".equals(data.cmd())) {
-            logger.info("客户端{}停止定时任务", sessionId);
+            logger.info("用户{}停止定时任务", uid);
             final TimerTask task = sendTaskMap.remove(sessionId);
             if (task != null) {
                 task.cancel();
@@ -166,15 +165,17 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
             try {
                 session.sendMessage(new TextMessage(JacksonUtil.toJSONString(data)));
             } catch (IOException e) {
-                logger.error("发送信息报错%s".formatted(e.getClass().getName()), e);
+                logger.error("发送信息报错{}", e.getClass().getName(), e);
             }
 
-            if (!tokenService.check(attr.uid(), attr.token())) {
+            final var token = attr.token();
+            final var timeout = StpUtil.getTokenTimeout(token);
+            if (timeout == 0 || timeout == -2) {
                 try {
-                    session.close(CloseStatus.NORMAL.withReason("token已超时"));
+                    session.close(CloseStatus.NORMAL.withReason("token已过期"));
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
-                    logger.error("关闭WebSocket失败,uid: {} ,sessionId: {}", attr.uid(), sessionId);
+                    logger.error("关闭WebSocket失败,uid: {} ,sessionId: {}", attr.user().getUid(), sessionId);
                 }
             }
         }

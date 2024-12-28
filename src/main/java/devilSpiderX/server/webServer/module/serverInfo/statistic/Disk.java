@@ -1,6 +1,6 @@
 package devilSpiderX.server.webServer.module.serverInfo.statistic;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.annotation.Nonnull;
 
 public class Disk implements Comparable<Disk> {
     /**
@@ -109,7 +109,7 @@ public class Disk implements Comparable<Disk> {
     }
 
     @Override
-    public int compareTo(@NotNull Disk o) {
+    public int compareTo(@Nonnull Disk o) {
         return this.mount.compareTo(o.mount);
     }
 }

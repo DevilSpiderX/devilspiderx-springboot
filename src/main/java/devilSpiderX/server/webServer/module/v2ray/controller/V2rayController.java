@@ -1,41 +1,33 @@
 package devilSpiderX.server.webServer.module.v2ray.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
-import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.core.vo.AjaxResp;
 import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
-@Controller
+@Tag(name = "V2ray接口")
+@RestController
 @RequestMapping("/api/admin/v2ray")
 @SaCheckRole("admin")
 public class V2rayController {
-    private final Logger logger = LoggerFactory.getLogger(V2rayController.class);
+    private static final Logger logger = LoggerFactory.getLogger(V2rayController.class);
+
     private final V2ray v2ray;
 
     public V2rayController(V2ray v2ray) {
         this.v2ray = v2ray;
     }
 
-    /**
-     * <b>启动v2ray</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 启动成功；1 启动失败；2 v2ray正在运行；
-     * 100 没有权限；101 没有管理员权限；
-     * </p>
-     */
+    @Operation(summary = "启动v2ray")
     @PostMapping("start")
-    @ResponseBody
     private AjaxResp<Integer> start() {
         if (v2ray.isAlive()) {
             logger.info("v2ray正在运行");
@@ -52,19 +44,8 @@ public class V2rayController {
         }
     }
 
-    /**
-     * <b>关闭v2ray</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 关闭成功；1 关闭失败；2 v2ray没有运行；
-     * 100 没有权限；101 没有管理员权限；
-     * </p>
-     */
+    @Operation(summary = "关闭v2ray")
     @PostMapping("stop")
-    @ResponseBody
     private AjaxResp<Integer> stop() {
         if (v2ray.isAlive()) {
             if (v2ray.stop()) {
@@ -80,19 +61,8 @@ public class V2rayController {
         }
     }
 
-    /**
-     * <b>v2ray的状态</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 v2ray没有运行；1 v2ray正在运行；
-     * 100 没有权限；101 没有管理员权限；
-     * </p>
-     */
+    @Operation(summary = "v2ray的状态")
     @PostMapping("state")
-    @ResponseBody
     private AjaxResp<Boolean> state() {
         return AjaxResp.success(
                 v2ray.isAlive() ? "v2ray正在运行" : "v2ray没有运行",

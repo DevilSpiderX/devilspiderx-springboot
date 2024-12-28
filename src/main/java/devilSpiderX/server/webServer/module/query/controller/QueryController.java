@@ -2,11 +2,14 @@ package devilSpiderX.server.webServer.module.query.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
-import devilSpiderX.server.webServer.core.util.AjaxResp;
+import devilSpiderX.server.webServer.core.vo.AjaxResp;
 import devilSpiderX.server.webServer.core.vo.CommonPage;
 import devilSpiderX.server.webServer.module.query.dto.*;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
 import devilSpiderX.server.webServer.module.query.vo.MyPasswordsVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -17,32 +20,28 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
+@Tag(name = "密码记录接口")
 @Controller
 @RequestMapping("/api/query")
 @SaCheckLogin
 public class QueryController {
-    private final Logger logger = LoggerFactory.getLogger(QueryController.class);
+    private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
+
     private final MyPasswordsService myPasswordsService;
 
     public QueryController(MyPasswordsService myPasswordsService) {
         this.myPasswordsService = myPasswordsService;
     }
 
-    /**
-     * <b>查询密码记录</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * {@link GetRequestDto}
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 成功；
-     * </p>
-     */
+    @Operation(summary = "查询密码记录")
     @PostMapping("get")
     @ResponseBody
-    private AjaxResp<List<MyPasswordsVo>> get(@RequestBody GetRequestDto reqBody) {
+    private AjaxResp<List<MyPasswordsVo>> get(
+            @Parameter(description = "查询参数")
+            @RequestBody GetRequestDto reqBody
+    ) {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
         final var startTime = System.currentTimeMillis();
@@ -54,20 +53,13 @@ public class QueryController {
     }
 
 
-    /**
-     * <b>分页查询密码记录</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * {@link GetPagingRequestDto}
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 成功；
-     * </p>
-     */
+    @Operation(summary = "分页查询密码记录")
     @PostMapping("get_paging")
     @ResponseBody
-    private AjaxResp<CommonPage<MyPasswordsVo>> getPaging(@RequestBody GetPagingRequestDto reqBody) {
+    private AjaxResp<CommonPage<MyPasswordsVo>> getPaging(
+            @Parameter(description = "查询参数")
+            @RequestBody GetPagingRequestDto reqBody
+    ) {
         final var uid = StpUtil.getLoginIdAsString();
         final var keys = reqBody.keys();
         final var length = reqBody.length();
@@ -80,23 +72,18 @@ public class QueryController {
         return AjaxResp.success(result);
     }
 
-    /**
-     * <b>添加密码记录</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * {@link AddRequestDto}
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 添加成功；1 添加失败；
-     * </p>
-     */
+    @Operation(summary = "添加密码记录")
     @PostMapping("add")
     @ResponseBody
-    private AjaxResp<Boolean> add(@RequestBody AddRequestDto reqBody) {
-        if (reqBody.name() == null) {
-            return AjaxResp.error("name参数不能为空或不存在");
+    private AjaxResp<Boolean> add(
+            @Parameter(description = "添加密码记录的数据")
+            @RequestBody AddRequestDto reqBody
+    ) {
+        Objects.requireNonNull(reqBody.name(), "必须存在name参数");
+        if (reqBody.name().isBlank()) {
+            throw new IllegalArgumentException("name参数不能为空");
         }
+
         final var name = reqBody.name();
         final var account = reqBody.account();
         final var password = reqBody.password();
@@ -110,24 +97,13 @@ public class QueryController {
         return AjaxResp.success(flag);
     }
 
-
-    /**
-     * <b>修改密码记录</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * {@link UpdateRequestDto}
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 修改成功；1 修改失败；
-     * </p>
-     */
+    @Operation(summary = "修改密码记录")
     @PostMapping("update")
     @ResponseBody
-    private AjaxResp<Boolean> update(@RequestBody UpdateRequestDto reqBody) {
-        if (reqBody.id() == null) {
-            return AjaxResp.error("id参数不能为空或不存在");
-        }
+    private AjaxResp<Boolean> update(
+            @Parameter(description = "修改密码记录的数据")
+            @RequestBody UpdateRequestDto reqBody
+    ) {
         final var id = reqBody.id();
         final var uid = StpUtil.getLoginIdAsString();
         final var name = reqBody.name();
@@ -142,24 +118,13 @@ public class QueryController {
         return AjaxResp.success(flag);
     }
 
-
-    /**
-     * <b>删除密码记录</b>
-     * <p>
-     * <b>应包含参数：</b>
-     * {@link DeleteRequestDto}
-     * </p>
-     * <p>
-     * <b>返回代码：</b>
-     * 0 删除成功；1 删除失败；
-     * </p>
-     */
+    @Operation(summary = "删除密码记录")
     @PostMapping("delete")
     @ResponseBody
-    private AjaxResp<Boolean> delete(@RequestBody DeleteRequestDto reqBody) {
-        if (reqBody.id() == null) {
-            return AjaxResp.error("id参数不能为空或不存在");
-        }
+    private AjaxResp<Boolean> delete(
+            @Parameter(description = "删除密码记录的ID")
+            @RequestBody DeleteRequestDto reqBody
+    ) {
         final var id = reqBody.id();
         final var uid = StpUtil.getLoginIdAsString();
         final var startTime = System.currentTimeMillis();

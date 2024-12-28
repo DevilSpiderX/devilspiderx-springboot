@@ -3,6 +3,7 @@ package devilSpiderX.server.webServer.core.configuration;
 import devilSpiderX.server.webServer.core.util.BytesHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.FormToJSONHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.JacksonUtil;
+import jakarta.annotation.Nonnull;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.ErrorPageRegistrar;
 import org.springframework.boot.web.server.ErrorPageRegistry;
@@ -21,8 +22,9 @@ import java.util.List;
 public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar {
 
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.addFirst(getMappingJackson2HttpMessageConverter());
+    public void configureMessageConverters(@Nonnull List<HttpMessageConverter<?>> converters) {
+        removeDefaultMappingJackson2HttpMessageConverter(converters);
+        converters.add(getMappingJackson2HttpMessageConverter());
         converters.add(new BytesHttpMessageConverter());
         converters.add(new FormToJSONHttpMessageConverter());
     }
@@ -35,6 +37,10 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
         mediaTypeList.add(MediaType.APPLICATION_JSON);
         converter.setSupportedMediaTypes(mediaTypeList);
         return converter;
+    }
+
+    private void removeDefaultMappingJackson2HttpMessageConverter(List<HttpMessageConverter<?>> converters) {
+        converters.removeIf(converter -> converter instanceof MappingJackson2HttpMessageConverter);
     }
 
     @Override
