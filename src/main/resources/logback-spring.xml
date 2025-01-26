@@ -18,7 +18,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
 
     <!-- 滚动记录文件，先将日志记录到指定文件，当符合某个条件时，将日志记录到其他文件 -->
     <property name="FILE_LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %p ${PID} --- [%t] %-40.40logger{39} [%4line] : %m%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %p ${PID} --- [%t] %-40.40logger{39} : %m%n"/>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 当前活动日志文件名 -->
         <file>${LOG_HOME}/${logName}.log</file>

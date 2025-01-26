@@ -5,9 +5,8 @@ import devilSpiderX.server.webServer.core.service.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
 
 public class WindowsOS implements OS {
     private static final Logger logger = LoggerFactory.getLogger(WindowsOS.class);
@@ -26,32 +25,42 @@ public class WindowsOS implements OS {
 
     @Override
     public void reboot(long millis) {
-        List<String> rebootCMD = Arrays.asList("shutdown /r /t 1 /d p:4:1".split(" "));
-        new Thread(() -> {
-            try {
-                Thread.sleep(millis);
-                String result = system(rebootCMD);
-                logger.info(result);
-                DSXApplication.close();
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }, "reboot").start();
+        final var rebootCMD = "shutdown /r /t 1 /d p:4:1".split(" ");
+        Thread.ofVirtual()
+                .name("reboot")
+                .start(() -> {
+                    try {
+                        Thread.sleep(millis);
+                        String result = system(rebootCMD);
+                        logger.info(result);
+                        DSXApplication.close();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread()
+                                .interrupt();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                });
     }
 
     @Override
     public void shutdown(long millis) {
-        List<String> shutdownCMD = Arrays.asList("shutdown /s /t 1 /d p:4:1".split(" "));
-        new Thread(() -> {
-            try {
-                Thread.sleep(millis);
-                String result = system(shutdownCMD);
-                logger.info(result);
-                DSXApplication.close();
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }, "shutdown").start();
+        final var shutdownCMD = "shutdown /s /t 1 /d p:4:1".split(" ");
+        Thread.ofVirtual()
+                .name("shutdown")
+                .start(() -> {
+                    try {
+                        Thread.sleep(millis);
+                        String result = system(shutdownCMD);
+                        logger.info(result);
+                        DSXApplication.close();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread()
+                                .interrupt();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                });
     }
 
 }

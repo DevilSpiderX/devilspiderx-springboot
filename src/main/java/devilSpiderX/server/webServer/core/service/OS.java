@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.core.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import devilSpiderX.server.webServer.core.service.impl.LinuxOS;
+import devilSpiderX.server.webServer.core.service.impl.WindowsOS;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,37 +15,30 @@ public interface OS {
 
     Charset getCharset();
 
-    default String system(String... cmd) {
+    default String system(String... cmd) throws IOException, InterruptedException {
         return system(Arrays.asList(cmd));
     }
 
-    default String system(List<String> cmd) {
-        Logger logger = LoggerFactory.getLogger(OS.class);
-        StringBuilder resultBuilder = new StringBuilder();
+    default String system(List<String> cmd) throws IOException, InterruptedException {
+        final StringBuilder resultBuilder = new StringBuilder();
         Process process = null;
-        BufferedReader resultReader = null;
         try {
             ProcessBuilder builder = new ProcessBuilder(cmd);
             builder.redirectErrorStream(true);
             process = builder.start();
-            resultReader = new BufferedReader(new InputStreamReader(process.getInputStream(), getCharset()));
-            String line;
-            while ((line = resultReader.readLine()) != null) {
-                resultBuilder.append(line).append("\n");
+            try (var resultReader = new BufferedReader(new InputStreamReader(
+                    process.getInputStream(),
+                    getCharset()
+            ))) {
+                String line;
+                while ((line = resultReader.readLine()) != null) {
+                    resultBuilder.append(line).append("\n");
+                }
             }
             process.waitFor();
-        } catch (IOException | InterruptedException e) {
-            logger.error(e.getMessage(), e);
         } finally {
-            try {
-                if (resultReader != null) {
-                    resultReader.close();
-                }
-                if (process != null) {
-                    process.destroy();
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+            if (process != null) {
+                process.destroy();
             }
         }
         return resultBuilder.toString();
@@ -55,4 +48,21 @@ public interface OS {
 
     void shutdown(long millis);
 
+    class Factory {
+        private static OS os;
+
+        public static OS getOS() {
+            if (os == null) {
+                String name = System.getProperty("os.name");
+                if (name.startsWith("Windows")) {
+                    os = new WindowsOS();
+                } else if (name.startsWith("Linux")) {
+                    os = new LinuxOS();
+                } else {
+                    throw new UnsupportedOperationException("Unsupported OS: " + name);
+                }
+            }
+            return os;
+        }
+    }
 }
