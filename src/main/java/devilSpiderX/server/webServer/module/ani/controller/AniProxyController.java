@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriUtils;
@@ -21,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 @RestController
 @RequestMapping("/api/ani")
 public class AniProxyController {
+    private static final Logger logger = LoggerFactory.getLogger(AniProxyController.class);
+
     public static final String dataURL = "https://api.ani.rip/ani-torrent.xml";
     public static final Proxy PROXY = new Proxy(
             Proxy.Type.HTTP,
@@ -36,10 +40,12 @@ public class AniProxyController {
     @Operation(summary = "获取Ani番剧更新列表")
     @GetMapping("torrent")
     public ResponseEntity<byte[]> getTorrentXML(
-            @Parameter(description = "是否走代理请求") @RequestParam(name = "proxy", defaultValue = "false") boolean proxy
+            @Parameter(description = "是否走代理请求")
+            @RequestParam(name = "proxy", defaultValue = "false") final boolean proxy
     ) {
         try {
-            final var url = URI.create(dataURL).toURL();
+            final var url = URI.create(dataURL)
+                    .toURL();
             final var urlCon = proxy ? url.openConnection(PROXY) : url.openConnection();
             if (urlCon instanceof HttpURLConnection con) {
                 con.setRequestMethod("GET");
@@ -48,7 +54,8 @@ public class AniProxyController {
                 con.setUseCaches(false);
                 var respCode = con.getResponseCode();
                 if (respCode != HttpURLConnection.HTTP_OK) {
-                    return ResponseEntity.notFound().build();
+                    return ResponseEntity.notFound()
+                            .build();
                 }
                 final var contentType = con.getHeaderField("Content-Type");
                 try (BufferedInputStream in = new BufferedInputStream(con.getInputStream())) {
@@ -62,9 +69,11 @@ public class AniProxyController {
                         .body("连接错误".getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
+            logger.error(e.getMessage(), e);
             return ResponseEntity.internalServerError()
                     .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
-                    .body(e.getMessage().getBytes(StandardCharsets.UTF_8));
+                    .body(e.getMessage()
+                            .getBytes(StandardCharsets.UTF_8));
         }
     }
 
@@ -78,8 +87,10 @@ public class AniProxyController {
     )
     @GetMapping("file/{name}")
     public ResponseEntity<byte[]> getTorrentFile(
-            @Parameter(description = "Torrent文件名") @PathVariable final String name,
-            @Parameter(description = "Torrent文件的下载地址") @RequestParam("fileUrl") final String fileUrl
+            @Parameter(description = "Torrent文件名")
+            @PathVariable final String name,
+            @Parameter(description = "Torrent文件的下载地址")
+            @RequestParam("fileUrl") final String fileUrl
     ) {
         if (!StpUtil.isLogin()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -93,7 +104,8 @@ public class AniProxyController {
         }
 
         try {
-            final var url = URI.create(fileUrl).toURL();
+            final var url = URI.create(fileUrl)
+                    .toURL();
             final var urlCon = url.openConnection(PROXY);
             if (urlCon instanceof HttpURLConnection con) {
                 con.setRequestMethod("GET");
@@ -102,7 +114,8 @@ public class AniProxyController {
                 con.setUseCaches(true);
                 var respCode = con.getResponseCode();
                 if (respCode != HttpURLConnection.HTTP_OK) {
-                    return ResponseEntity.notFound().build();
+                    return ResponseEntity.notFound()
+                            .build();
                 }
                 final var contentType = con.getHeaderField("Content-Type");
                 final var headers = new HttpHeaders();
@@ -123,9 +136,11 @@ public class AniProxyController {
                         .body("连接错误".getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
+            logger.error(e.getMessage(), e);
             return ResponseEntity.internalServerError()
                     .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
-                    .body(e.getMessage().getBytes(StandardCharsets.UTF_8));
+                    .body(e.getMessage()
+                            .getBytes(StandardCharsets.UTF_8));
         }
     }
 }
