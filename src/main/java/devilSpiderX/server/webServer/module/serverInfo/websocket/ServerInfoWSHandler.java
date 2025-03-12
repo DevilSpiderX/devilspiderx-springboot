@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class ServerInfoWSHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoWSHandler.class);
+    private static final CloseStatus TokenExpiredCloseStatus = new CloseStatus(3000, "token已过期");
 
     private final AtomicInteger onlineCount = new AtomicInteger();
     private final ServerInfoService serverInfoService;
@@ -58,8 +59,10 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     ) {
         final String sessionId = session.getId();
         final Attribute attr = attributeMap.remove(sessionId);
-        logger.info("用户{}退出，当前在线数量为：{} - {}{}",
-                attr.user().getUid(),
+        logger.info(
+                "用户{}退出，当前在线数量为：{} - {}{}",
+                attr.user()
+                        .getUid(),
                 onlineCount.decrementAndGet(),
                 CloseReason.CloseCodes.getCloseCode(status.getCode()),
                 status.getReason() == null ? "" : " - %s".formatted(status.getReason())
@@ -91,7 +94,8 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         final var msg = message.getPayload();
         final var sessionId = session.getId();
         final Attribute attr = attributeMap.get(sessionId);
-        final var uid = attr.user().getUid();
+        final var uid = attr.user()
+                .getUid();
         logger.info("来自用户{}的消息 - {}", uid, msg);
 
         final var data = JacksonUtil.parseObject(msg, TextMsgData.class);
@@ -172,17 +176,27 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
             try {
                 session.sendMessage(new TextMessage(JacksonUtil.toJSONString(data)));
             } catch (IOException e) {
-                logger.error("发送信息报错{}", e.getClass().getName(), e);
+                logger.error(
+                        "发送信息报错{}",
+                        e.getClass()
+                                .getName(),
+                        e
+                );
             }
 
             final var token = attr.token();
             final var timeout = StpUtil.getTokenTimeout(token);
             if (timeout == 0 || timeout == -2) {
                 try {
-                    session.close(CloseStatus.NORMAL.withReason("token已过期"));
+                    session.close(TokenExpiredCloseStatus);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
-                    logger.error("关闭WebSocket失败,uid: {} ,sessionId: {}", attr.user().getUid(), sessionId);
+                    logger.error(
+                            "关闭WebSocket失败,uid: {} ,sessionId: {}",
+                            attr.user()
+                                    .getUid(),
+                            sessionId
+                    );
                 }
             }
         }
