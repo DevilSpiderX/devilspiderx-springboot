@@ -30,21 +30,21 @@ public class ServerInfoController {
 
     @Operation(summary = "CPU信息")
     @GetMapping("cpu")
-    private AjaxResp<CPUVo> cpu() {
+    public AjaxResp<CPUVo> cpu() {
         CPU cpu = serverInfoService.getCPU();
         return AjaxResp.success(serverInfoService.constructCpuObject(cpu));
     }
 
     @Operation(summary = "内存信息")
     @GetMapping("memory")
-    private AjaxResp<MemoryVo> memory() {
+    public AjaxResp<MemoryVo> memory() {
         Memory memory = serverInfoService.getMemory();
         return AjaxResp.success(serverInfoService.constructMemoryObject(memory));
     }
 
     @Operation(summary = "网络信息")
     @GetMapping("networks")
-    private AjaxResp<List<NetworkVo>> networks() {
+    public AjaxResp<List<NetworkVo>> networks() {
         final var networks = serverInfoService.getNetworks();
         final var networkDataList = new ArrayList<NetworkVo>(networks.length);
         for (var network : networks) {
@@ -55,7 +55,7 @@ public class ServerInfoController {
 
     @Operation(summary = "硬盘信息")
     @GetMapping("disks")
-    private AjaxResp<List<DiskVo>> disks() {
+    public AjaxResp<List<DiskVo>> disks() {
         var diskArray = new ArrayList<DiskVo>();
         for (Disk disk : serverInfoService.getDisks()) {
             diskArray.add(serverInfoService.constructDiskObject(disk));
@@ -65,7 +65,7 @@ public class ServerInfoController {
 
     @Operation(summary = "系统信息")
     @GetMapping("os")
-    private AjaxResp<CurrentOSVo> os() {
+    public AjaxResp<CurrentOSVo> os() {
         CurrentOS os = serverInfoService.getCurrentOS();
         return AjaxResp.success(serverInfoService.constructCurrentOSObject(os));
     }

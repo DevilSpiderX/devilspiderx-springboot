@@ -2,6 +2,8 @@ package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.util.JacksonUtil;
+import devilSpiderX.server.webServer.module.serverInfo.record.Attribute;
+import devilSpiderX.server.webServer.module.serverInfo.record.TextMsgData;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.user.entity.User;
 import jakarta.annotation.Nonnull;
@@ -19,7 +21,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
@@ -35,9 +40,6 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
 
     public ServerInfoWSHandler(ServerInfoService serverInfoService) {
         this.serverInfoService = serverInfoService;
-    }
-
-    record Attribute(User user, String token) {
     }
 
     @OnOpen
@@ -73,18 +75,6 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         }
     }
 
-    /**
-     * websocket获取的消息类型
-     *
-     * @param cmd 命令{@code [start, stop]}
-     * @param cd  命令为start时，每次数据发送的间隔时长，单位为毫秒
-     */
-    record TextMsgData(String cmd, Long cd) {
-        public long cd(long defaultValue) {
-            return cd != null ? cd : defaultValue;
-        }
-    }
-
     @OnMessage
     @Override
     protected void handleTextMessage(
@@ -102,7 +92,7 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
 
         if ("start".equals(data.cmd())) {
             logger.info("用户{}开始定时任务", uid);
-            final TimerTask task = new SendTask(session);
+            final TimerTask task = new SendTask(session, attr, serverInfoService);
             final TimerTask lastTask = sendTaskMap.put(sessionId, task);
             if (lastTask != null) {
                 logger.info("用户{}中止上个定时任务", uid);
@@ -118,40 +108,20 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         }
     }
 
-    public Map<String, Object> getServerInfo() {
-        final var data = new HashMap<String, Object>();
-
-        final var cpu = serverInfoService.getCPU();
-        data.put("cpu", serverInfoService.constructCpuObject(cpu));
-
-        final var memory = serverInfoService.getMemory();
-        data.put("memory", serverInfoService.constructMemoryObject(memory));
-
-        final var diskDataList = new ArrayList<>();
-        for (var disk : serverInfoService.getDisks()) {
-            diskDataList.add(serverInfoService.constructDiskObject(disk));
-        }
-        data.put("disks", diskDataList);
-
-        final var networks = serverInfoService.getNetworks();
-        final var networkDataList = new ArrayList<>(networks.length);
-        for (var network : networks) {
-            networkDataList.add(serverInfoService.constructNetworkObject(network));
-        }
-        data.put("networks", networkDataList);
-
-        final var currentOS = serverInfoService.getCurrentOS();
-        data.put("os", serverInfoService.constructCurrentOSObject(currentOS));
-
-        return data;
-    }
-
-    private class SendTask extends TimerTask {
+    private static class SendTask extends TimerTask {
         private final WeakReference<WebSocketSession> sessionRef;
-        private int index = 0;
+        private final Attribute attr;
+        private final ServerInfoService serverInfoService;
 
-        public SendTask(WebSocketSession session) {
+
+        public SendTask(
+                final WebSocketSession session,
+                final Attribute attr,
+                final ServerInfoService serverInfoService
+        ) {
             this.sessionRef = new WeakReference<>(session);
+            this.attr = attr;
+            this.serverInfoService = serverInfoService;
         }
 
         @Override
@@ -168,18 +138,14 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
             if (session == null || !session.isOpen()) {
                 return;
             }
-            final var sessionId = session.getId();
-            final var attr = attributeMap.get(sessionId);
-            final var data = getServerInfo();
-            data.put("index", index++);
+            final var data = serverInfoService.getServerInfo();
 
             try {
                 session.sendMessage(new TextMessage(JacksonUtil.toJSONString(data)));
             } catch (IOException e) {
                 logger.error(
                         "发送信息报错{}",
-                        e.getClass()
-                                .getName(),
+                        e.getMessage(),
                         e
                 );
             }
@@ -190,12 +156,13 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
                 try {
                     session.close(TokenExpiredCloseStatus);
                 } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
                     logger.error(
-                            "关闭WebSocket失败,uid: {} ,sessionId: {}",
+                            "关闭WebSocket失败,uid: {} ,sessionId: {} ,message: {}",
                             attr.user()
                                     .getUid(),
-                            sessionId
+                            session.getId(),
+                            e.getMessage(),
+                            e
                     );
                 }
             }

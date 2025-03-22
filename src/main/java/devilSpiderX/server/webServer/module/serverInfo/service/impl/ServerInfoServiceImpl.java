@@ -48,23 +48,29 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     private final CurrentOS currentOS = new CurrentOS();
 
     public ServerInfoServiceImpl() {
-        lock.writeLock().lock();
+        lock.writeLock()
+                .lock();
         try {
             final var info = new SystemInfo();
             hw = info.getHardware();
             os = info.getOperatingSystem();
-            oldTicks = hw.getProcessor().getSystemCpuLoadTicks();
-            final var temperature = hw.getSensors().getCpuTemperature();
+            oldTicks = hw.getProcessor()
+                    .getSystemCpuLoadTicks();
+            final var temperature = hw.getSensors()
+                    .getCpuTemperature();
             if (temperature == 0 || Double.isNaN(temperature)) {
                 isTemperatureDetectable = false;
             }
 
-            for (int i = 0; i < os.getFileSystem().getFileStores().size(); i++) {
+            for (int i = 0; i < os.getFileSystem()
+                    .getFileStores()
+                    .size(); i++) {
                 disks.add(new Disk());
             }
 
             for (NetworkIF nIf : hw.getNetworkIFs()) {
-                if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
+                if (nIf.getIfOperStatus()
+                        .equals(NetworkIF.IfOperStatus.UP)) {
                     networks.add(new Network(
                             nIf.getName(),
                             nIf.getDisplayName(),
@@ -78,7 +84,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 }
             }
         } finally {
-            lock.writeLock().unlock();
+            lock.writeLock()
+                    .unlock();
         }
         updateThread.start();
     }
@@ -90,55 +97,65 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     @Override
     public CPU getCPU() {
         this.update();
-        lock.readLock().lock();
+        lock.readLock()
+                .lock();
         try {
             return cpu;
         } finally {
-            lock.readLock().unlock();
+            lock.readLock()
+                    .unlock();
         }
     }
 
     @Override
     public Memory getMemory() {
         this.update();
-        lock.readLock().lock();
+        lock.readLock()
+                .lock();
         try {
             return memory;
         } finally {
-            lock.readLock().unlock();
+            lock.readLock()
+                    .unlock();
         }
     }
 
     @Override
     public Disk[] getDisks() {
         this.update();
-        lock.readLock().lock();
+        lock.readLock()
+                .lock();
         try {
             return disks.toArray(new Disk[0]);
         } finally {
-            lock.readLock().unlock();
+            lock.readLock()
+                    .unlock();
         }
     }
 
     @Override
     public Network[] getNetworks() {
         this.update();
-        lock.readLock().lock();
+        lock.readLock()
+                .lock();
         try {
             return networks.toArray(new Network[0]);
         } finally {
-            lock.readLock().unlock();
+            lock.readLock()
+                    .unlock();
         }
     }
 
     @Override
     public CurrentOS getCurrentOS() {
         this.update();
-        lock.readLock().lock();
+        lock.readLock()
+                .lock();
         try {
             return currentOS;
         } finally {
-            lock.readLock().unlock();
+            lock.readLock()
+                    .unlock();
         }
     }
 
@@ -148,7 +165,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     private void setCPUInfo() {
         final var processor = hw.getProcessor();
         final var processorIdentifier = processor.getProcessorIdentifier();
-        lock.writeLock().lock();
+        lock.writeLock()
+                .lock();
         try {
             cpu.setName(processorIdentifier.getName())
                     .setPhysicalNum(processor.getPhysicalProcessorCount())
@@ -156,10 +174,12 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                     .setUsedRate(processor.getSystemCpuLoadBetweenTicks(oldTicks))
                     .setA64bit(processorIdentifier.isCpu64bit());
             if (isTemperatureDetectable) {
-                cpu.setTemperature(hw.getSensors().getCpuTemperature());
+                cpu.setTemperature(hw.getSensors()
+                        .getCpuTemperature());
             }
         } finally {
-            lock.writeLock().unlock();
+            lock.writeLock()
+                    .unlock();
         }
         oldTicks = processor.getSystemCpuLoadTicks();
     }
@@ -170,13 +190,15 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     private void setMemoryInfo() {
         final var gMemory = hw.getMemory();
         final var total = gMemory.getTotal();
-        lock.writeLock().lock();
+        lock.writeLock()
+                .lock();
         try {
             memory.setTotal(total)
                     .setUsed(total - gMemory.getAvailable())
                     .setFree(gMemory.getAvailable());
         } finally {
-            lock.writeLock().unlock();
+            lock.writeLock()
+                    .unlock();
         }
     }
 
@@ -186,11 +208,13 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     private void setDisksInfo() {
         final var fileSystem = os.getFileSystem();
         final List<OSFileStore> fsList = fileSystem.getFileStores();
-        lock.writeLock().lock();
+        lock.writeLock()
+                .lock();
         try {
             final int n = disks.size() - fsList.size();
             if (n > 0) {
-                disks.subList(0, n).clear();
+                disks.subList(0, n)
+                        .clear();
             } else if (n < 0) {
                 for (int i = 0; i < -n; i++) {
                     disks.add(new Disk());
@@ -212,7 +236,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
             }
             disks.sort(Comparator.naturalOrder());
         } finally {
-            lock.writeLock().unlock();
+            lock.writeLock()
+                    .unlock();
         }
     }
 
@@ -222,11 +247,13 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     public void setNetworkInfo() {
         final Map<String, NetworkIF> nIfMap = new HashMap<>();
         for (final var nIf : hw.getNetworkIFs()) {
-            if (nIf.getIfOperStatus().equals(NetworkIF.IfOperStatus.UP)) {
+            if (nIf.getIfOperStatus()
+                    .equals(NetworkIF.IfOperStatus.UP)) {
                 nIfMap.put(nIf.getName(), nIf);
             }
         }
-        lock.writeLock().lock();
+        lock.writeLock()
+                .lock();
         try {
             final List<Network> removedList = new ArrayList<>();
             for (final var network : networks) {
@@ -261,18 +288,21 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 )));
             }
         } finally {
-            lock.writeLock().unlock();
+            lock.writeLock()
+                    .unlock();
         }
     }
 
     public void setCurrentOSInfo() {
-        lock.writeLock().lock();
+        lock.writeLock()
+                .lock();
         try {
             currentOS.setName(os.getFamily());
             currentOS.setBitness(os.getBitness());
             currentOS.setProcessCount(os.getProcessCount());
         } finally {
-            lock.writeLock().unlock();
+            lock.writeLock()
+                    .unlock();
         }
     }
 
@@ -331,6 +361,35 @@ public class ServerInfoServiceImpl implements ServerInfoService {
                 currentOS.getName(),
                 currentOS.getBitness(),
                 currentOS.getProcessCount()
+        );
+    }
+
+    @Override
+    public ServerInfoVo getServerInfo() {
+        final var cpu = this.constructCpuObject(this.getCPU());
+
+        final var memory = this.constructMemoryObject(this.getMemory());
+
+        final var diskArray = this.getDisks();
+        final var disks = new ArrayList<DiskVo>(diskArray.length);
+        for (var disk : diskArray) {
+            disks.add(this.constructDiskObject(disk));
+        }
+
+        final var networkArray = this.getNetworks();
+        final var networks = new ArrayList<NetworkVo>(networkArray.length);
+        for (var network : networkArray) {
+            networks.add(this.constructNetworkObject(network));
+        }
+
+        final var currentOS = this.constructCurrentOSObject(this.getCurrentOS());
+
+        return new ServerInfoVo(
+                cpu,
+                memory,
+                disks,
+                networks,
+                currentOS
         );
     }
 

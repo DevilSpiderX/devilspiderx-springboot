@@ -16,3 +16,7 @@ mybatis-plus:
 springdoc:
   api-docs:
     enabled: true
+
+management:
+  endpoints:
+    enabled-by-default: true

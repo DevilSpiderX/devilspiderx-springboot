@@ -23,4 +23,6 @@ public interface ServerInfoService {
     CurrentOS getCurrentOS();
 
     CurrentOSVo constructCurrentOSObject(CurrentOS currentOS);
+
+    ServerInfoVo getServerInfo();
 }

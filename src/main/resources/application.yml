@@ -40,3 +40,7 @@ springdoc:
       display-name: '默认'
       paths-to-match: '/**'
       packages-to-scan: devilSpiderX.server.webServer
+
+management:
+  endpoints:
+    enabled-by-default: false
