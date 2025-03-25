@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @RequestMapping("/api/ServerInfo")
 public class ServerInfoSSEController {
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoSSEController.class);
-    private static final String notLoginEvent = "event:notLogin\ndata:[DONE]\n\n";
+    private static final byte[] notLoginEvent = "event:notLogin\ndata:[DONE]\n\n".getBytes(StandardCharsets.UTF_8);
     private static final ThreadFactory threadFactory = new ThreadFactory() {
         private final AtomicLong counter = new AtomicLong();
 
@@ -68,11 +70,12 @@ public class ServerInfoSSEController {
         threadFactory.newThread(() -> {
                     final var currentThread = Thread.currentThread();
 
-                    try (final var writer = response.getWriter()) {
+                    try {
+                        final var out = new BufferedOutputStream(response.getOutputStream());
                         while (!currentThread.isInterrupted()) {
                             if (Objects.isNull(StpUtil.getLoginIdByToken(token))) {
-                                writer.print(notLoginEvent);
-                                writer.flush();
+                                out.write(notLoginEvent);
+                                out.flush();
                                 break;
                             }
 
@@ -81,8 +84,8 @@ public class ServerInfoSSEController {
                                     JacksonUtil.toJSONString(data)
                                             .replaceAll("\n", "\ndata:")
                             );
-                            writer.print(event);
-                            writer.flush();
+                            out.write(event.getBytes(StandardCharsets.UTF_8));
+                            out.flush();
                             Thread.sleep(cd);
                         }
                     } catch (IOException ignored) {
