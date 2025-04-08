@@ -4,14 +4,12 @@ import devilSpiderX.server.webServer.core.util.BytesHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.FormToJSONHttpMessageConverter;
 import devilSpiderX.server.webServer.core.util.JacksonUtil;
 import jakarta.annotation.Nonnull;
-import org.springframework.boot.web.server.ErrorPage;
-import org.springframework.boot.web.server.ErrorPageRegistrar;
-import org.springframework.boot.web.server.ErrorPageRegistry;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.charset.StandardCharsets;
@@ -19,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar {
+public class MyWebAppConfigurer implements WebMvcConfigurer {
 
     @Override
     public void configureMessageConverters(@Nonnull List<HttpMessageConverter<?>> converters) {
@@ -44,13 +42,18 @@ public class MyWebAppConfigurer implements WebMvcConfigurer, ErrorPageRegistrar 
     }
 
     @Override
-    public void registerErrorPages(ErrorPageRegistry registry) {
-        final ErrorPage[] pages = {
-                new ErrorPage(HttpStatus.BAD_REQUEST, "/error/400"),
-                new ErrorPage(HttpStatus.NOT_FOUND, "/error/404"),
-                new ErrorPage(HttpStatus.METHOD_NOT_ALLOWED, "/error/405"),
-                new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/error/500")
+    public void addCorsMappings(final CorsRegistry registry) {
+        final var array = new CorsRegistration[]{
+                registry.addMapping("/api/**"),
+                registry.addMapping("/user/**"),
+                registry.addMapping("/websocket/**")
         };
-        registry.addErrorPages(pages);
+        for (final var r : array) {
+            r.allowCredentials(false)
+                    .allowedOriginPatterns("*")
+                    .allowedMethods("GET", "POST", "OPTIONS", "HEAD")
+                    .allowedHeaders("*")
+                    .exposedHeaders("*");
+        }
     }
 }

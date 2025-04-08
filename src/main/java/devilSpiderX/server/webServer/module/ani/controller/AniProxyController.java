@@ -52,6 +52,8 @@ public class AniProxyController {
                 con.setDoOutput(false);
                 con.setDoInput(true);
                 con.setUseCaches(false);
+                con.setConnectTimeout(30_000);
+                con.setReadTimeout(30_000);
                 var respCode = con.getResponseCode();
                 if (respCode != HttpURLConnection.HTTP_OK) {
                     return ResponseEntity.notFound()

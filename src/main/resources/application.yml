@@ -1,13 +1,9 @@
 server:
-  port: 80
+  port: ${SERVER_PORT:8080}
   http2:
     enabled: true
 
 spring:
-  web:
-    resources:
-      static-locations:
-        - file:./web
   banner:
     location: classpath:banner.txt
   main:
@@ -21,6 +17,10 @@ spring:
     url: jdbc:mysql://localhost:3306/devilspiderx?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
+
+logging:
+  file:
+    path: ./log
 
 sa-token:
   token-name: DSXSessionId

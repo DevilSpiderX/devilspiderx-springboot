@@ -3,6 +3,7 @@ package devilSpiderX.server.webServer.core.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import devilSpiderX.server.webServer.DSXApplication;
+import devilSpiderX.server.webServer.core.annotation.GetPostMapping;
 import devilSpiderX.server.webServer.core.service.OS;
 import devilSpiderX.server.webServer.core.vo.AjaxResp;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "系统主接口")
@@ -44,20 +44,19 @@ public class MainController {
     }
 
     @Operation(summary = "关闭服务")
-    @RequestMapping(
-            value = "service/shutdown",
-            method = {RequestMethod.GET, RequestMethod.POST}
-    )
+    @GetPostMapping("service/shutdown")
     @SaCheckPermission("process.shutdown")
     private AjaxResp<Object> serviceShutdown() {
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-                DSXApplication.close();
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }, "service-shutdown-thread").start();
+        new Thread(
+                () -> {
+                    try {
+                        Thread.sleep(1000);
+                        DSXApplication.close();
+                    } catch (InterruptedException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }, "service-shutdown-thread"
+        ).start();
         return AjaxResp.success("关闭成功");
     }
 }

@@ -8,6 +8,8 @@ sa-token:
 logging:
   level:
     root: debug
+  file:
+    path: target/log
 
 mybatis-plus:
   configuration:

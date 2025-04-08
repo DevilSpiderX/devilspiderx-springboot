@@ -32,7 +32,8 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(@Nonnull WebSocketHandlerRegistry registry) {
         registry.addHandler(serverInfoWSHandler, "/websocket/getServerInfo")
-                .addInterceptors(new ServerInfoWSInterceptor());
+                .addInterceptors(new ServerInfoWSInterceptor())
+                .setAllowedOriginPatterns("*");
     }
 
     private static class ServerInfoWSInterceptor implements HandshakeInterceptor {
@@ -54,7 +55,11 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
                     return false;
                 }
 
-                attributes.put("user", StpUtil.getSession().get("user"));
+                attributes.put(
+                        "user",
+                        StpUtil.getSession()
+                                .get("user")
+                );
                 attributes.put("token", token);
 
                 return true;
@@ -67,7 +72,8 @@ public class ServerInfoWSConfig implements WebSocketConfigurer {
                 @Nonnull ServerHttpRequest request,
                 @Nonnull ServerHttpResponse response,
                 @Nonnull WebSocketHandler wsHandler,
-                @Nullable Exception exception) {
+                @Nullable Exception exception
+        ) {
         }
     }
 }
