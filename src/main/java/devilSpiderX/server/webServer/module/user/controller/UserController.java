@@ -5,6 +5,7 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.annotation.GetPostMapping;
 import devilSpiderX.server.webServer.core.service.SettingsService;
+import devilSpiderX.server.webServer.core.util.ClientIpUtil;
 import devilSpiderX.server.webServer.core.util.MyCipher;
 import devilSpiderX.server.webServer.core.vo.AjaxResp;
 import devilSpiderX.server.webServer.module.user.dto.LoginRequest;
@@ -37,8 +38,10 @@ public class UserController {
     private final UserService userService;
     private final SettingsService settingsService;
 
-    public UserController(UserService userService,
-                          SettingsService settingsService) {
+    public UserController(
+            UserService userService,
+            SettingsService settingsService
+    ) {
         this.userService = userService;
         this.settingsService = settingsService;
     }
@@ -55,22 +58,30 @@ public class UserController {
 
         if (user == null) {
             return AjaxResp.success(LoginVo.of(2, "用户不存在"));
-        } else if (Objects.equals(user.getPassword().toLowerCase(), password.toLowerCase())) {
+        } else if (Objects.equals(
+                user.getPassword()
+                        .toLowerCase(),
+                password.toLowerCase()
+        )) {
             StpUtil.login(uid, settingsService.getSessionMaxAge());
             final SaSession session = StpUtil.getSession();
             session.set("user", user);
 
             var adminFlag = StpUtil.hasRole("admin");
             logger.info("{}{}登录成功", adminFlag ? "管理员" : "用户", uid);
-            userService.updateLastAddr(uid, req.getRemoteAddr());
-            return AjaxResp.success(LoginVo.of(0, "", new LoginDataVo(
-                    uid,
-                    StpUtil.getTokenValue(),
-                    adminFlag,
-                    StpUtil.getRoleList(),
-                    StpUtil.getPermissionList(),
-                    user.getLastAddress()
-            )));
+            userService.updateLastAddr(uid, ClientIpUtil.getClientIp(req));
+            return AjaxResp.success(LoginVo.of(
+                    0,
+                    "",
+                    new LoginDataVo(
+                            uid,
+                            StpUtil.getTokenValue(),
+                            adminFlag,
+                            StpUtil.getRoleList(),
+                            StpUtil.getPermissionList(),
+                            user.getLastAddress()
+                    )
+            ));
         } else {
             logger.info("{}输入密码错误，登录失败", uid);
             return AjaxResp.success(LoginVo.of(1, "密码错误"));
@@ -97,7 +108,7 @@ public class UserController {
 
         if (userService.exist(uid)) {
             return AjaxResp.success(new RegisterVo(2, "该uid已存在"));
-        } else if (userService.register(uid, passwordSHA256, req.getRemoteAddr())) {
+        } else if (userService.register(uid, passwordSHA256, ClientIpUtil.getClientIp(req))) {
             return AjaxResp.success(new RegisterVo(0, ""));
         } else {
             return AjaxResp.success(new RegisterVo(1, "注册失败"));
@@ -129,7 +140,11 @@ public class UserController {
         final String uid = StpUtil.getLoginIdAsString();
         final User user = userService.get(uid);
 
-        if (Objects.equals(user.getPassword().toLowerCase(), oldPassword.toLowerCase())) {
+        if (Objects.equals(
+                user.getPassword()
+                        .toLowerCase(),
+                oldPassword.toLowerCase()
+        )) {
             boolean flag = userService.updatePassword(uid, newPassword.toLowerCase());
             return flag ? AjaxResp.success() : AjaxResp.failure();
         } else {
