@@ -259,9 +259,9 @@ public final class RedisUtil {
     /**
      * 向一张hash表中放入数据,如果不存在将创建
      *
-     * @param key   键
-     * @param hashKey  项
-     * @param value 值
+     * @param key     键
+     * @param hashKey 项
+     * @param value   值
      * @return true 成功 false失败
      */
     public <V> boolean hashSet(@Nonnull String key, @Nonnull String hashKey, V value) {
@@ -278,10 +278,10 @@ public final class RedisUtil {
     /**
      * 向一张hash表中放入数据,如果不存在将创建
      *
-     * @param key   键
-     * @param hashKey  项
-     * @param value 值
-     * @param time  时间(秒) 注意:如果已存在的hash表有时间,这里将会替换原有的时间
+     * @param key     键
+     * @param hashKey 项
+     * @param value   值
+     * @param time    时间(秒) 注意:如果已存在的hash表有时间,这里将会替换原有的时间
      * @return true 成功 false失败
      */
     public <V> boolean hashSet(@Nonnull String key, @Nonnull String hashKey, V value, long time) {
@@ -300,10 +300,9 @@ public final class RedisUtil {
      * @param key  键 不能为null
      * @param item 项 可以使多个 不能为null
      */
-    @SuppressWarnings("ConfusingArgumentToVarargsMethod")
     public void hashDelete(@Nonnull String key, @Nonnull String... item) {
         final var result = redisTemplate.opsForHash()
-                .delete(key, item);
+                .delete(key, (Object[]) item);
         _assert(result);
     }
 
