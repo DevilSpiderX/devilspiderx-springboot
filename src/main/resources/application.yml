@@ -17,6 +17,11 @@ spring:
     url: jdbc:mysql://localhost:3306/devilspiderx?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 7
 
 logging:
   file:
