@@ -18,14 +18,14 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
     <!--<property name="FILE_LOG_PATTERN"-->
     <!--          value="%d{yyyy-MM-dd HH:mm:ss.SSS} %p ${PID} -&#45;&#45; [%t] %-40.40logger{39} : %m%n"/>-->
     <property name="FILE_LOG_PATTERN"
-              value='{%n\t"time": "%d{yyyy-MM-dd HH:mm:ss.SSS}",%n\t"level": "%p",%n\t"pid": ${PID},%n\t"thread": "%t",%n\t"logger": "%logger",%n\t"message": "%m"%n}%n'/>
+              value='{%n\t"time": "%d{yyyy-MM-dd HH:mm:ss.SSS}",%n\t"level": "%p",%n\t"pid": ${PID},%n\t"thread": "%t",%n\t"logger": "%logger",%n\t"message": "%m"%n},%n'/>
     <!--所有日志-->
     <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 当前活动日志文件名 -->
-        <file>${LOG_HOME}/${LOG_NAME}.log</file>
+        <file>${LOG_HOME}/${LOG_NAME}.all.log</file>
         <!-- 文件滚动策略根据%d{patter}中的“patter”而定，此处为每天产生一个文件 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${LOG_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/${LOG_NAME}.all.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>2MB</maxFileSize>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
