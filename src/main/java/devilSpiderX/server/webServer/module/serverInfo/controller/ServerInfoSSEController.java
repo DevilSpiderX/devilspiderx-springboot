@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.module.serverInfo.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
-import devilSpiderX.server.webServer.core.util.JacksonUtil;
+import devilSpiderX.server.webServer.core.jackson.JacksonUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

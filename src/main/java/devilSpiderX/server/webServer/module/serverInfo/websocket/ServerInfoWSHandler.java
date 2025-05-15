@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
 import cn.dev33.satoken.stp.StpUtil;
-import devilSpiderX.server.webServer.core.util.JacksonUtil;
+import devilSpiderX.server.webServer.core.jackson.JacksonUtil;
 import devilSpiderX.server.webServer.module.serverInfo.record.Attribute;
 import devilSpiderX.server.webServer.module.serverInfo.record.TextMsgData;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;

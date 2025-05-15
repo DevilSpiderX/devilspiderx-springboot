@@ -1,4 +1,4 @@
-package devilSpiderX.server.webServer.core.util;
+package devilSpiderX.server.webServer.core.jackson;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,8 +8,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import devilSpiderX.server.webServer.core.jackson.exception.JacksonUtilException;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.util.List;
 public class JacksonUtil {
     public static final ObjectMapper MAPPER = new ObjectMapper();
     public static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-    private static final Logger LOGGER = LoggerFactory.getLogger(JacksonUtil.class);
 
     static {
         MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -47,8 +45,7 @@ public class JacksonUtil {
         try {
             return MAPPER.readValue(jsonString, clazz);
         } catch (JsonProcessingException e) {
-            LOGGER.error("Json字符串转为自定义对象失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("Json字符串转为自定义对象失败", e);
         }
     }
 
@@ -63,8 +60,7 @@ public class JacksonUtil {
         try {
             return MAPPER.readValue(jsonString, typeRef);
         } catch (JsonProcessingException e) {
-            LOGGER.error("Json字符串转为自定义对象失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("Json字符串转为自定义对象失败", e);
         }
     }
 
@@ -79,8 +75,7 @@ public class JacksonUtil {
         try {
             return MAPPER.readValue(jsonString, type);
         } catch (JsonProcessingException e) {
-            LOGGER.error("Json字符串转为自定义对象失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("Json字符串转为自定义对象失败", e);
         }
     }
 
@@ -96,8 +91,7 @@ public class JacksonUtil {
         try {
             return MAPPER.readValue(file, clazz);
         } catch (IOException e) {
-            LOGGER.error("从文件中读取json字符串转为自定义对象失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("从文件中读取json字符串转为自定义对象失败", e);
         }
     }
 
@@ -109,12 +103,12 @@ public class JacksonUtil {
      * @return 解析文件后的List类，内部类型为clazz
      */
     public static <T> List<T> parseJSONArray(String jsonArray, Class<T> clazz) {
-        final var typeRef = TypeFactory.defaultInstance().constructCollectionType(ArrayList.class, clazz);
+        final var typeRef = TypeFactory.defaultInstance()
+                .constructCollectionType(ArrayList.class, clazz);
         try {
             return MAPPER.readValue(jsonArray, typeRef);
         } catch (JsonProcessingException e) {
-            LOGGER.error("JSONArray字符串转为List失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("JSONArray字符串转为List失败", e);
         }
     }
 
@@ -122,8 +116,7 @@ public class JacksonUtil {
         try {
             return MAPPER.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            LOGGER.error("Object转JSONString失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("Object转JSONString失败", e);
         }
     }
 
@@ -133,8 +126,7 @@ public class JacksonUtil {
                     .writerWithDefaultPrettyPrinter()
                     .writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            LOGGER.error("Object转JSONString失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("Object转JSONString失败", e);
         }
     }
 
@@ -142,8 +134,7 @@ public class JacksonUtil {
         try {
             return MAPPER.writeValueAsBytes(object);
         } catch (JsonProcessingException e) {
-            LOGGER.error("Object转ByteArray失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("Object转ByteArray失败", e);
         }
     }
 
@@ -151,8 +142,7 @@ public class JacksonUtil {
         try {
             MAPPER.writeValue(file, object);
         } catch (IOException e) {
-            LOGGER.error("Object写入文件失败", e);
-            throw new RuntimeException(e);
+            throw new JacksonUtilException("Object写入文件失败", e);
         }
     }
 

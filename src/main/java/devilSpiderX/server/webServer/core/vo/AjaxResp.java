@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.core.vo;
 
 import devilSpiderX.server.webServer.core.util.AjaxCode;
-import devilSpiderX.server.webServer.core.util.JacksonUtil;
+import devilSpiderX.server.webServer.core.jackson.JacksonUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;

@@ -33,4 +33,8 @@ public class AjaxCode {
      * 实体所有者和用户不相符
      */
     public static final int ENTITY_OWNER_NOT_MATCH = 1005;
+    /**
+     * JacksonUtil出现错误
+     */
+    public static final int JACKSON_UTIL_ERROR = 1006;
 }
