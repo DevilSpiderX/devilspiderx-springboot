@@ -14,12 +14,15 @@ public class Knife4jConfig {
         return new OpenAPI().info(customInfo());
     }
 
-    private Info customInfo() {
-        final var pkg = this.getClass().getPackage();
+    @Bean
+    public Info customInfo() {
+        final var pkg = this.getClass()
+                .getPackage();
         return new Info()
                 .title("DSX-Server服务后端")
                 .version(pkg.getImplementationVersion())
-                .contact(new Contact().email("775716441@qq.com"));
+                .contact(new Contact().name("DevilSpiderX")
+                        .email("775716441@qq.com"));
     }
 
 }
