@@ -1,28 +1,28 @@
 package devilSpiderX.server.webServer.module.serverInfo.service;
 
+import devilSpiderX.server.webServer.module.serverInfo.model.vo.*;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
-import devilSpiderX.server.webServer.module.serverInfo.vo.*;
 
 public interface ServerInfoService {
     CPU getCPU();
 
-    CPUVo constructCpuObject(CPU cpu);
+    CPUVO constructCpuObject(CPU cpu);
 
     Memory getMemory();
 
-    MemoryVo constructMemoryObject(Memory memory);
+    MemoryVO constructMemoryObject(Memory memory);
 
     Disk[] getDisks();
 
-    DiskVo constructDiskObject(Disk disk);
+    DiskVO constructDiskObject(Disk disk);
 
     Network[] getNetworks();
 
-    NetworkVo constructNetworkObject(Network network);
+    NetworkVO constructNetworkObject(Network network);
 
     CurrentOS getCurrentOS();
 
-    CurrentOSVo constructCurrentOSObject(CurrentOS currentOS);
+    CurrentOSVO constructCurrentOSObject(CurrentOS currentOS);
 
-    ServerInfoVo getServerInfo();
+    ServerInfoVO getServerInfo();
 }

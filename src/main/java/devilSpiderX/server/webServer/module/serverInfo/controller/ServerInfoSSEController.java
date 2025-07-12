@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.module.serverInfo.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
-import devilSpiderX.server.webServer.core.jackson.JacksonUtil;
+import devilSpiderX.server.webServer.core.util.JacksonUtil;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,8 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Tag(name = "系统软硬件信息SSE接口")
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/ServerInfo")
 public class ServerInfoSSEController {
@@ -44,10 +47,6 @@ public class ServerInfoSSEController {
 
     private final ServerInfoService serverInfoService;
 
-    public ServerInfoSSEController(final ServerInfoService serverInfoService) {
-        this.serverInfoService = serverInfoService;
-    }
-
     @Operation(summary = "系统信息SSE")
     @GetMapping("sse")
     public void sendServerInfo(
@@ -62,8 +61,8 @@ public class ServerInfoSSEController {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.setHeader("Cache-Control", "no-cache");
-        response.setHeader("Connection", "keep-alive");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+        response.setHeader(HttpHeaders.CONNECTION, "keep-alive");
 
         final var token = StpUtil.getTokenValue();
 

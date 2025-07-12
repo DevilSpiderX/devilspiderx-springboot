@@ -13,10 +13,7 @@ import org.springframework.web.util.UriUtils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URI;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 
 @Tag(name = "Ani代理接口")
@@ -28,7 +25,7 @@ public class AniProxyController {
     public static final String dataURL = "https://api.ani.rip/ani-torrent.xml";
     public static final Proxy PROXY = new Proxy(
             Proxy.Type.HTTP,
-            new InetSocketAddress("localhost", 10809)
+            new InetSocketAddress("localhost", 10808)
     );
 
     /**

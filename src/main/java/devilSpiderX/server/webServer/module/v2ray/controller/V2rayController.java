@@ -1,7 +1,7 @@
 package devilSpiderX.server.webServer.module.v2ray.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
-import devilSpiderX.server.webServer.core.vo.AjaxResp;
+import devilSpiderX.server.webServer.core.resp.CommonResult;
 import devilSpiderX.server.webServer.module.v2ray.service.V2ray;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,43 +28,43 @@ public class V2rayController {
 
     @Operation(summary = "启动v2ray")
     @PostMapping("start")
-    private AjaxResp<Integer> start() {
+    private CommonResult<Integer> start() {
         if (v2ray.isAlive()) {
             logger.info("v2ray正在运行");
-            return AjaxResp.success("v2ray正在运行", 2);
+            return CommonResult.success("v2ray正在运行", 2);
         } else {
             try {
                 long pid = v2ray.start();
                 logger.info("v2ray启动成功 PID={}", pid);
-                return AjaxResp.success("v2ray启动成功", 0);
+                return CommonResult.success("v2ray启动成功", 0);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
-                return AjaxResp.success("v2ray启动失败", 1);
+                return CommonResult.success("v2ray启动失败", 1);
             }
         }
     }
 
     @Operation(summary = "关闭v2ray")
     @PostMapping("stop")
-    private AjaxResp<Integer> stop() {
+    private CommonResult<Integer> stop() {
         if (v2ray.isAlive()) {
             if (v2ray.stop()) {
                 logger.info("v2ray关闭成功");
-                return AjaxResp.success("v2ray关闭成功", 0);
+                return CommonResult.success("v2ray关闭成功", 0);
             } else {
                 logger.info("v2ray关闭失败");
-                return AjaxResp.success("v2ray关闭失败", 1);
+                return CommonResult.success("v2ray关闭失败", 1);
             }
         } else {
             logger.info("v2ray没有运行");
-            return AjaxResp.success("v2ray没有运行", 2);
+            return CommonResult.success("v2ray没有运行", 2);
         }
     }
 
     @Operation(summary = "v2ray的状态")
     @PostMapping("state")
-    private AjaxResp<Boolean> state() {
-        return AjaxResp.success(
+    private CommonResult<Boolean> state() {
+        return CommonResult.success(
                 v2ray.isAlive() ? "v2ray正在运行" : "v2ray没有运行",
                 v2ray.isAlive()
         );

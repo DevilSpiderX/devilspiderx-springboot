@@ -1,5 +1,6 @@
 package devilSpiderX.server.webServer.core.configuration;
 
+import jakarta.annotation.Nonnull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -9,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
 
     @Override
-    public void addCorsMappings(final CorsRegistry registry) {
+    public void addCorsMappings(final @Nonnull CorsRegistry registry) {
         final var array = new CorsRegistration[]{
                 registry.addMapping("/api/**"),
                 registry.addMapping("/user/**"),

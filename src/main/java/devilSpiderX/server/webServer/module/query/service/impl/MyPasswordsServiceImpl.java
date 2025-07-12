@@ -1,214 +1,192 @@
 package devilSpiderX.server.webServer.module.query.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryChain;
+import com.mybatisflex.core.query.QueryCondition;
+import com.mybatisflex.core.util.SqlUtil;
 import devilSpiderX.server.webServer.core.exception.BaseException;
-import devilSpiderX.server.webServer.core.util.AjaxCode;
-import devilSpiderX.server.webServer.core.util.MyCipher;
-import devilSpiderX.server.webServer.core.vo.CommonPage;
-import devilSpiderX.server.webServer.module.query.dao.MyPasswordsDeletedMapper;
-import devilSpiderX.server.webServer.module.query.dao.MyPasswordsMapper;
-import devilSpiderX.server.webServer.module.query.entity.MyPasswords;
-import devilSpiderX.server.webServer.module.query.entity.MyPasswordsDeleted;
+import devilSpiderX.server.webServer.core.resp.CommonPage;
+import devilSpiderX.server.webServer.core.resp.ResultCode;
+import devilSpiderX.server.webServer.core.util.DigestUtils;
+import devilSpiderX.server.webServer.core.util.ValidUtil;
+import devilSpiderX.server.webServer.module.mybatisflex.UpdateChainExt;
+import devilSpiderX.server.webServer.module.query.model.converter.MyPasswordConverter;
+import devilSpiderX.server.webServer.module.query.model.dto.AddRequestDTO;
+import devilSpiderX.server.webServer.module.query.model.dto.UpdateRequestDTO;
+import devilSpiderX.server.webServer.module.query.model.mapper.MyPasswordMapper;
+import devilSpiderX.server.webServer.module.query.model.vo.MyPasswordsVO;
 import devilSpiderX.server.webServer.module.query.service.MyPasswordsService;
-import devilSpiderX.server.webServer.module.query.vo.MyPasswordsVo;
-import devilSpiderX.server.webServer.module.user.service.UserService;
+import devilSpiderX.server.webServer.module.satoken.StpKit;
+import jakarta.annotation.Nonnull;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
+import static devilSpiderX.server.webServer.module.query.model.entity.table.MyPasswordTableDef.MY_PASSWORD;
+
+@RequiredArgsConstructor
 @Service
 public class MyPasswordsServiceImpl implements MyPasswordsService {
     private static final Logger logger = LoggerFactory.getLogger(MyPasswordsServiceImpl.class);
 
-    private final UserService userService;
-    private final MyPasswordsMapper myPasswordsMapper;
-    private final MyPasswordsDeletedMapper myPasswordsDeletedMapper;
+    private final ValidUtil validUtil;
+    private final MyPasswordMapper myPasswordMapper;
+    private final MyPasswordConverter myPasswordConverter;
 
-    public MyPasswordsServiceImpl(UserService userService, MyPasswordsMapper myPasswordsMapper, MyPasswordsDeletedMapper myPasswordsDeletedMapper) {
-        this.userService = userService;
-        this.myPasswordsMapper = myPasswordsMapper;
-        this.myPasswordsDeletedMapper = myPasswordsDeletedMapper;
-    }
 
-    @Override
-    public boolean add(String name, String account, String password, String remark, String owner) {
-        if (name == null || name.isEmpty()) {
-            return false;
-        }
-        if (!userService.exist(owner)) {
-            return false;
-        }
-        MyPasswords myPwd = new MyPasswords();
-        myPwd.setName(name);
-        myPwd.setOwner(owner);
-        if (myPasswordsMapper.existsByNameAndOwner(myPwd)) {
-            logger.error("在用户{}中名为({})的记录已存在", owner, name);
-            return false;
-        }
-        myPwd.setAccount(account);
-        myPwd.setPassword(MyCipher.encrypt(password));
-        myPwd.setRemark(remark);
-        return myPasswordsMapper.insert(myPwd) == 1;
-    }
-
-    @Override
     @Transactional
-    public boolean delete(int id, String owner) {
-        final MyPasswordsDeleted deletedEntity = new MyPasswordsDeleted(
-                myPasswordsMapper.selectById(id)
-        );
-        if (!Objects.equals(deletedEntity.getOwner(), owner)) {
-            throw new BaseException(AjaxCode.ENTITY_OWNER_NOT_MATCH, "实体所有者和用户不相符");
+    @Override
+    public void add(final @Nonnull AddRequestDTO dto) {
+        Assert.notNull(dto, "dto不能为null");
+        validUtil.validate(dto);
+
+        final var owner = StpKit.USER.getLoginIdAsLong();
+        final var exists = QueryChain.of(myPasswordMapper)
+                .where(MY_PASSWORD.NAME.eq(dto.name())
+                        .and(MY_PASSWORD.OWNER.eq(owner)))
+                .exists();
+        if (exists) {
+            logger.error("在用户{}中名为({})的记录已存在", owner, dto.name());
+            throw new BaseException(ResultCode.MyPasswordExists);
         }
 
-        int flag = 0;
-        flag += myPasswordsDeletedMapper.insert(deletedEntity);
-        if (flag != 1) {
-            logger.error("my_password_deleted表插入失败,id:{}", id);
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return false;
+        final var password = DigestUtils.aesEncrypt(dto.password());
+        final var myPwd = myPasswordConverter.fromDTO(dto, password, owner);
+
+        final var n = myPasswordMapper.insert(myPwd);
+        if (!SqlUtil.toBool(n)) {
+            logger.info("用户(uid={})密码记录(name={})添加失败", owner, dto.name());
+            throw new BaseException(ResultCode.MyPasswordAddFailure);
+        }
+        logger.info("用户(uid={})密码记录(id={},name={})添加成功", owner, myPwd.getId(), dto.name());
+    }
+
+    @Transactional
+    @Override
+    public void delete(final int id) {
+        final var owner = StpKit.USER.getLoginIdAsLong();
+
+        final var myPwd = QueryChain.of(myPasswordMapper)
+                .where(MY_PASSWORD.ID.eq(id)
+                        .and(MY_PASSWORD.OWNER.eq(owner)))
+                .forUpdate()
+                .one();
+        if (myPwd == null) {
+            throw new BaseException(ResultCode.MyPasswordNotExists);
         }
 
-        flag += myPasswordsMapper.deleteById(id);
-        if (flag != 2) {
-            logger.error("my_password表删除失败,id:{}", id);
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        final var n = myPasswordMapper.deleteById(id);
+        if (!SqlUtil.toBool(n)) {
+            logger.info("用户(uid={})删除密码记录(id={})失败", owner, id);
+            throw new BaseException(ResultCode.MyPasswordDeleteFailure);
         }
-        return flag == 2;
+        logger.info("用户(uid={})删除密码记录(id={})成功", owner, id);
+    }
+
+    @Transactional
+    @Override
+    public void update(final int id, final @Nonnull UpdateRequestDTO dto) {
+        Assert.notNull(dto, "dto不能为null");
+
+        final var owner = StpKit.USER.getLoginIdAsLong();
+
+        final var myPwd = QueryChain.of(myPasswordMapper)
+                .where(MY_PASSWORD.ID.eq(id)
+                        .and(MY_PASSWORD.OWNER.eq(owner)))
+                .forUpdate()
+                .one();
+        if (myPwd == null) {
+            throw new BaseException(ResultCode.MyPasswordNotExists);
+        }
+
+        final var updateChain = UpdateChainExt.of(myPasswordMapper);
+        if (StringUtils.isNotBlank(dto.name())) {
+            final var name = dto.name();
+            final var exists = QueryChain.of(myPasswordMapper)
+                    .where(MY_PASSWORD.NAME.eq(name)
+                            .and(MY_PASSWORD.OWNER.eq(owner)))
+                    .exists();
+            if (exists) {
+                logger.error("在用户(uid={})中名为({})的记录已存在，无法重命名为{}", owner, name, name);
+                throw new BaseException(ResultCode.MyPasswordExists);
+            }
+            updateChain.set(MY_PASSWORD.NAME, name);
+        }
+
+        if (Objects.nonNull(dto.password())) {
+            final var password = DigestUtils.aesEncrypt(dto.password());
+            updateChain.set(MY_PASSWORD.PASSWORD, password);
+        }
+
+        updateChain.set(MY_PASSWORD.ACCOUNT, dto.account(), Objects::nonNull)
+                .set(MY_PASSWORD.REMARK, dto.remark(), Objects::nonNull);
+
+        if (!updateChain.isModified()) {
+            logger.info("用户(uid={})密码记录(id={})未修改", owner, id);
+            return;
+        }
+
+        final var flag = updateChain.update();
+        if (!flag) {
+            logger.info("用户(uid={})密码记录(id={})修改失败", owner, id);
+            throw new BaseException(ResultCode.MyPasswordUpdateFailure);
+        }
+        logger.info("用户(uid={})密码记录(id={})修改成功", owner, id);
     }
 
     @Override
-    public boolean update(int id, String name, String account, String password, String remark, String owner) {
-        if (name == null || name.isEmpty()) {
-            return false;
+    public @Nonnull List<MyPasswordsVO> query(List<String> names) {
+        final var owner = StpKit.USER.getLoginIdAsLong();
+        final var passwords = QueryChain.of(myPasswordMapper)
+                .where(getQueryWrapper(names, owner))
+                .orderBy(MY_PASSWORD.ID.asc())
+                .listAs(MyPasswordsVO.class);
+
+        for (final var vo : passwords) {
+            final var password = vo.getPassword();
+            vo.setPassword(DigestUtils.aesDecrypt(password));
         }
-        final var oldMyPwd = myPasswordsMapper.selectById(id);
-        if (!Objects.equals(oldMyPwd.getOwner(), owner)) {
-            throw new BaseException(AjaxCode.ENTITY_OWNER_NOT_MATCH, "实体所有者和用户不相符");
+
+        return passwords;
+    }
+
+    @Override
+    public @Nonnull CommonPage<MyPasswordsVO> queryPaging(List<String> names, int current, int pageSize) {
+        final var owner = StpKit.USER.getLoginIdAsLong();
+        final var passwords = QueryChain.of(myPasswordMapper)
+                .where(getQueryWrapper(names, owner))
+                .orderBy(MY_PASSWORD.ID.asc())
+                .pageAs(Page.of(current, pageSize), MyPasswordsVO.class);
+
+        for (final var vo : passwords.getRecords()) {
+            final var password = vo.getPassword();
+            vo.setPassword(DigestUtils.aesDecrypt(password));
         }
 
-        final MyPasswords myPwd = new MyPasswords();
-        myPwd.setName(name);
-        myPwd.setOwner(owner);
-        if (!oldMyPwd.getName().equals(name) && myPasswordsMapper.existsByNameAndOwner(myPwd)) {
-            logger.error("在用户{}中名为({})的记录已存在，无法重命名为{1}", owner, name);
-            return false;
-        }
-        myPwd.setId(id);
-        myPwd.setAccount(account);
-        myPwd.setPassword(MyCipher.encrypt(password));
-        myPwd.setRemark(remark);
-        return myPasswordsMapper.updateById(myPwd) == 1;
-    }
-
-    @Override
-    public List<MyPasswordsVo> query(String name, String owner) {
-        if (name == null) return _query(null, owner);
-        return _query(List.of(name), owner);
-    }
-
-    @Override
-    public List<MyPasswordsVo> query(String[] names, String owner) {
-        if (names == null) return _query(null, owner);
-        return _query(List.of(names), owner);
-    }
-
-    @Override
-    public List<MyPasswordsVo> query(List<String> names, String owner) {
-        return _query(names, owner);
-    }
-
-    private List<MyPasswordsVo> _query(List<String> names, String owner) {
-        final List<MyPasswords> passwords = myPasswordsMapper.selectList(getQueryWrapper(names, owner));
-        passwords.sort(Comparator.naturalOrder());
-
-        final List<MyPasswordsVo> result = new ArrayList<>();
-        for (final var password : passwords) {
-            result.add(new MyPasswordsVo(
-                    password.getId(),
-                    password.getName(),
-                    password.getAccount(),
-                    MyCipher.decrypt(password.getPassword()),
-                    password.getRemark()
-            ));
-        }
-        return result;
-    }
-
-    @Override
-    public CommonPage<MyPasswordsVo> queryPaging(String name, int length, int page, String owner) {
-        if (name == null) return _queryPaging(null, length, page, owner);
-        return _queryPaging(List.of(name), length, page, owner);
-    }
-
-    @Override
-    public CommonPage<MyPasswordsVo> queryPaging(String[] names, int length, int page, String owner) {
-        if (names == null) return _queryPaging(null, length, page, owner);
-        return _queryPaging(List.of(names), length, page, owner);
-    }
-
-    @Override
-    public CommonPage<MyPasswordsVo> queryPaging(List<String> names, int length, int page, String owner) {
-        return _queryPaging(names, length, page, owner);
-    }
-
-    /**
-     * @param page 从0开始
-     */
-    private CommonPage<MyPasswordsVo> _queryPaging(List<String> names, int length, int page, String owner) {
-        final var passwordPage = myPasswordsMapper.selectPage(
-                Page.of(page + 1, length),
-                getQueryWrapper(names, owner)
-        );
-        final var total = passwordPage.getTotal();
-        final List<MyPasswords> passwords = passwordPage.getRecords();
-
-        passwords.sort(Comparator.naturalOrder());
-
-        final List<MyPasswordsVo> result = new ArrayList<>();
-        for (final var password : passwords) {
-            result.add(new MyPasswordsVo(
-                    password.getId(),
-                    password.getName(),
-                    password.getAccount(),
-                    MyCipher.decrypt(password.getPassword()),
-                    password.getRemark()
-            ));
-        }
-        return new CommonPage<>(
-                result,
-                total,
-                page,
-                length
-        );
+        return new CommonPage<>(passwords);
     }
 
     private boolean isEmptyNames(List<String> names) {
-        return names == null || names.isEmpty() || (names.size() == 1 && names.getFirst().isEmpty());
+        return names == null || names.isEmpty() || (names.size() == 1 && StringUtils.isBlank(names.getFirst()));
     }
 
-    private LambdaQueryWrapper<MyPasswords> getQueryWrapper(List<String> names, String owner) {
-        final var wrapper = Wrappers.lambdaQuery(MyPasswords.class);
-        if (isEmptyNames(names)) {
-            wrapper.eq(MyPasswords::getOwner, owner);
-        } else {
-            final Set<String> nameSet = new HashSet<>(names);
-            final List<String> nameList = nameSet.stream()
+    private @Nonnull QueryCondition getQueryWrapper(List<String> names, long owner) {
+        final var condition = MY_PASSWORD.OWNER.eq(owner);
+        if (!isEmptyNames(names)) {
+            final var nameCondition = QueryCondition.createEmpty();
+            names.stream()
                     .filter(name -> !Objects.equals(name, ""))
-                    .toList();
-
-            wrapper.eq(MyPasswords::getOwner, owner).and(i -> {
-                for (String name : nameList) {
-                    i.or().like(MyPasswords::getName, name);
-                }
-            });
+                    .distinct()
+                    .forEach(name -> nameCondition.or(MY_PASSWORD.NAME.like(name)));
+            condition.and(nameCondition);
         }
-        return wrapper;
+        return condition;
     }
 }

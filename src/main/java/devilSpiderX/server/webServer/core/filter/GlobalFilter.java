@@ -29,7 +29,7 @@ public class GlobalFilter extends OncePerRequestFilter {
     }
 
     private void addApplicationInfo(HttpServletResponse response) {
-        response.addHeader("Application-Title", applicationProperties.getTitle());
+        response.addHeader("Application-Title", applicationProperties.getName());
         response.addHeader("Application-Version", applicationProperties.getVersion());
     }
 }

@@ -1,155 +1,103 @@
 package devilSpiderX.server.webServer.module.user.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import devilSpiderX.server.webServer.core.annotation.GetPostMapping;
-import devilSpiderX.server.webServer.core.service.SettingsService;
+import devilSpiderX.server.webServer.core.resp.CommonResult;
 import devilSpiderX.server.webServer.core.util.ClientIpUtil;
-import devilSpiderX.server.webServer.core.util.MyCipher;
-import devilSpiderX.server.webServer.core.vo.AjaxResp;
-import devilSpiderX.server.webServer.module.user.dto.LoginRequest;
-import devilSpiderX.server.webServer.module.user.dto.RegisterRequest;
-import devilSpiderX.server.webServer.module.user.dto.UpdatePasswordRequest;
-import devilSpiderX.server.webServer.module.user.entity.User;
+import devilSpiderX.server.webServer.module.user.model.dto.LoginDTO;
+import devilSpiderX.server.webServer.module.user.model.dto.RegisterDTO;
+import devilSpiderX.server.webServer.module.user.model.dto.UpdatePasswordDTO;
+import devilSpiderX.server.webServer.module.user.model.vo.LoginVO;
+import devilSpiderX.server.webServer.module.user.model.vo.StatusVO;
+import devilSpiderX.server.webServer.module.user.model.vo.UploadAvatarVO;
 import devilSpiderX.server.webServer.module.user.service.UserService;
-import devilSpiderX.server.webServer.module.user.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.UnsupportedMediaTypeStatusException;
-
-import java.io.IOException;
-import java.util.Objects;
 
 @Tag(name = "用户接口")
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/user")
 @EnableScheduling
 public class UserController {
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
-    private final SettingsService settingsService;
-
-    public UserController(
-            UserService userService,
-            SettingsService settingsService
-    ) {
-        this.userService = userService;
-        this.settingsService = settingsService;
-    }
 
     @Operation(summary = "登录")
     @PostMapping("login")
-    public AjaxResp<LoginVo> login(
-            @RequestBody LoginRequest reqBody,
-            HttpServletRequest req
+    public CommonResult<LoginVO> login(
+            final
+            @Valid
+            @RequestBody
+            LoginDTO reqBody
     ) {
-        final String uid = reqBody.uid();
+        final String username = reqBody.username();
         final String password = reqBody.password();
-        final User user = userService.get(uid);
 
-        if (user == null) {
-            return AjaxResp.success(LoginVo.of(2, "用户不存在"));
-        } else if (Objects.equals(
-                user.getPassword()
-                        .toLowerCase(),
-                password.toLowerCase()
-        )) {
-            StpUtil.login(uid, settingsService.getSessionMaxAge());
-            final SaSession session = StpUtil.getSession();
-            session.set("user", user);
+        final var loginVO = userService.login(username, password);
+        userService.updateLastAddr(loginVO.getUid(), ClientIpUtil.getClientIp());
 
-            var adminFlag = StpUtil.hasRole("admin");
-            logger.info("{}{}登录成功", adminFlag ? "管理员" : "用户", uid);
-            userService.updateLastAddr(uid, ClientIpUtil.getClientIp(req));
-            return AjaxResp.success(LoginVo.of(
-                    0,
-                    "",
-                    new LoginDataVo(
-                            uid,
-                            StpUtil.getTokenValue(),
-                            adminFlag,
-                            StpUtil.getRoleList(),
-                            StpUtil.getPermissionList(),
-                            user.getLastAddress()
-                    )
-            ));
-        } else {
-            logger.info("{}输入密码错误，登录失败", uid);
-            return AjaxResp.success(LoginVo.of(1, "密码错误"));
-        }
+        return CommonResult.success(loginVO);
     }
 
     @Operation(summary = "登出")
     @PostMapping("logout")
-    public AjaxResp<Void> logout() {
+    public CommonResult<Void> logout() {
         StpUtil.logout();
-        return AjaxResp.success();
+        return CommonResult.success();
     }
 
 
     @Operation(summary = "注册")
     @PostMapping("register")
-    public AjaxResp<RegisterVo> register(
-            @RequestBody RegisterRequest reqBody,
-            HttpServletRequest req
+    public CommonResult<Void> register(
+            final
+            @Valid
+            @RequestBody
+            RegisterDTO reqBody
     ) {
-        final String uid = reqBody.uid();
-        final String password = reqBody.password();
-        final String passwordSHA256 = MyCipher.bytes2Hex(MyCipher.SHA256(password));
-
-        if (userService.exist(uid)) {
-            return AjaxResp.success(new RegisterVo(2, "该uid已存在"));
-        } else if (userService.register(uid, passwordSHA256, ClientIpUtil.getClientIp(req))) {
-            return AjaxResp.success(new RegisterVo(0, ""));
-        } else {
-            return AjaxResp.success(new RegisterVo(1, "注册失败"));
-        }
+        userService.register(reqBody, ClientIpUtil.getClientIp());
+        return CommonResult.success();
     }
 
 
     @Operation(summary = "用户状态")
     @GetPostMapping("status")
-    public AjaxResp<StatusVo> status() {
-        final var result = new StatusVo();
+    public CommonResult<StatusVO> status() {
+        final var result = new StatusVO();
         if (StpUtil.isLogin()) {
             result.setLogin(true);
-            result.setUid(StpUtil.getLoginIdAsString());
+            result.setUid(StpUtil.getLoginIdAsLong());
             result.setAdmin(StpUtil.hasRole("admin"));
             result.setRoles(StpUtil.getRoleList());
             result.setPermissions(StpUtil.getPermissionList());
         }
-        return AjaxResp.success(result);
+        return CommonResult.success(result);
     }
 
     @Operation(summary = "修改密码")
     @PostMapping("updatePassword")
     @SaCheckLogin
-    public AjaxResp<Void> updatePassword(@RequestBody UpdatePasswordRequest reqBody) {
-        final String oldPassword = reqBody.oldPassword();
-        final String newPassword = reqBody.newPassword();
+    public CommonResult<Void> updatePassword(
+            final
+            @Valid
+            @RequestBody
+            UpdatePasswordDTO reqBody
+    ) {
+        final var uid = StpUtil.getLoginIdAsLong();
+        final var oldPassword = reqBody.oldPassword();
+        final var newPassword = reqBody.newPassword();
 
-        final String uid = StpUtil.getLoginIdAsString();
-        final User user = userService.get(uid);
+        userService.updatePassword(uid, oldPassword, newPassword);
 
-        if (Objects.equals(
-                user.getPassword()
-                        .toLowerCase(),
-                oldPassword.toLowerCase()
-        )) {
-            boolean flag = userService.updatePassword(uid, newPassword.toLowerCase());
-            return flag ? AjaxResp.success() : AjaxResp.failure();
-        } else {
-            return AjaxResp.failure("旧密码错误");
-        }
+        return CommonResult.success();
     }
 
     public static final String userAvatarPrefix = "/user/avatar/";
@@ -157,30 +105,25 @@ public class UserController {
     @Operation(summary = "上传头像")
     @PostMapping("uploadAvatar")
     @SaCheckLogin
-    public AjaxResp<UploadAvatarVo> uploadAvatar(
+    public CommonResult<UploadAvatarVO> uploadAvatar(
+            final
             @Parameter(description = "用户头像文件")
-            @RequestPart("image") MultipartFile imageFile
+            @RequestPart("image")
+            MultipartFile imageFile
     ) {
-        final String uid = StpUtil.getLoginIdAsString();
-        try {
-            final String avatarName = userService.uploadAvatarImage(uid, imageFile);
-            return AjaxResp.success(new UploadAvatarVo(userAvatarPrefix + avatarName));
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            return AjaxResp.error(e.getMessage());
-        } catch (UnsupportedMediaTypeStatusException e) {
-            return AjaxResp.error("上传的文件不是图片");
-        }
+        final var uid = StpUtil.getLoginIdAsLong();
+        final String avatarName = userService.uploadAvatarImage(uid, imageFile);
+        return CommonResult.success(new UploadAvatarVO(userAvatarPrefix + avatarName));
     }
 
     @Operation(summary = "获取头像地址")
     @GetMapping("avatar")
     @SaCheckLogin
-    public AjaxResp<String> getAvatar() {
-        final String avatarName = userService.getAvatarImage(StpUtil.getLoginIdAsString());
+    public CommonResult<String> getAvatar() {
+        final String avatarName = userService.getAvatarImage(StpUtil.getLoginIdAsLong());
         if (avatarName == null) {
-            return AjaxResp.of(AjaxResp.success(), "");
+            return CommonResult.success("");
         }
-        return AjaxResp.of(AjaxResp.success(), userAvatarPrefix + avatarName);
+        return CommonResult.success(userAvatarPrefix + avatarName);
     }
 }

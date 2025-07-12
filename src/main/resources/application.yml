@@ -4,6 +4,8 @@ server:
     enabled: true
 
 spring:
+  application:
+    name: DevilSpiderX
   banner:
     location: classpath:banner.txt
   main:
@@ -16,11 +18,12 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/devilspiderx?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    # password:
   data:
     redis:
       host: localhost
       port: 6379
+      # password:
       database: 7
 
 logging:
@@ -34,18 +37,10 @@ sa-token:
   is-read-cookie: false
 
 springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
   api-docs:
-    path: /v3/api-docs
     enabled: false
-  group-configs:
-    - group: 'default'
-      display-name: '默认'
-      paths-to-match: '/**'
-      packages-to-scan: devilSpiderX.server.webServer
 
 management:
   endpoints:
-    enabled-by-default: false
+    access:
+      default: none

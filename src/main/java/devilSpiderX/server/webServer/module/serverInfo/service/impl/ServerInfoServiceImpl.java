@@ -1,8 +1,8 @@
 package devilSpiderX.server.webServer.module.serverInfo.service.impl;
 
+import devilSpiderX.server.webServer.module.serverInfo.model.vo.*;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
 import devilSpiderX.server.webServer.module.serverInfo.statistic.*;
-import devilSpiderX.server.webServer.module.serverInfo.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -307,8 +307,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public CPUVo constructCpuObject(CPU cpu) {
-        return new CPUVo(
+    public CPUVO constructCpuObject(CPU cpu) {
+        return new CPUVO(
                 cpu.getName(),
                 cpu.getPhysicalNum(),
                 cpu.getLogicalNum(),
@@ -319,8 +319,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public MemoryVo constructMemoryObject(Memory memory) {
-        return new MemoryVo(
+    public MemoryVO constructMemoryObject(Memory memory) {
+        return new MemoryVO(
                 memory.getTotal(),
                 memory.getUsed(),
                 memory.getFree()
@@ -328,8 +328,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public DiskVo constructDiskObject(Disk disk) {
-        return new DiskVo(
+    public DiskVO constructDiskObject(Disk disk) {
+        return new DiskVO(
                 disk.getLabel(),
                 disk.getMount(),
                 disk.getFSType(),
@@ -341,8 +341,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public NetworkVo constructNetworkObject(Network network) {
-        return new NetworkVo(
+    public NetworkVO constructNetworkObject(Network network) {
+        return new NetworkVO(
                 network.getName(),
                 network.getDisplayName(),
                 network.getMacAddr(),
@@ -356,8 +356,8 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public CurrentOSVo constructCurrentOSObject(CurrentOS currentOS) {
-        return new CurrentOSVo(
+    public CurrentOSVO constructCurrentOSObject(CurrentOS currentOS) {
+        return new CurrentOSVO(
                 currentOS.getName(),
                 currentOS.getBitness(),
                 currentOS.getProcessCount()
@@ -365,26 +365,26 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public ServerInfoVo getServerInfo() {
+    public ServerInfoVO getServerInfo() {
         final var cpu = this.constructCpuObject(this.getCPU());
 
         final var memory = this.constructMemoryObject(this.getMemory());
 
         final var diskArray = this.getDisks();
-        final var disks = new ArrayList<DiskVo>(diskArray.length);
+        final var disks = new ArrayList<DiskVO>(diskArray.length);
         for (var disk : diskArray) {
             disks.add(this.constructDiskObject(disk));
         }
 
         final var networkArray = this.getNetworks();
-        final var networks = new ArrayList<NetworkVo>(networkArray.length);
+        final var networks = new ArrayList<NetworkVO>(networkArray.length);
         for (var network : networkArray) {
             networks.add(this.constructNetworkObject(network));
         }
 
         final var currentOS = this.constructCurrentOSObject(this.getCurrentOS());
 
-        return new ServerInfoVo(
+        return new ServerInfoVO(
                 cpu,
                 memory,
                 disks,

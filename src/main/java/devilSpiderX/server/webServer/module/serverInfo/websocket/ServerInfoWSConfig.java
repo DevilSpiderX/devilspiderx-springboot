@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -18,16 +19,13 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSocket
 public class ServerInfoWSConfig implements WebSocketConfigurer {
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoWSConfig.class);
 
     private final ServerInfoWSHandler serverInfoWSHandler;
-
-    public ServerInfoWSConfig(ServerInfoWSHandler serverInfoWSHandler) {
-        this.serverInfoWSHandler = serverInfoWSHandler;
-    }
 
     @Override
     public void registerWebSocketHandlers(@Nonnull WebSocketHandlerRegistry registry) {

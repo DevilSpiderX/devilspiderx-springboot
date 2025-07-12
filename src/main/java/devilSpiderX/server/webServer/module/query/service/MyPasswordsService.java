@@ -1,26 +1,48 @@
 package devilSpiderX.server.webServer.module.query.service;
 
-import devilSpiderX.server.webServer.core.vo.CommonPage;
-import devilSpiderX.server.webServer.module.query.vo.MyPasswordsVo;
+import devilSpiderX.server.webServer.core.resp.CommonPage;
+import devilSpiderX.server.webServer.module.query.model.dto.AddRequestDTO;
+import devilSpiderX.server.webServer.module.query.model.dto.UpdateRequestDTO;
+import devilSpiderX.server.webServer.module.query.model.vo.MyPasswordsVO;
+import jakarta.annotation.Nonnull;
 
 import java.util.List;
 
 public interface MyPasswordsService {
-    boolean add(String name, String account, String password, String remark, String owner);
 
-    boolean delete(int id, String owner);
+    void add(@Nonnull AddRequestDTO dto);
 
-    boolean update(int id, String name, String account, String password, String remark, String owner);
+    void delete(int id);
 
-    List<MyPasswordsVo> query(String name, String owner);
+    void update(int id, @Nonnull UpdateRequestDTO dto);
 
-    List<MyPasswordsVo> query(String[] names, String owner);
+    default @Nonnull List<MyPasswordsVO> query(String name) {
+        if (name == null) return query((List<String>) null);
+        return query(List.of(name));
+    }
 
-    List<MyPasswordsVo> query(List<String> names, String owner);
+    default @Nonnull List<MyPasswordsVO> query(String[] names) {
+        if (names == null) return query((List<String>) null);
+        return query(List.of(names));
+    }
 
-    CommonPage<MyPasswordsVo> queryPaging(String name, int length, int page, String owner);
+    @Nonnull
+    List<MyPasswordsVO> query(List<String> names);
 
-    CommonPage<MyPasswordsVo> queryPaging(String[] names, int length, int page, String owner);
+    default @Nonnull CommonPage<MyPasswordsVO> queryPaging(String name, int current, int pageSize) {
+        if (name == null) return queryPaging((List<String>) null, current, pageSize);
+        return queryPaging(List.of(name), current, pageSize);
+    }
 
-    CommonPage<MyPasswordsVo> queryPaging(List<String> names, int length, int page, String owner);
+    default @Nonnull CommonPage<MyPasswordsVO> queryPaging(String[] names, int current, int pageSize) {
+        if (names == null) return queryPaging((List<String>) null, current, pageSize);
+        return queryPaging(List.of(names), current, pageSize);
+    }
+
+    @Nonnull
+    CommonPage<MyPasswordsVO> queryPaging(
+            List<String> names,
+            int current,
+            int pageSize
+    );
 }

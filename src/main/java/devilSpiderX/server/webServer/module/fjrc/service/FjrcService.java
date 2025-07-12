@@ -1,20 +1,32 @@
 package devilSpiderX.server.webServer.module.fjrc.service;
 
-import cn.dev33.satoken.secure.SaSecureUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import devilSpiderX.server.webServer.module.fjrc.dao.FjrcMapper;
-import devilSpiderX.server.webServer.module.fjrc.dao.FjrcUserMapper;
-import devilSpiderX.server.webServer.module.fjrc.entity.Fjrc;
-import devilSpiderX.server.webServer.module.fjrc.entity.FjrcUser;
-import devilSpiderX.server.webServer.module.fjrc.vo.HistoryVo;
+import com.mybatisflex.core.query.QueryChain;
+import com.mybatisflex.core.query.QueryCondition;
+import com.mybatisflex.core.update.UpdateChain;
+import com.mybatisflex.core.util.SqlUtil;
+import devilSpiderX.server.webServer.core.util.DigestUtils;
+import devilSpiderX.server.webServer.module.fjrc.mapper.FjrcMapper;
+import devilSpiderX.server.webServer.module.fjrc.mapper.FjrcUserMapper;
+import devilSpiderX.server.webServer.module.fjrc.model.entity.Fjrc;
+import devilSpiderX.server.webServer.module.fjrc.model.entity.FjrcUser;
+import devilSpiderX.server.webServer.module.fjrc.model.vo.HistoryVO;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static devilSpiderX.server.webServer.module.fjrc.entity.table.FjrcTableDef.FJRC;
+import static devilSpiderX.server.webServer.module.fjrc.entity.table.FjrcUserTableDef.FJRC_USER;
+
+@RequiredArgsConstructor
 @Service
 public class FjrcService {
     private static final Logger logger = LoggerFactory.getLogger(FjrcService.class);
@@ -22,10 +34,6 @@ public class FjrcService {
     private final FjrcMapper fjrcMapper;
     private final FjrcUserMapper fjrcUserMapper;
 
-    public FjrcService(FjrcMapper fjrcMapper, FjrcUserMapper fjrcUserMapper) {
-        this.fjrcMapper = fjrcMapper;
-        this.fjrcUserMapper = fjrcUserMapper;
-    }
 
     public static final Map<String, String> ITEM_BANK_NAME = Map.ofEntries(
             Map.entry("A", "2023年运营岗位资质考试理论题库（财务会计部）"),
@@ -47,29 +55,28 @@ public class FjrcService {
     );
 
     public Fjrc getTopic(String bank, int id) {
-        final var wrapper = new LambdaQueryWrapper<Fjrc>();
+        final var condition = QueryCondition.createEmpty();
         if (ITEM_BANK_NAME.containsKey(bank)) {
-            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get(bank));
+            condition.and(FJRC.ITEM_BANK.eq(ITEM_BANK_NAME.get(bank)));
         } else {
-            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get("A"));
+            condition.and(FJRC.ITEM_BANK.eq(ITEM_BANK_NAME.get("A")));
         }
 
-        final List<Fjrc> list = fjrcMapper.selectList(new Page<>(id, 1), wrapper);
-        if (!list.isEmpty()) {
-            return list.getFirst();
-        }
-        return null;
+        return QueryChain.of(fjrcMapper)
+                .where(condition)
+                .offset(id)
+                .one();
     }
 
     public long getCount(String bank) {
-        final var wrapper = new LambdaQueryWrapper<Fjrc>();
+        final var condition = QueryCondition.createEmpty();
         if (ITEM_BANK_NAME.containsKey(bank)) {
-            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get(bank));
+            condition.and(FJRC.ITEM_BANK.eq(ITEM_BANK_NAME.get(bank)));
         } else {
-            wrapper.eq(Fjrc::getItemBank, ITEM_BANK_NAME.get("A"));
+            condition.and(FJRC.ITEM_BANK.eq(ITEM_BANK_NAME.get("A")));
         }
 
-        return fjrcMapper.selectCount(wrapper);
+        return fjrcMapper.selectCountByCondition(condition);
     }
 
     private final Timer onlineTimer = new Timer("Online Timer", true);
@@ -77,7 +84,7 @@ public class FjrcService {
 
 
     public int getOnlineCount(String fingerprint) {
-        if (fingerprint == null) throw new NullPointerException("fingerprint can't be null");
+        Assert.notNull(fingerprint, "fingerprint can't be null");
         final var task = new TimerTask() {
             @Override
             public void run() {
@@ -105,16 +112,15 @@ public class FjrcService {
         return online.size();
     }
 
+    @Transactional
     public boolean uploadHistory(String key, String value) {
         if (key == null || value == null) return false;
-        final var uid = SaSecureUtil.sha256(key);
-        final var fjrcUser = new FjrcUser();
-        fjrcUser.setUid(uid);
+        final var uid = DigestUtils.sha256(key);
 
-        final var wrapper = new LambdaQueryWrapper<FjrcUser>();
-        wrapper.eq(FjrcUser::getUid, uid);
-
-        final var one = fjrcUserMapper.selectOne(wrapper);
+        final var one = QueryChain.of(fjrcUserMapper)
+                .where(FJRC_USER.UID.eq(uid))
+                .forUpdate()
+                .one();
         final var nowDate = new Date();
         if (one != null) {
             final var lastDate = one.getTime();
@@ -123,22 +129,29 @@ public class FjrcService {
             }
         }
 
-        fjrcUser.setValue(value);
-        fjrcUser.setTime(nowDate);
-
-        final var n = (one != null) ? fjrcUserMapper.update(fjrcUser, wrapper) : fjrcUserMapper.insert(fjrcUser);
-        return n > 0;
+        if (one != null) {
+            return UpdateChain.of(fjrcUserMapper)
+                    .set(FJRC_USER.VALUE, value)
+                    .set(FJRC_USER.TIME, nowDate)
+                    .where(FJRC_USER.UID.eq(uid))
+                    .update();
+        } else {
+            final var fjrcUser = new FjrcUser();
+            fjrcUser.setUid(uid);
+            fjrcUser.setValue(value);
+            fjrcUser.setTime(nowDate);
+            final var n = fjrcUserMapper.insert(fjrcUser);
+            return SqlUtil.toBool(n);
+        }
     }
 
-    public HistoryVo downloadHistory(String key) {
+    public HistoryVO downloadHistory(String key) {
         if (key == null) return null;
-        final var uid = SaSecureUtil.sha256(key);
+        final var uid = DigestUtils.sha256(key);
 
-        final var result = fjrcUserMapper.selectOne(
-                new LambdaQueryWrapper<FjrcUser>().eq(FjrcUser::getUid, uid)
-        );
+        final var result = fjrcUserMapper.selectOneByCondition(FJRC_USER.UID.eq(uid));
         if (result == null) return null;
-        return new HistoryVo(
+        return new HistoryVO(
                 key,
                 result.getTime(),
                 result.getValue()

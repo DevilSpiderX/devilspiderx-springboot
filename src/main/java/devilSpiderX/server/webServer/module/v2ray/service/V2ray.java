@@ -1,6 +1,7 @@
 package devilSpiderX.server.webServer.module.v2ray.service;
 
 import devilSpiderX.server.webServer.core.property.V2rayProperties;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.io.IOException;
 public class V2ray {
     private final String exePath;
     private final String configPath;
+    @Getter
     private boolean alive = false;
     private Process p = null;
 
@@ -37,8 +39,5 @@ public class V2ray {
         return result;
     }
 
-    public boolean isAlive() {
-        return alive;
-    }
 }
 

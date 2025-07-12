@@ -1,16 +1,17 @@
 package devilSpiderX.server.webServer.module.serverInfo.websocket;
 
 import cn.dev33.satoken.stp.StpUtil;
-import devilSpiderX.server.webServer.core.jackson.JacksonUtil;
-import devilSpiderX.server.webServer.module.serverInfo.record.Attribute;
-import devilSpiderX.server.webServer.module.serverInfo.record.TextMsgData;
+import devilSpiderX.server.webServer.core.util.JacksonUtil;
+import devilSpiderX.server.webServer.module.serverInfo.model.dto.Attribute;
+import devilSpiderX.server.webServer.module.serverInfo.model.dto.TextMsgData;
 import devilSpiderX.server.webServer.module.serverInfo.service.ServerInfoService;
-import devilSpiderX.server.webServer.module.user.entity.User;
+import devilSpiderX.server.webServer.module.user.model.entity.User;
 import jakarta.annotation.Nonnull;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@RequiredArgsConstructor
 @Component
 public class ServerInfoWSHandler extends TextWebSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(ServerInfoWSHandler.class);
@@ -38,9 +40,6 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
     private final Timer senderTimer = new Timer("send-server-info-thread", true);
     private final Map<String, TimerTask> sendTaskMap = new HashMap<>();
 
-    public ServerInfoWSHandler(ServerInfoService serverInfoService) {
-        this.serverInfoService = serverInfoService;
-    }
 
     @OnOpen
     @Override
@@ -50,7 +49,7 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         final User user = (User) map.get("user");
         final String token = (String) map.get("token");
         attributeMap.put(sessionId, new Attribute(user, token));
-        logger.info("用户{}接入，当前在线数量为：{}", user.getUid(), onlineCount.incrementAndGet());
+        logger.info("用户{}接入，当前在线数量为：{}", user.getUsername(), onlineCount.incrementAndGet());
     }
 
     @OnClose
@@ -64,7 +63,7 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         logger.info(
                 "用户{}退出，当前在线数量为：{} - {}{}",
                 attr.user()
-                        .getUid(),
+                        .getUsername(),
                 onlineCount.decrementAndGet(),
                 CloseReason.CloseCodes.getCloseCode(status.getCode()),
                 status.getReason() == null ? "" : " - %s".formatted(status.getReason())
@@ -84,23 +83,23 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
         final var msg = message.getPayload();
         final var sessionId = session.getId();
         final Attribute attr = attributeMap.get(sessionId);
-        final var uid = attr.user()
-                .getUid();
-        logger.info("来自用户{}的消息 - {}", uid, msg);
+        final var username = attr.user()
+                .getUsername();
+        logger.info("来自用户{}的消息 - {}", username, msg);
 
         final var data = JacksonUtil.parseObject(msg, TextMsgData.class);
 
         if ("start".equals(data.cmd())) {
-            logger.info("用户{}开始定时任务", uid);
+            logger.info("用户{}开始定时任务", username);
             final TimerTask task = new SendTask(session, attr, serverInfoService);
             final TimerTask lastTask = sendTaskMap.put(sessionId, task);
             if (lastTask != null) {
-                logger.info("用户{}中止上个定时任务", uid);
+                logger.info("用户{}中止上个定时任务", username);
                 lastTask.cancel();
             }
             senderTimer.scheduleAtFixedRate(task, 0, data.cd(1000));
         } else if ("stop".equals(data.cmd())) {
-            logger.info("用户{}停止定时任务", uid);
+            logger.info("用户{}停止定时任务", username);
             final TimerTask task = sendTaskMap.remove(sessionId);
             if (task != null) {
                 task.cancel();
@@ -157,9 +156,9 @@ public class ServerInfoWSHandler extends TextWebSocketHandler {
                     session.close(TokenExpiredCloseStatus);
                 } catch (IOException e) {
                     logger.error(
-                            "关闭WebSocket失败,uid: {} ,sessionId: {} ,message: {}",
+                            "关闭WebSocket失败,username: {} ,sessionId: {} ,message: {}",
                             attr.user()
-                                    .getUid(),
+                                    .getUsername(),
                             session.getId(),
                             e.getMessage(),
                             e

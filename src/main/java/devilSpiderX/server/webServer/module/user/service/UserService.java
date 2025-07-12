@@ -1,28 +1,28 @@
 package devilSpiderX.server.webServer.module.user.service;
 
-import devilSpiderX.server.webServer.module.user.entity.User;
-import jakarta.validation.constraints.NotNull;
+import devilSpiderX.server.webServer.module.user.model.dto.RegisterDTO;
+import devilSpiderX.server.webServer.module.user.model.vo.LoginVO;
+import jakarta.annotation.Nonnull;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
-    User get(String uid);
 
-    boolean register(String uid, String password, String ipAddr);
+    LoginVO login(@Nonnull String username, @Nonnull String password);
 
-    boolean isAdmin(String uid);
+    void register(@Nonnull RegisterDTO dto, String ipAddr);
 
-    boolean exist(String uid);
+    boolean isAdmin(long uid);
 
-    boolean updateLastAddr(String uid, String ipAddr);
+    void updateLastAddr(long uid, String ipAddr);
 
-    boolean updatePassword(String uid, String password);
+    void updatePassword(long uid, @Nonnull String oldPassword, @Nonnull String newPassword);
 
-    String uploadAvatarImage(@NotNull String uid, MultipartFile imageFile) throws IOException;
+    String uploadAvatarImage(long uid, @Nonnull MultipartFile imageFile);
 
-    String getAvatarImage(String uid);
+    String getAvatarImage(long uid);
 
-    List<String> getUserPermissions(String uid);
+    List<String> getUserPermissions(long uid);
+
 }
