@@ -1,0 +1,25 @@
+spring:
+  application:
+    version: dev
+
+sa-token:
+  is-log: true
+
+logging:
+  level:
+    root: debug
+  file:
+    path: server/target/log
+
+mybatis-flex:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+springdoc:
+  api-docs:
+    enabled: true
+
+management:
+  endpoints:
+    access:
+      default: unrestricted

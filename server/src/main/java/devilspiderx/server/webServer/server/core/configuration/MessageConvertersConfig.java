@@ -1,0 +1,28 @@
+package devilSpiderX.server.webServer.server.core.configuration;
+
+import devilSpiderX.server.webServer.common.core.converter.factory.EnumConverterFactory;
+import devilSpiderX.server.webServer.common.core.util.BytesHttpMessageConverter;
+import devilSpiderX.server.webServer.common.core.util.FormToJSONHttpMessageConverter;
+import jakarta.annotation.Nonnull;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+
+@Configuration
+public class MessageConvertersConfig implements WebMvcConfigurer {
+
+    @Override
+    public void configureMessageConverters(@Nonnull List<HttpMessageConverter<?>> converters) {
+        converters.add(new BytesHttpMessageConverter());
+        converters.add(new FormToJSONHttpMessageConverter());
+    }
+
+    @Override
+    public void addFormatters(final @Nonnull FormatterRegistry registry) {
+        registry.addConverterFactory(new EnumConverterFactory());
+    }
+
+}
