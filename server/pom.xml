@@ -191,7 +191,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>devilSpiderX.server.webServer.DSXApplication</mainClass>
+                            <mainClass>devilSpiderX.server.webServer.server.DSXApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
